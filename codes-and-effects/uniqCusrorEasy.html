@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cursor Effect - Copy Paste Ready</title>
+    <style>
+      body {
+        background: #060610;
+        min-height: 100vh;
+        font-family: 'Courier New', monospace;
+        color: white;
+      }
+
+      /* ============================================
+       STEP 1: Apni site ke CSS mein ye add karo
+       ============================================ */
+      /* CURSOR EFFECT CSS - START */
+
+      #cursor-dot {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: white;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 9999;
+        mix-blend-mode: exclusion;
+      }
+
+      #cursor-canvas {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9998;
+      }
+      /* CURSOR EFFECT CSS - END */
+
+      /* Demo page styles (ye apni site mein mat dalna) */
+      .page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        gap: 2rem;
+        padding: 2rem;
+      }
+      .box {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem 2.5rem;
+        max-width: 680px;
+        width: 100%;
+      }
+      .box h2 {
+        color: #a78bfa;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .box pre {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 1.2rem;
+        font-size: 0.78rem;
+        line-height: 1.7;
+        overflow-x: auto;
+        color: #7dd3fc;
+        white-space: pre-wrap;
+      }
+      .label {
+        display: inline-block;
+        background: #7c3aed;
+        color: white;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.75rem;
+      }
+      .copy-btn {
+        margin-top: 0.75rem;
+        background: rgba(124, 58, 237, 0.3);
+        border: 1px solid #7c3aed;
+        color: white;
+        padding: 0.5rem 1.2rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: background 0.2s;
+      }
+      .copy-btn:hover {
+        background: rgba(124, 58, 237, 0.6);
+      }
+      h1 {
+        font-size: 1.4rem;
+        letter-spacing: 0.2em;
+        opacity: 0.5;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- CURSOR EFFECT HTML - ye apni site mein <body> ke andar sabse pehle dalna -->
+    <div id="cursor-dot"></div>
+
+    <!-- CURSOR EFFECT HTML - END -->
+
+    <!-- Demo content (ye mat copy karna) -->
+    <div class="page">
+      <h1>✦ Cursor Effect ✦</h1>
+
+      <div class="box">
+        <div class="label">STEP 1 — HTML</div>
+        <h2>Ye 2 lines &lt;body&gt; ke andar sabse upar dalo</h2>
+        <pre id="html-code">
+&lt;div id="cursor-dot"&gt;&lt;/div&gt;
+&lt;canvas id="cursor-canvas"&gt;&lt;/canvas&gt;</pre
+        >
+        <button class="copy-btn" onclick="copyCode('html-code', this)">
+          Copy ⧉
+        </button>
+      </div>
+
+      <div class="box">
+        <div class="label">STEP 2 — CSS</div>
+        <h2>Ye CSS apni stylesheet mein dalo</h2>
+        <pre id="css-code">
+body { cursor: none; }
+
+#cursor-dot {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: white;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: exclusion;
+}
+
+#cursor-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+}</pre
+        >
+        <button class="copy-btn" onclick="copyCode('css-code', this)">
+          Copy ⧉
+        </button>
+      </div>
+
+      <div class="box">
+        <div class="label">STEP 3 — JavaScript</div>
+        <h2>Ye script &lt;/body&gt; se pehle dalo</h2>
+        <pre id="js-code">
+&lt;script&gt;
+(function() {
+  const canvas = document.getElementById('cursor-canvas');
+  const ctx    = canvas.getContext('2d');
+  const dot    = document.getElementById('cursor-dot');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const mouse = { x: -999, y: -999 };
+  const DOTS  = 18;
+  const trail = Array.from({ length: DOTS }, () => ({ x: -999, y: -999 }));
+  const MAX_P = 40;
+  const parts  = [];
+  let hue = 0, frame = 0;
+
+  window.addEventListener('mousemove', e =&gt; {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    dot.style.left = e.clientX + 'px';
+    dot.style.top  = e.clientY + 'px';
+    if (trail[0].x === -999) trail.forEach(t =&gt; { t.x = e.clientX; t.y = e.clientY; });
+  });
+  window.addEventListener('touchmove', e =&gt; {
+    mouse.x = e.touches[0].clientX;
+    mouse.y = e.touches[0].clientY;
+  }, { passive: true });
+  window.addEventListener('mousedown', e =&gt; {
+    for (let i = 0; i &lt; 12; i++) parts.push(newDot(e.clientX, e.clientY));
+  });
+
+  function newDot(x, y) {
+    const a = Math.random() * Math.PI * 2;
+    const s = 0.8 + Math.random() * 1.8;
+    return {
+      x, y,
+      vx: Math.cos(a) * s,
+      vy: Math.sin(a) * s - 0.5,
+      life: 1,
+      decay: 0.028 + Math.random() * 0.02,
+      r: 1.5 + Math.random() * 2,
+      hue: hue + Math.random() * 40 - 20
+    };
+  }
+
+  function render() {
+    requestAnimationFrame(render);
+    hue = (hue + 0.8) % 360;
+    frame++;
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(0, 0, W, H);
+
+    // Trail update
+    trail[0].x += (mouse.x - trail[0].x) * 0.5;
+    trail[0].y += (mouse.y - trail[0].y) * 0.5;
+    for (let i = 1; i &lt; DOTS; i++) {
+      trail[i].x += (trail[i-1].x - trail[i].x) * 0.45;
+      trail[i].y += (trail[i-1].y - trail[i].y) * 0.45;
+    }
+
+    // Draw ribbon
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineJoin = 'round';
+    ctx.lineCap  = 'round';
+    for (let i = 1; i &lt; DOTS; i++) {
+      const t = 1 - i / DOTS;
+      const h = (hue + i * 8) % 360;
+      ctx.beginPath();
+      ctx.moveTo(trail[i-1].x, trail[i-1].y);
+      ctx.lineTo(trail[i].x,   trail[i].y);
+      ctx.strokeStyle = `hsla(${h},100%,65%,${t * 0.6})`;
+      ctx.lineWidth   = t * 5;
+      ctx.shadowColor = `hsla(${h},100%,70%,0.5)`;
+      ctx.shadowBlur  = 6;
+      ctx.stroke();
+    }
+
+    // Emit particle
+    const dx = trail[0].x - trail[1].x;
+    const dy = trail[0].y - trail[1].y;
+    if (Math.sqrt(dx*dx+dy*dy) &gt; 2 &amp;&amp; parts.length &lt; MAX_P &amp;&amp; frame%2===0)
+      parts.push(newDot(mouse.x, mouse.y));
+
+    // Draw particles
+    ctx.shadowBlur = 0;
+    for (let i = parts.length-1; i &gt;= 0; i--) {
+      const p = parts[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.04; p.vx *= 0.98;
+      p.life -= p.decay;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI*2);
+      ctx.fillStyle = `hsla(${p.hue},100%,70%,${p.life*0.8})`;
+      ctx.fill();
+      if (p.life &lt;= 0) parts.splice(i, 1);
+    }
+    ctx.shadowBlur = 0;
+  }
+
+  render();
+})();
+&lt;/script&gt;</pre
+        >
+        <button class="copy-btn" onclick="copyCode('js-code', this)">
+          Copy ⧉
+        </button>
+      </div>
+    </div>
+
+    <!-- CURSOR JS (actual working script) -->
+    <script>
+      (function () {
+        const canvas = document.getElementById('cursor-canvas');
+        const ctx = canvas.getContext('2d');
+        const dot = document.getElementById('cursor-dot');
+        let W, H;
+
+        function resize() {
+          W = canvas.width = window.innerWidth;
+          H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const mouse = { x: -999, y: -999 };
+        const DOTS = 18;
+        const trail = Array.from({ length: DOTS }, () => ({
+          x: -999,
+          y: -999,
+        }));
+        const MAX_P = 40;
+        const parts = [];
+        let hue = 0,
+          frame = 0;
+
+        window.addEventListener('mousemove', (e) => {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+          dot.style.left = e.clientX + 'px';
+          dot.style.top = e.clientY + 'px';
+          if (trail[0].x === -999)
+            trail.forEach((t) => {
+              t.x = e.clientX;
+              t.y = e.clientY;
+            });
+        });
+        window.addEventListener(
+          'touchmove',
+          (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+          },
+          { passive: true },
+        );
+        window.addEventListener('mousedown', (e) => {
+          for (let i = 0; i < 12; i++) parts.push(newDot(e.clientX, e.clientY));
+        });
+
+        function newDot(x, y) {
+          const a = Math.random() * Math.PI * 2;
+          const s = 0.8 + Math.random() * 1.8;
+          return {
+            x,
+            y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s - 0.5,
+            life: 1,
+            decay: 0.028 + Math.random() * 0.02,
+            r: 1.5 + Math.random() * 2,
+            hue: hue + Math.random() * 40 - 20,
+          };
+        }
+
+        function render() {
+          requestAnimationFrame(render);
+          hue = (hue + 0.8) % 360;
+          frame++;
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.fillStyle = 'rgba(0,0,0,0.2)';
+          ctx.fillRect(0, 0, W, H);
+          trail[0].x += (mouse.x - trail[0].x) * 0.5;
+          trail[0].y += (mouse.y - trail[0].y) * 0.5;
+          for (let i = 1; i < DOTS; i++) {
+            trail[i].x += (trail[i - 1].x - trail[i].x) * 0.45;
+            trail[i].y += (trail[i - 1].y - trail[i].y) * 0.45;
+          }
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.lineJoin = 'round';
+          ctx.lineCap = 'round';
+          for (let i = 1; i < DOTS; i++) {
+            const t = 1 - i / DOTS,
+              h = (hue + i * 8) % 360;
+            ctx.beginPath();
+            ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+            ctx.lineTo(trail[i].x, trail[i].y);
+            ctx.strokeStyle = `hsla(${h},100%,65%,${t * 0.6})`;
+            ctx.lineWidth = t * 5;
+            ctx.shadowColor = `hsla(${h},100%,70%,0.5)`;
+            ctx.shadowBlur = 6;
+            ctx.stroke();
+          }
+          const dx = trail[0].x - trail[1].x,
+            dy = trail[0].y - trail[1].y;
+          if (
+            Math.sqrt(dx * dx + dy * dy) > 2 &&
+            parts.length < MAX_P &&
+            frame % 2 === 0
+          )
+            parts.push(newDot(mouse.x, mouse.y));
+          ctx.shadowBlur = 0;
+          for (let i = parts.length - 1; i >= 0; i--) {
+            const p = parts[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.04;
+            p.vx *= 0.98;
+            p.life -= p.decay;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${p.hue},100%,70%,${p.life * 0.8})`;
+            ctx.fill();
+            if (p.life <= 0) parts.splice(i, 1);
+          }
+          ctx.shadowBlur = 0;
+        }
+        render();
+      })();
+
+      // Copy button logic
+      function copyCode(id, btn) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = 'Copied ✓';
+          setTimeout(() => (btn.textContent = 'Copy ⧉'), 2000);
+        });
+      }
+    </script>
+  </body>
+</html>

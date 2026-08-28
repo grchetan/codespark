@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cursor Effect</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#080810;cursor:none;font-family:'DM Sans',sans-serif}
+canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* Tiny custom dot cursor */
+#dot{
+  position:fixed;width:6px;height:6px;border-radius:50%;
+  background:#fff;pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  mix-blend-mode:difference;
+  transition:transform .08s;
+}
+body:active #dot{transform:translate(-50%,-50%) scale(2.5)}
+
+/* Page content */
+.page{
+  position:fixed;inset:0;z-index:10;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;gap:1rem;
+  pointer-events:none;
+  user-select:none;
+}
+h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(2.5rem,7vw,6rem);
+  font-weight:800;
+  color:rgba(255,255,255,.08);
+  letter-spacing:-.03em;
+  line-height:1;
+}
+p{
+  font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.12);font-weight:300;
+}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+<div id="dot"></div>
+
+<div class="page">
+  <h1>MOVE<br>YOUR<br>CURSOR</h1>
+  <p>anywhere on screen</p>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const dot    = document.getElementById('dot');
+
+let W, H;
+function resize(){
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── Mouse state ──
+const mouse = { x: W/2, y: H/2, px: W/2, py: H/2, down: false };
+const target = { x: W/2, y: H/2 };          // lerp target for smooth trail head
+
+document.addEventListener('mousemove', e => {
+  target.x = e.clientX;
+  target.y = e.clientY;
+  dot.style.left = e.clientX + 'px';
+  dot.style.top  = e.clientY + 'px';
+});
+document.addEventListener('mousedown', () => mouse.down = true);
+document.addEventListener('mouseup',   () => mouse.down = false);
+
+// ── Trail ribbon (spline of points) ──
+const TRAIL_LEN = 80;
+const trail = Array.from({length: TRAIL_LEN}, () => ({ x: W/2, y: H/2 }));
+
+// ── Ink splat particles (burst on click) ──
+let splats = [];
+document.addEventListener('click', e => {
+  const count = 28 + Math.random()*20|0;
+  for(let i=0;i<count;i++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 1.5 + Math.random()*5;
+    splats.push({
+      x: e.clientX, y: e.clientY,
+      vx: Math.cos(angle)*speed,
+      vy: Math.sin(angle)*speed,
+      life: 1, decay: .018 + Math.random()*.025,
+      r: 1.5 + Math.random()*3.5,
+      hue: Math.random()*360,
+    });
+  }
+});
+
+// ── Magnetic field lines (always on, follow mouse) ──
+const FIELD_LINES = 14;
+const fieldPhase = Array.from({length:FIELD_LINES},(_,i)=>i/FIELD_LINES*Math.PI*2);
+
+// ── Orbit rings ──
+const RINGS = 3;
+const rings = Array.from({length:RINGS},(_,i)=>({
+  angle: Math.random()*Math.PI*2,
+  speed: (.004 + i*.003) * (i%2===0?1:-1),
+  radius: 28 + i*22,
+  dotR: 2.5 - i*.4,
+}));
+
+// ── Ripple pool ──
+let ripples = [];
+// auto-create subtle ripples as mouse moves
+let lastRipple = 0;
+
+// ── Velocity glow ──
+let velMag = 0;
+
+let t = 0;
+
+function draw(){
+  requestAnimationFrame(draw);
+  t += .018;
+
+  // Lerp mouse head
+  mouse.px = mouse.x;
+  mouse.py = mouse.y;
+  mouse.x += (target.x - mouse.x) * .18;
+  mouse.y += (target.y - mouse.y) * .18;
+
+  const dx = mouse.x - mouse.px;
+  const dy = mouse.y - mouse.py;
+  velMag = Math.sqrt(dx*dx + dy*dy);
+
+  // Shift trail
+  trail.unshift({ x: mouse.x, y: mouse.y });
+  if(trail.length > TRAIL_LEN) trail.length = TRAIL_LEN;
+
+  // Auto ripple when moving fast enough
+  if(velMag > 4 && t - lastRipple > .12){
+    ripples.push({ x: mouse.x, y: mouse.y, r: 0, max: 60, alpha: .5 });
+    lastRipple = t;
+  }
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+
+  // ── 1. Smear trail (glowing ribbon) ──
+  if(trail.length > 2){
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    for(let i = 1; i < trail.length-1; i++){
+      const prog = 1 - i/trail.length;
+      const width = prog * (6 + velMag*.3);
+      const hue   = (t*60 + i*3) % 360;
+      const alpha = prog * .85;
+
+      ctx.beginPath();
+      ctx.moveTo(trail[i-1].x, trail[i-1].y);
+      ctx.quadraticCurveTo(trail[i].x, trail[i].y, (trail[i].x+trail[i+1].x)/2, (trail[i].y+trail[i+1].y)/2);
+      ctx.lineWidth = width;
+      ctx.strokeStyle = `hsla(${hue},100%,70%,${alpha})`;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ── 2. Magnetic field arcs ──
+  ctx.save();
+  ctx.globalAlpha = Math.min(.55, .1 + velMag*.015);
+  for(let l=0;l<FIELD_LINES;l++){
+    const phase = fieldPhase[l] + t*.4;
+    const len   = 55 + 20*Math.sin(t + l);
+    const x1 = mouse.x + Math.cos(phase)*len;
+    const y1 = mouse.y + Math.sin(phase)*len;
+    const x2 = mouse.x + Math.cos(phase + .6)*len*.55;
+    const y2 = mouse.y + Math.sin(phase + .6)*len*.55;
+    const hue = (t*40 + l*26)%360;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.quadraticCurveTo(mouse.x, mouse.y, x2, y2);
+    ctx.strokeStyle = `hsl(${hue},90%,72%)`;
+    ctx.lineWidth   = .8;
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── 3. Orbit dots ──
+  rings.forEach(r => {
+    r.angle += r.speed * (1 + velMag*.04);
+    const ox = mouse.x + Math.cos(r.angle) * r.radius;
+    const oy = mouse.y + Math.sin(r.angle) * r.radius;
+    const hue = (t*80 + r.radius*3) % 360;
+
+    // orbit path (faint circle)
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, r.radius, 0, Math.PI*2);
+    ctx.strokeStyle = `hsla(${hue},70%,60%,.06)`;
+    ctx.lineWidth = .5;
+    ctx.stroke();
+
+    // dot
+    ctx.beginPath();
+    ctx.arc(ox, oy, r.dotR, 0, Math.PI*2);
+    ctx.fillStyle = `hsl(${hue},100%,80%)`;
+    ctx.fill();
+
+    // dot glow
+    const g = ctx.createRadialGradient(ox,oy,0,ox,oy,r.dotR*5);
+    g.addColorStop(0,`hsla(${hue},100%,70%,.5)`);
+    g.addColorStop(1,'transparent');
+    ctx.beginPath();
+    ctx.arc(ox,oy,r.dotR*5,0,Math.PI*2);
+    ctx.fillStyle=g;
+    ctx.fill();
+  });
+
+  // ── 4. Core glow ──
+  const coreR = 18 + velMag*1.2;
+  const cg = ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,coreR);
+  const ch  = (t*50)%360;
+  cg.addColorStop(0,`hsla(${ch},100%,90%,.9)`);
+  cg.addColorStop(.35,`hsla(${ch+40},100%,65%,.35)`);
+  cg.addColorStop(1,'transparent');
+  ctx.beginPath();
+  ctx.arc(mouse.x,mouse.y,coreR,0,Math.PI*2);
+  ctx.fillStyle=cg;
+  ctx.fill();
+
+  // ── 5. Ripples ──
+  ripples = ripples.filter(r => r.alpha > 0);
+  ripples.forEach(r => {
+    const hue = (t*60 + r.r) % 360;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, r.r, 0, Math.PI*2);
+    ctx.strokeStyle = `hsla(${hue},100%,75%,${r.alpha})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    r.r   += 2.2;
+    r.alpha -= .012;
+  });
+
+  // ── 6. Ink splat particles ──
+  splats = splats.filter(s => s.life > 0);
+  splats.forEach(s => {
+    ctx.save();
+    ctx.globalAlpha = s.life;
+    const g2 = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*2);
+    g2.addColorStop(0,`hsl(${s.hue},100%,80%)`);
+    g2.addColorStop(1,'transparent');
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r*2,0,Math.PI*2);
+    ctx.fillStyle=g2;
+    ctx.fill();
+    ctx.restore();
+
+    s.x   += s.vx;
+    s.y   += s.vy;
+    s.vy  += .08;           // gravity
+    s.vx  *= .96;
+    s.vy  *= .96;
+    s.life -= s.decay;
+    s.r   *= .97;
+  });
+
+  // ── 7. Velocity shockwave (when speeding) ──
+  if(velMag > 10){
+    const sw = ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,velMag*6);
+    const sh = (t*90)%360;
+    sw.addColorStop(0,'transparent');
+    sw.addColorStop(.6,`hsla(${sh},100%,70%,.06)`);
+    sw.addColorStop(1,'transparent');
+    ctx.beginPath();
+    ctx.arc(mouse.x,mouse.y,velMag*6,0,Math.PI*2);
+    ctx.fillStyle=sw;
+    ctx.fill();
+  }
+}
+
+draw();
+</script>
+</body>
+</html>

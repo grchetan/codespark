@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Split Text</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f0f0f0; /* For visibility */
+      }
+
+      #split-text {
+        position: relative;
+        margin-left: auto;
+        margin-right: auto; /* mx-auto */
+        cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4"/></svg>'),
+          auto; /* cursor-sword (approximated) */
+        font-size: 2.25rem; /* text-4xl */
+        font-weight: 900; /* font-black */
+        text-transform: uppercase; /* uppercase */
+        color: #eab308; /* text-yellow-500 */
+        line-height: 1;
+      }
+
+      @media (min-width: 768px) {
+        #split-text {
+          font-size: 3rem; /* md:text-5xl */
+        }
+      }
+
+      @media (min-width: 1024px) {
+        #split-text {
+          font-size: 8rem; /* lg:text-9xl */
+        }
+      }
+
+      .invisible-text {
+        visibility: hidden; /* invisible */
+        line-height: 1; /* leading-none */
+        white-space: pre;
+      }
+
+      .letters {
+        position: absolute;
+        top: 0;
+        display: flex; /* flex */
+        height: 100%; /* h-full */
+      }
+
+      .letter {
+        position: relative;
+        display: inline-flex; /* inline-flex */
+        flex-direction: column; /* flex-col */
+        height: 100%; /* h-full */
+        cursor: inherit; /* cursor-sword */
+        line-height: 1; /* leading-none */
+      }
+
+      .letter-half {
+        display: inline-block; /* inline */
+        height: 50%; /* h-1/2 */
+        overflow-y: hidden; /* overflow-y-hidden */
+        line-height: 1; /* leading-none */
+        transition: transform 0.3s ease-out; /* transition-all duration-300 ease-out */
+        user-select: none; /* select-none */
+        white-space: pre; /* whitespace-pre */
+      }
+
+      .bottom-half span {
+        position: absolute;
+        transform: translateY(-50%); /* -translate-y-1/2 */
+        line-height: 1; /* leading-none */
+      }
+
+      .translate-y-5 {
+        transform: translateY(1.25rem); /* translate-y-5 */
+      }
+
+      .translate-y-3 {
+        transform: translateY(0.75rem); /* translate-y-3 */
+      }
+
+      .translate-y-1 {
+        transform: translateY(0.25rem); /* translate-y-1 */
+      }
+
+      .-translate-y-5 {
+        transform: translateY(-1.25rem); /* -translate-y-5 */
+      }
+
+      .-translate-y-3 {
+        transform: translateY(-0.75rem); /* -translate-y-3 */
+      }
+
+      .-translate-y-1 {
+        transform: translateY(-0.25rem); /* -translate-y-1 */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="split-text">
+      <div class="invisible-text"></div>
+      <div class="letters"></div>
+    </div>
+    <script>
+      const config = {
+        text: "mage-ui",
+      };
+
+      let activeIndex = undefined;
+      let timer = null;
+
+      function updateLetterClasses(index) {
+        const letters = document.querySelectorAll(".letter");
+        letters.forEach((letter, i) => {
+          const topHalf = letter.querySelector(".top-half");
+          const bottomHalf = letter.querySelector(".bottom-half");
+
+          // Remove all translation classes
+          topHalf.classList.remove(
+            "-translate-y-5",
+            "-translate-y-3",
+            "-translate-y-1"
+          );
+          bottomHalf.classList.remove(
+            "translate-y-5",
+            "translate-y-3",
+            "translate-y-1"
+          );
+
+          if (index === undefined) return;
+
+          // Apply classes based on active index
+          if (i === index) {
+            topHalf.classList.add("-translate-y-5");
+            bottomHalf.classList.add("translate-y-5");
+          } else if (i === index - 1 || i === index + 1) {
+            topHalf.classList.add("-translate-y-3");
+            bottomHalf.classList.add("translate-y-3");
+          } else if (i === index - 2 || i === index + 2) {
+            topHalf.classList.add("-translate-y-1");
+            bottomHalf.classList.add("translate-y-1");
+          }
+        });
+      }
+
+      function init() {
+        const container = document.getElementById("split-text");
+        const invisibleText = container.querySelector(".invisible-text");
+        const lettersContainer = container.querySelector(".letters");
+
+        if (!container || !invisibleText || !lettersContainer) return;
+
+        // Set invisible text for sizing
+        invisibleText.textContent = config.text;
+
+        // Split text into letters
+        config.text.split("").forEach((letter, index) => {
+          const letterDiv = document.createElement("div");
+          letterDiv.className = "letter";
+
+          const topHalf = document.createElement("span");
+          topHalf.className = "letter-half top-half";
+          topHalf.textContent = letter;
+
+          const bottomHalf = document.createElement("span");
+          bottomHalf.className = "letter-half bottom-half";
+          const bottomSpan = document.createElement("span");
+          bottomSpan.textContent = letter;
+          bottomHalf.appendChild(bottomSpan);
+
+          letterDiv.appendChild(topHalf);
+          letterDiv.appendChild(bottomHalf);
+          lettersContainer.appendChild(letterDiv);
+
+          // Add event listeners
+          letterDiv.addEventListener("mouseenter", () => {
+            if (timer) {
+              clearTimeout(timer);
+            }
+            activeIndex = index;
+            updateLetterClasses(index);
+          });
+
+          letterDiv.addEventListener("mouseleave", () => {
+            timer = setTimeout(() => {
+              activeIndex = undefined;
+              updateLetterClasses(undefined);
+            }, 100); // Default timeout duration
+          });
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>

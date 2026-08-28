@@ -1,0 +1,298 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+.scene{
+  width:100%;min-height:500px;
+  background:#080808;
+  border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:0;padding:2rem;
+  position:relative;cursor:none;
+}
+canvas#bg{position:absolute;inset:0;pointer-events:none;}
+.words{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:0;}
+.word-wrap{position:relative;overflow:visible;line-height:1;}
+.word-wrap canvas{display:block;}
+.sub{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(255,255,255,.18);margin-top:2rem;position:relative;z-index:2;
+}
+</style>
+
+<div class="scene" id="scene">
+  <canvas id="bg"></canvas>
+  <div class="words" id="words">
+    <div class="word-wrap"><canvas id="c0"></canvas></div>
+    <div class="word-wrap"><canvas id="c1"></canvas></div>
+    <div class="word-wrap"><canvas id="c2"></canvas></div>
+  </div>
+  <p class="sub">hover · slice · heal</p>
+</div>
+
+<script>
+const WORDS = ['CREATIVE', 'DEVELOPER', 'PORTFOLIO'];
+const FONT_SIZE = Math.min(Math.floor(window.innerWidth * .115), 118);
+const FONT = `900 ${FONT_SIZE}px 'Bebas Neue', sans-serif`;
+const SLICE_COUNT = 9;
+
+const scene = document.getElementById('scene');
+const bgCvs = document.getElementById('bg');
+const bgCtx = bgCvs.getContext('2d');
+
+let scW, scH, curX = -999, curY = -999;
+
+function resizeScene(){
+  const r = scene.getBoundingClientRect();
+  scW = bgCvs.width = r.width;
+  scH = bgCvs.height = r.height;
+}
+resizeScene();
+window.addEventListener('resize', () => { resizeScene(); words.forEach(w=>w.init()); });
+
+scene.addEventListener('mousemove', e => {
+  const r = scene.getBoundingClientRect();
+  curX = e.clientX - r.left;
+  curY = e.clientY - r.top;
+});
+scene.addEventListener('mouseleave', () => { curX=-999; curY=-999; });
+
+/* ── Custom cursor ── */
+let cx=0,cy=0,tx=0,ty=0;
+scene.addEventListener('mousemove',e=>{
+  const r=scene.getBoundingClientRect();
+  tx=e.clientX-r.left; ty=e.clientY-r.top;
+});
+
+/* ── Word renderer ── */
+class Word {
+  constructor(text, canvasId, index){
+    this.text = text;
+    this.cvs = document.getElementById(canvasId);
+    this.ctx = this.cvs.getContext('2d');
+    this.index = index;
+    this.slices = [];
+    this.init();
+  }
+
+  init(){
+    const c = this.ctx;
+    c.font = FONT;
+    const tw = c.measureText(this.text).width;
+    this.cvs.width = Math.ceil(tw) + 8;
+    this.cvs.height = Math.ceil(FONT_SIZE * 1.15);
+    this.W = this.cvs.width;
+    this.H = this.cvs.height;
+
+    // Render text to offscreen
+    this.off = document.createElement('canvas');
+    this.off.width = this.W; this.off.height = this.H;
+    const oc = this.off.getContext('2d');
+    oc.font = FONT;
+    oc.fillStyle = '#fff';
+    oc.fillText(this.text, 4, FONT_SIZE * .92);
+
+    this.buildSlices();
+  }
+
+  buildSlices(){
+    this.slices = [];
+    const sliceH = this.H / SLICE_COUNT;
+    for(let i = 0; i < SLICE_COUNT; i++){
+      this.slices.push({
+        i,
+        y: i * sliceH,
+        h: sliceH,
+        offsetX: 0,
+        targetX: 0,
+        vel: 0,
+        opacity: 1,
+        targetOpacity: 1,
+        rotation: 0,
+        targetRotation: 0,
+        scaleX: 1,
+        targetScaleX: 1,
+      });
+    }
+  }
+
+  getScenePos(){
+    const sr = scene.getBoundingClientRect();
+    const cr = this.cvs.getBoundingClientRect();
+    return { x: cr.left - sr.left, y: cr.top - sr.top, w: cr.width, h: cr.height };
+  }
+
+  update(){
+    const pos = this.getScenePos();
+    const relY = curY - pos.y;
+    const relX = curX - pos.x;
+    const inside = curX >= pos.x && curX <= pos.x + pos.w
+                && curY >= pos.y - 10 && curY <= pos.y + pos.h + 10;
+
+    const sliceH = this.H / SLICE_COUNT;
+    const centerSlice = inside ? relY / sliceH : -1;
+
+    this.slices.forEach((s, i) => {
+      if(inside){
+        const dist = Math.abs(i - centerSlice);
+        const maxDist = SLICE_COUNT * .55;
+        if(dist < maxDist){
+          const t = 1 - dist / maxDist;
+          const tt = t * t;
+
+          // Direction: left slices go left, right by mouse
+          const dir = relX > this.W / 2 ? 1 : -1;
+          const pushMax = 90 + tt * 70;
+          s.targetX = dir * tt * pushMax;
+          s.targetOpacity = Math.max(0.05, 1 - tt * .88);
+          s.targetRotation = dir * tt * 8;
+          s.targetScaleX = 1 - tt * .18;
+        } else {
+          s.targetX = 0;
+          s.targetOpacity = 1;
+          s.targetRotation = 0;
+          s.targetScaleX = 1;
+        }
+      } else {
+        s.targetX = 0;
+        s.targetOpacity = 1;
+        s.targetRotation = 0;
+        s.targetScaleX = 1;
+      }
+
+      // Spring physics
+      const k = 0.18, damp = 0.72;
+      s.vel = s.vel * damp + (s.targetX - s.offsetX) * k;
+      s.offsetX += s.vel;
+      s.opacity += (s.targetOpacity - s.opacity) * .14;
+      s.rotation += (s.targetRotation - s.rotation) * .14;
+      s.scaleX += (s.targetScaleX - s.scaleX) * .14;
+    });
+  }
+
+  draw(){
+    const c = this.ctx;
+    c.clearRect(0, 0, this.W, this.H);
+    const sliceH = this.H / SLICE_COUNT;
+
+    this.slices.forEach(s => {
+      c.save();
+      c.globalAlpha = Math.max(0, s.opacity);
+
+      const cy = s.y + sliceH / 2;
+      c.translate(this.W / 2 + s.offsetX, cy);
+      c.rotate(s.rotation * Math.PI / 180);
+      c.scale(s.scaleX, 1);
+      c.translate(-this.W / 2, -cy);
+
+      // Clip to this slice
+      c.beginPath();
+      c.rect(0, s.y, this.W, sliceH + .5);
+      c.clip();
+
+      // Draw from offscreen
+      c.drawImage(this.off, 0, 0);
+
+      // Chromatic aberration on displaced slices
+      if(Math.abs(s.offsetX) > 8){
+        const shift = s.offsetX * .04;
+        c.globalCompositeOperation = 'screen';
+        c.globalAlpha = Math.abs(s.offsetX) / 280 * .6;
+        // red channel
+        c.fillStyle = 'rgba(255,50,50,1)';
+        c.globalCompositeOperation = 'source-atop';
+        c.drawImage(this.off, shift, 0);
+        // cyan channel
+        c.globalCompositeOperation = 'screen';
+        c.globalAlpha = Math.abs(s.offsetX) / 280 * .4;
+        c.drawImage(this.off, -shift*.6, 0);
+      }
+
+      // Slice edge glint
+      if(Math.abs(s.offsetX) > 5){
+        c.globalCompositeOperation = 'source-over';
+        c.globalAlpha = Math.min(.9, Math.abs(s.offsetX)/60);
+        const grad = c.createLinearGradient(0, s.y, 0, s.y + sliceH);
+        grad.addColorStop(0, 'rgba(255,255,255,.7)');
+        grad.addColorStop(.5, 'rgba(255,255,255,.1)');
+        grad.addColorStop(1, 'rgba(255,255,255,.5)');
+        c.fillStyle = grad;
+        c.fillRect(s.offsetX > 0 ? 0 : this.W - 2, s.y, 2, sliceH);
+      }
+
+      c.restore();
+    });
+  }
+}
+
+/* ── BG: ambient particles ── */
+const ambParts = Array.from({length:30},()=>({
+  x:Math.random(),y:Math.random(),
+  r:.5+Math.random()*1.5,
+  vx:(Math.random()-.5)*.0003,
+  vy:(Math.random()-.5)*.0003,
+  a:.04+Math.random()*.12
+}));
+
+function drawBg(t){
+  bgCtx.clearRect(0,0,scW,scH);
+  ambParts.forEach(p=>{
+    p.x=(p.x+p.vx+1)%1; p.y=(p.y+p.vy+1)%1;
+    bgCtx.beginPath();
+    bgCtx.arc(p.x*scW,p.y*scH,p.r,0,Math.PI*2);
+    bgCtx.fillStyle=`rgba(255,255,255,${p.a})`;
+    bgCtx.fill();
+  });
+
+  // cursor glow on bg
+  if(curX>0&&curX<scW){
+    const g=bgCtx.createRadialGradient(curX,curY,0,curX,curY,120);
+    g.addColorStop(0,'rgba(180,140,255,.06)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    bgCtx.fillStyle=g;
+    bgCtx.fillRect(0,0,scW,scH);
+  }
+
+  // custom cursor
+  cx+=(tx-cx)*.15; cy+=(ty-cy)*.15;
+  if(tx>0&&tx<scW){
+    bgCtx.beginPath();
+    bgCtx.arc(cx,cy,5,0,Math.PI*2);
+    bgCtx.fillStyle='#fff';
+    bgCtx.fill();
+    bgCtx.beginPath();
+    bgCtx.arc(tx,ty,18,0,Math.PI*2);
+    bgCtx.strokeStyle='rgba(255,255,255,.25)';
+    bgCtx.lineWidth=1;
+    bgCtx.stroke();
+
+    // crosshair lines
+    const len=8;
+    ['left','right','top','bottom'].forEach(d=>{
+      const dx=d==='left'?-len:d==='right'?len:0;
+      const dy=d==='top'?-len:d==='bottom'?len:0;
+      bgCtx.beginPath();
+      bgCtx.moveTo(tx+dx*.4,ty+dy*.4);
+      bgCtx.lineTo(tx+dx,ty+dy);
+      bgCtx.strokeStyle='rgba(255,255,255,.5)';
+      bgCtx.lineWidth=1.2;
+      bgCtx.stroke();
+    });
+  }
+}
+
+const words = [
+  new Word(WORDS[0], 'c0', 0),
+  new Word(WORDS[1], 'c1', 1),
+  new Word(WORDS[2], 'c2', 2),
+];
+
+function loop(t){
+  requestAnimationFrame(loop);
+  words.forEach(w=>{ w.update(); w.draw(); });
+  drawBg(t);
+}
+requestAnimationFrame(loop);
+</script>

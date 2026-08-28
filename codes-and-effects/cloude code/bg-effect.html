@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Animated BG Effect</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #03050f;
+      --accent1: #5e17eb;
+      --accent2: #00d4ff;
+      --accent3: #ff2d78;
+      --text: #f0f0ff;
+      --text-muted: rgba(240,240,255,0.45);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Canvas Background ── */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Noise grain overlay ── */
+    .grain {
+      position: fixed;
+      inset: -50%;
+      width: 200%;
+      height: 200%;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      animation: grain-shift 0.4s steps(1) infinite;
+    }
+    @keyframes grain-shift {
+      0%  { transform: translate(0,0); }
+      25% { transform: translate(-2%,-3%); }
+      50% { transform: translate(3%, 2%); }
+      75% { transform: translate(-1%, 4%); }
+      100%{ transform: translate(2%,-1%); }
+    }
+
+    /* ── Hero Section ── */
+    .hero {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(94,23,235,0.18);
+      border: 1px solid rgba(94,23,235,0.4);
+      border-radius: 100px;
+      padding: 6px 18px;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fade-up 0.8s 0.2s forwards;
+    }
+    .badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); display: inline-block; animation: pulse-dot 1.8s ease-in-out infinite; }
+
+    @keyframes pulse-dot {
+      0%,100%{ box-shadow: 0 0 0 0 rgba(0,212,255,0.6); }
+      50%    { box-shadow: 0 0 0 6px rgba(0,212,255,0); }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.8rem, 8vw, 7rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.4rem;
+      opacity: 0;
+      animation: fade-up 0.9s 0.4s forwards;
+    }
+
+    h1 .gradient-text {
+      background: linear-gradient(135deg, var(--accent2) 0%, var(--accent1) 50%, var(--accent3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      background-size: 200% 200%;
+      animation: gradient-flow 4s ease-in-out infinite;
+    }
+    @keyframes gradient-flow {
+      0%,100%{ background-position: 0% 50%; }
+      50%    { background-position: 100% 50%; }
+    }
+
+    p.sub {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 2.8rem;
+      font-weight: 300;
+      font-style: italic;
+      opacity: 0;
+      animation: fade-up 0.9s 0.6s forwards;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fade-up 0.9s 0.8s forwards;
+    }
+
+    .btn {
+      padding: 14px 34px;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      text-decoration: none;
+    }
+    .btn:hover { transform: translateY(-3px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent1), var(--accent3));
+      color: #fff;
+      box-shadow: 0 0 30px rgba(94,23,235,0.45);
+    }
+    .btn-primary:hover { box-shadow: 0 0 50px rgba(94,23,235,0.7); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(240,240,255,0.2);
+    }
+    .btn-ghost:hover { background: rgba(240,240,255,0.06); }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* scrolling hint */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      opacity: 0;
+      animation: fade-up 1s 1.4s forwards;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .scroll-hint .line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--accent2), transparent);
+      animation: scroll-line 1.6s ease-in-out infinite;
+    }
+    @keyframes scroll-line {
+      0%,100%{ opacity: 0.3; transform: scaleY(1); }
+      50%    { opacity: 1;   transform: scaleY(1.3); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="grain"></div>
+
+<section class="hero">
+  <div class="badge"><span></span> Now live — v2.0</div>
+  <h1>Build something<br><span class="gradient-text">extraordinary.</span></h1>
+  <p class="sub">A home page that breathes. Interactive particles, ambient glow, and motion that feels alive — ready to drop into any project.</p>
+  <div class="cta-row">
+    <a href="#" class="btn btn-primary">Get Started</a>
+    <a href="#" class="btn btn-ghost">View Demo →</a>
+  </div>
+  <div class="scroll-hint">
+    <div class="line"></div>
+    Scroll
+  </div>
+</section>
+
+<script>
+/* ─── Particle + Orb Canvas ─── */
+const canvas = document.getElementById('bg-canvas');
+const ctx    = canvas.getContext('2d');
+
+let W, H, particles, mouse = { x: -9999, y: -9999 };
+
+const COLORS = ['#5e17eb','#00d4ff','#ff2d78','#a855f7','#06b6d4'];
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+/* ── Floating orbs (blurred blobs) ── */
+const ORBS = [
+  { x: 0.2, y: 0.3, r: 0.38, c: '#5e17eb', speed: 0.00012, phase: 0 },
+  { x: 0.8, y: 0.6, r: 0.32, c: '#00d4ff', speed: 0.00009, phase: 2 },
+  { x: 0.5, y: 0.8, r: 0.28, c: '#ff2d78', speed: 0.00015, phase: 4 },
+  { x: 0.7, y: 0.1, r: 0.22, c: '#7c3aed', speed: 0.00010, phase: 1 },
+];
+
+function drawOrbs(t) {
+  ORBS.forEach(o => {
+    const cx = (o.x + Math.sin(t * o.speed + o.phase) * 0.12) * W;
+    const cy = (o.y + Math.cos(t * o.speed * 0.7 + o.phase) * 0.10) * H;
+    const r  = o.r * Math.min(W, H);
+    const g  = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, o.c + '55');
+    g.addColorStop(1, o.c + '00');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+  });
+}
+
+/* ── Particles ── */
+function mkParticle() {
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    r:  Math.random() * 2 + 0.5,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    alpha: Math.random() * 0.7 + 0.2,
+    life: Math.random() * 200,
+    maxLife: 200 + Math.random() * 200,
+  };
+}
+
+function initParticles() {
+  const N = Math.min(160, Math.floor((W * H) / 8000));
+  particles = Array.from({ length: N }, mkParticle);
+}
+
+const CONNECT_DIST = 120;
+
+function drawParticles() {
+  particles.forEach((p, i) => {
+    // mouse repel
+    const dx = p.x - mouse.x, dy = p.y - mouse.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 100) {
+      const force = (100 - dist) / 100;
+      p.vx += (dx / dist) * force * 0.8;
+      p.vy += (dy / dist) * force * 0.8;
+    }
+
+    p.vx *= 0.98; p.vy *= 0.98;
+    p.x += p.vx; p.y += p.vy;
+    p.life++;
+
+    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+    const fade = Math.min(p.life, p.maxLife - p.life, 30) / 30;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = p.color + Math.floor(fade * p.alpha * 255).toString(16).padStart(2,'0');
+    ctx.fill();
+
+    if (p.life >= p.maxLife) Object.assign(p, mkParticle());
+
+    // connections
+    for (let j = i + 1; j < particles.length; j++) {
+      const q = particles[j];
+      const ddx = p.x - q.x, ddy = p.y - q.y;
+      const d = Math.sqrt(ddx*ddx + ddy*ddy);
+      if (d < CONNECT_DIST) {
+        const a = (1 - d / CONNECT_DIST) * 0.18;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(q.x, q.y);
+        ctx.strokeStyle = `rgba(150,130,255,${a})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
+    }
+  });
+}
+
+/* ── Scanlines ── */
+function drawScanlines() {
+  for (let y = 0; y < H; y += 4) {
+    ctx.fillStyle = 'rgba(0,0,0,0.025)';
+    ctx.fillRect(0, y, W, 1);
+  }
+}
+
+/* ── Main loop ── */
+let raf;
+function loop(t) {
+  ctx.clearRect(0, 0, W, H);
+
+  // deep bg
+  ctx.fillStyle = '#03050f';
+  ctx.fillRect(0, 0, W, H);
+
+  drawOrbs(t);
+  drawParticles();
+  drawScanlines();
+
+  raf = requestAnimationFrame(loop);
+}
+
+window.addEventListener('resize', () => { resize(); initParticles(); });
+window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+window.addEventListener('touchmove', e => {
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+}, { passive: true });
+
+resize();
+initParticles();
+loop(0);
+</script>
+</body>
+</html>

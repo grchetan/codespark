@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurora Wave</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #0a0a1a;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+      }
+
+      canvas {
+        position: absolute;
+        inset: 0;
+        display: block;
+      }
+
+      .title {
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.15);
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 8px;
+        pointer-events: none;
+        z-index: 10;
+        text-shadow: 0 0 30px rgba(100, 200, 255, 0.3);
+      }
+
+      .info {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.2);
+        font-size: 13px;
+        letter-spacing: 2px;
+        pointer-events: none;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div class="title">AURORA WAVE</div>
+    <div class="info">PURE CSS + CANVAS • FULLSCREEN</div>
+
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      let t = 0;
+      let width, height;
+
+      function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+      }
+
+      function draw() {
+        // Background
+        ctx.fillStyle = '#0a0a1a';
+        ctx.fillRect(0, 0, width, height);
+
+        // Aurora layers
+        for (let i = 0; i < 6; i++) {
+          ctx.beginPath();
+
+          const hue = 165 + i * 18; // Teal → cyan → green gradient
+          const alpha = 0.35 - i * 0.04; // Fade upper layers
+
+          ctx.strokeStyle = `hsla(${hue}, 95%, 68%, ${alpha})`;
+          ctx.lineWidth = 72 - i * 8;
+          ctx.filter = `blur(${18 + i * 2}px)`;
+
+          ctx.moveTo(0, height * 0.48);
+
+          for (let x = 0; x <= width; x += 8) {
+            const y =
+              height * 0.48 +
+              Math.sin(x / 280 + t * 0.8 + i) * (78 + i * 12) +
+              Math.sin(x / 110 + t * 1.6 + i * 1.2) * (38 + i * 6) +
+              Math.cos(x / 420 + t * 0.4) * 18; // extra organic movement
+
+            ctx.lineTo(x, y);
+          }
+
+          ctx.stroke();
+        }
+
+        // Reset filter
+        ctx.filter = 'none';
+
+        // Gentle time progression
+        t += 0.0092;
+
+        // FPS independent animation
+        requestAnimationFrame(draw);
+      }
+
+      // Initial setup
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+
+      // Optional: Click anywhere to pause/play (nice touch)
+      let paused = false;
+      canvas.addEventListener('click', () => {
+        paused = !paused;
+        if (!paused) draw();
+      });
+    </script>
+  </body>
+</html>

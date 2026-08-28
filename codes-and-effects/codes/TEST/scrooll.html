@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #scrollTopBtn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background: black;
+        color: white;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      #scrollTopBtn svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: rotate(-90deg); /* Circle ko upar se start karne ke liye */
+      }
+
+      #progressCircle {
+        transition: stroke-dashoffset 0.2s linear;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Id velit,
+      obcaecati officiis nam praesentium impedit vero necessitatibus doloribus
+      aliimpedit vero necessitatibus doloribus aliquid recusandae voluptate
+      expedita, magnam saepe modi, quidem eaque optio. Quisquam, libero? impedit
+      vero necessitatibus doloribus aliquid recusandae voluptate expedita,
+      magnam saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitati expedita, magnam saepe modi, quidem eaque optio. Quisquam,
+      libero? impedit vero necessitatibus doloribus aliquid recusandae voluptate
+      expedita, magnam saepe modi, quidem eaque optio. Quisquam, libero? impedit
+      vero necessitatibus doloribus aliquid recusandae voluptate expedita,
+      magnam saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam sro
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero? impedit vero
+      necessitatibus doloribus aliquid recusandae voluptate expedita, magnam
+      saepe modi, quidem eaque optio. Quisquam, libero?
+    </p>
+    <!--Circular Scroll Progress Indicator-->
+    <button id="scrollTopBtn">
+      ⬆️
+      <svg width="50" height="50">
+        <circle
+          cx="25"
+          cy="25"
+          r="20"
+          stroke="white"
+          stroke-width="4"
+          fill="none"
+        />
+        <circle
+          id="progressCircle"
+          cx="25"
+          cy="25"
+          r="20"
+          stroke="red"
+          stroke-width="4"
+          fill="none"
+          stroke-dasharray="125.6"
+          stroke-dashoffset="125.6"
+        />
+      </svg>
+    </button>
+    <script>
+      let scrollBtn = document.getElementById("scrollTopBtn");
+      let progressCircle = document.getElementById("progressCircle");
+      let circleLength = progressCircle.getTotalLength(); // Circle ka total perimeter
+
+      window.addEventListener("scroll", () => {
+        let scrollTop = document.documentElement.scrollTop;
+        let scrollHeight =
+          document.documentElement.scrollHeight -
+          document.documentElement.clientHeight;
+        let scrollPercentage = (scrollTop / scrollHeight) * 100;
+
+        // Circle ko update karna
+        let progressOffset =
+          circleLength - (scrollPercentage / 100) * circleLength;
+        progressCircle.style.strokeDashoffset = progressOffset;
+
+        // Scroll button dikhana/chhupana
+        scrollBtn.style.display = scrollTop > 100 ? "flex" : "none";
+      });
+
+      // Scroll to top on click
+      scrollBtn.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    </script>
+  </body>
+</html>

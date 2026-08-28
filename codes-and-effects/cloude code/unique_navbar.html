@@ -1,0 +1,366 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+.demo{
+  width:100%;min-height:520px;background:#080808;
+  border-radius:16px;overflow:hidden;
+  font-family:'Space Grotesk',sans-serif;
+  position:relative;cursor:none;
+  display:flex;flex-direction:column;
+}
+
+/* ── CANVAS ── */
+#nc{position:absolute;inset:0;pointer-events:none;z-index:0;}
+
+/* ── NAV ── */
+nav{
+  position:relative;z-index:10;
+  width:100%;padding:0 32px;
+  height:68px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+/* logo */
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px;letter-spacing:3px;color:#fff;
+  text-decoration:none;position:relative;
+  display:flex;align-items:center;gap:6px;
+}
+.logo-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#b5ff2d;
+  animation:dot-pulse 2s ease-in-out infinite;
+}
+@keyframes dot-pulse{
+  0%,100%{transform:scale(1);opacity:1;}
+  50%{transform:scale(1.6);opacity:.5;}
+}
+
+/* center links */
+.nav-links{
+  display:flex;align-items:center;gap:2px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:999px;
+  padding:5px;
+  position:relative;
+}
+.nav-pill-bg{
+  position:absolute;
+  height:calc(100% - 10px);
+  top:5px;left:5px;
+  background:rgba(255,255,255,.1);
+  border-radius:999px;
+  transition:left .35s cubic-bezier(.34,1.56,.64,1),width .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+.nav-link{
+  position:relative;z-index:1;
+  padding:7px 18px;border-radius:999px;
+  font-size:12px;font-weight:500;letter-spacing:.08em;
+  text-transform:uppercase;color:rgba(255,255,255,.4);
+  cursor:none;text-decoration:none;
+  transition:color .25s;white-space:nowrap;
+  user-select:none;
+}
+.nav-link.active{color:#fff;}
+.nav-link:hover{color:rgba(255,255,255,.8);}
+
+/* right side */
+.nav-right{display:flex;align-items:center;gap:12px;}
+
+.nav-status{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:999px;
+  border:1px solid rgba(74,222,128,.25);
+  background:rgba(74,222,128,.06);
+  font-size:11px;letter-spacing:.06em;color:rgba(255,255,255,.5);
+}
+.status-dot{
+  width:6px;height:6px;border-radius:50%;background:#4ade80;
+  animation:dot-pulse 1.6s ease-in-out infinite;
+}
+
+.nav-btn{
+  padding:9px 22px;border-radius:999px;
+  background:#fff;color:#000;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;border:none;cursor:none;
+  transition:transform .2s,background .2s;
+  position:relative;overflow:hidden;
+}
+.nav-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,#b5ff2d,#3cffee);
+  opacity:0;transition:opacity .3s;
+}
+.nav-btn:hover::before{opacity:1;}
+.nav-btn span{position:relative;z-index:1;}
+.nav-btn:hover{transform:scale(1.04);}
+
+/* ── CONTENT AREA ── */
+.content{
+  position:relative;z-index:2;
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:2rem;text-align:center;
+  pointer-events:none;
+}
+.big-text{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(50px,12vw,110px);
+  line-height:.95;letter-spacing:2px;
+  color:#fff;opacity:.07;
+  user-select:none;
+}
+
+/* side ticker */
+.side-ticker{
+  position:absolute;right:20px;top:50%;
+  transform:translateY(-50%) rotate(90deg);
+  transform-origin:center;
+  font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(255,255,255,.12);
+  white-space:nowrap;pointer-events:none;z-index:2;
+}
+
+/* bottom bar */
+.bottom-bar{
+  position:relative;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 32px;
+  border-top:1px solid rgba(255,255,255,.05);
+}
+.bottom-left{font-size:10px;letter-spacing:.15em;color:rgba(255,255,255,.15);text-transform:uppercase;}
+.bottom-right{display:flex;gap:16px;}
+.b-link{font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.18);text-transform:uppercase;text-decoration:none;cursor:none;transition:color .2s;}
+.b-link:hover{color:rgba(255,255,255,.5);}
+
+/* progress line */
+.progress-line{
+  position:absolute;bottom:0;left:0;height:2px;
+  background:linear-gradient(90deg,#b5ff2d,#3cffee,#ff3cff);
+  width:0%;transition:width .1s;z-index:20;
+}
+
+/* custom cursor */
+#cur{position:absolute;z-index:999;pointer-events:none;}
+</style>
+
+<div class="demo" id="demo">
+  <canvas id="nc"></canvas>
+  <canvas id="cur" width="60" height="60" style="position:fixed;top:0;left:0;pointer-events:none;z-index:9999;"></canvas>
+  <div class="progress-line" id="pline"></div>
+
+  <nav id="nav">
+    <a href="#" class="logo">CP<div class="logo-dot"></div></a>
+
+    <div class="nav-links" id="navLinks">
+      <div class="nav-pill-bg" id="pillBg"></div>
+      <a href="#" class="nav-link active" data-label="Home">Home</a>
+      <a href="#" class="nav-link" data-label="Work">Work</a>
+      <a href="#" class="nav-link" data-label="About">About</a>
+      <a href="#" class="nav-link" data-label="Blog">Blog</a>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-status"><div class="status-dot"></div>Open to work</div>
+      <button class="nav-btn"><span>Hire Me →</span></button>
+    </div>
+  </nav>
+
+  <div class="content">
+    <div class="big-text">NAVIGATION</div>
+  </div>
+  <div class="side-ticker">© 2026 · Chetan Prajapat · Full Stack Developer</div>
+
+  <div class="bottom-bar">
+    <div class="bottom-left" id="clock">00:00:00</div>
+    <div class="bottom-right">
+      <a href="#" class="b-link">GitHub</a>
+      <a href="#" class="b-link">LinkedIn</a>
+      <a href="#" class="b-link">Twitter</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const demo = document.getElementById('demo');
+const canvas = document.getElementById('nc');
+const ctx = canvas.getContext('2d');
+const curCvs = document.getElementById('cur');
+const curCtx = curCvs.getContext('2d');
+
+let W,H, mx=-999,my=-999, cx=0,cy=0;
+let frame=0;
+const sparks=[];
+
+function resize(){
+  const r=demo.getBoundingClientRect();
+  W=canvas.width=r.width; H=canvas.height=r.height;
+}
+resize();
+window.addEventListener('resize',resize);
+
+demo.addEventListener('mousemove',e=>{
+  const r=demo.getBoundingClientRect();
+  mx=e.clientX-r.left; my=e.clientY-r.top;
+
+  // update cursor canvas position
+  curCvs.style.left=(e.clientX-30)+'px';
+  curCvs.style.top=(e.clientY-30)+'px';
+});
+demo.addEventListener('mouseleave',()=>{mx=-999;my=-999;});
+
+/* ── Pill follow ── */
+const links=document.querySelectorAll('.nav-link');
+const pillBg=document.getElementById('pillBg');
+const navLinksEl=document.getElementById('navLinks');
+
+function movePill(el){
+  const lr=navLinksEl.getBoundingClientRect();
+  const er=el.getBoundingClientRect();
+  pillBg.style.left=(er.left-lr.left)+'px';
+  pillBg.style.width=er.width+'px';
+}
+
+links.forEach(l=>{
+  l.addEventListener('click',e=>{
+    e.preventDefault();
+    links.forEach(x=>x.classList.remove('active'));
+    l.classList.add('active');
+    movePill(l);
+    // ripple sparks
+    for(let i=0;i<12;i++) sparks.push(mkSpark(mx,my));
+  });
+  l.addEventListener('mouseenter',()=>{ if(!l.classList.contains('active')) movePill(l); });
+});
+// init pill
+const active=document.querySelector('.nav-link.active');
+if(active) setTimeout(()=>movePill(active),100);
+
+/* ── Sparks ── */
+function mkSpark(x,y){
+  const a=Math.random()*Math.PI*2;
+  const s=1+Math.random()*4;
+  return {x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,
+    life:1,decay:.025+Math.random()*.02,
+    r:1.5+Math.random()*3,
+    color:['#b5ff2d','#3cffee','#ff3cff','#ffffff'][Math.floor(Math.random()*4)]};
+}
+
+/* ── Clock ── */
+const clkEl=document.getElementById('clock');
+setInterval(()=>{
+  const n=new Date();
+  clkEl.textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+},1000);
+
+/* ── Particles ── */
+const pts=Array.from({length:50},()=>({
+  x:Math.random(),y:Math.random(),
+  vx:(Math.random()-.5)*.0004,
+  vy:(Math.random()-.5)*.0004,
+  r:.6+Math.random()*1.4,a:.04+Math.random()*.1
+}));
+
+/* ── CURSOR draw ── */
+let prevAngle=0;
+function drawCursor(t){
+  curCtx.clearRect(0,0,60,60);
+  if(mx<0||mx>W) return;
+
+  const speed=Math.sqrt((mx-cx)*(mx-cx)+(my-cy)*(my-cy));
+  cx+=(mx-cx)*.18; cy+=(my-cy)*.18;
+
+  curCtx.save();
+  curCtx.translate(30,30);
+
+  // outer ring — rotates with speed
+  prevAngle+=.04+speed*.002;
+  curCtx.rotate(prevAngle);
+  for(let i=0;i<4;i++){
+    const a=(i/4)*Math.PI*2;
+    const rx=Math.cos(a)*20, ry=Math.sin(a)*20;
+    curCtx.beginPath();
+    curCtx.arc(rx,ry,2,0,Math.PI*2);
+    curCtx.fillStyle=['#b5ff2d','#3cffee','#ff3cff','#fff'][i];
+    curCtx.fill();
+  }
+  curCtx.restore();
+
+  curCtx.save();
+  curCtx.translate(30,30);
+  // center dot
+  curCtx.beginPath();
+  curCtx.arc(0,0,4,0,Math.PI*2);
+  curCtx.fillStyle='#fff';
+  curCtx.fill();
+  // ring
+  curCtx.beginPath();
+  curCtx.arc(0,0,13,0,Math.PI*2);
+  curCtx.strokeStyle='rgba(255,255,255,.2)';
+  curCtx.lineWidth=1;
+  curCtx.stroke();
+  curCtx.restore();
+}
+
+/* ── Main loop ── */
+function loop(t){
+  requestAnimationFrame(loop);
+  frame++;
+  ctx.clearRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,.025)';
+  ctx.lineWidth=.5;
+  for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // particles
+  pts.forEach(p=>{
+    p.x=(p.x+p.vx+1)%1; p.y=(p.y+p.vy+1)%1;
+    ctx.beginPath();
+    ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${p.a})`;
+    ctx.fill();
+  });
+
+  // nav glow trail
+  if(mx>0&&mx<W&&my>0&&my<68){
+    const g=ctx.createRadialGradient(mx,my,0,mx,my,80);
+    g.addColorStop(0,'rgba(181,255,45,.12)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,W,70);
+  }
+
+  // sparks
+  for(let i=sparks.length-1;i>=0;i--){
+    const s=sparks[i];
+    s.x+=s.vx;s.y+=s.vy;s.vy+=.12;s.vx*=.97;
+    s.life-=s.decay;
+    if(s.life<=0){sparks.splice(i,1);continue;}
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r*s.life,0,Math.PI*2);
+    ctx.fillStyle=s.color+Math.floor(s.life*220).toString(16).padStart(2,'0');
+    ctx.fill();
+  }
+
+  // cursor glow on canvas
+  if(mx>0&&mx<W){
+    const cg=ctx.createRadialGradient(mx,my,0,mx,my,100);
+    cg.addColorStop(0,'rgba(180,140,255,.05)');
+    cg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=cg;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  drawCursor(t);
+}
+requestAnimationFrame(loop);
+</script>

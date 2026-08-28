@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blurry Blob</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @keyframes pop-blob {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.45;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.6;
+        }
+      }
+
+      .blob-first {
+        background-color: var(
+          --first-blob-color,
+          #60a5fa
+        ); /* Fallback to bg-blue-400 */
+      }
+
+      .blob-second {
+        background-color: var(
+          --second-blob-color,
+          #a78bfa
+        ); /* Fallback to bg-purple-400 */
+      }
+    </style>
+  </head>
+  <body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="blurry-blob min-h-52 min-w-52 flex items-center justify-center">
+      <div class="relative w-full max-w-lg">
+        <div
+          class="blob-first absolute -right-24 -top-28 h-72 w-72 animate-pop-blob rounded-sm bg-blue-400 p-8 opacity-45 mix-blend-multiply blur-3xl"
+        ></div>
+        <div
+          class="blob-second absolute -left-40 -top-64 h-72 w-72 animate-pop-blob rounded-sm bg-purple-400 p-8 opacity-45 mix-blend-multiply blur-3xl"
+        ></div>
+      </div>
+    </div>
+    <script>
+      // Optional: Dynamically set blob colors
+      document.addEventListener("DOMContentLoaded", () => {
+        // Example: Set custom colors (uncomment to use)
+        // document.querySelector('.blob-first').style.setProperty('--first-blob-color', '#ff0000'); // Red
+        // document.querySelector('.blob-second').style.setProperty('--second-blob-color', '#00ff00'); // Green
+      });
+    </script>
+  </body>
+</html>

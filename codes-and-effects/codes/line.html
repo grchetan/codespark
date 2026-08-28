@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Circle Text Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .draw-path {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: draw 1.25s ease-in-out forwards;
+      }
+
+      @keyframes draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+
+      /* Trigger animation when element is in view */
+      .animate-on-scroll {
+        opacity: 0;
+        animation-play-state: paused;
+      }
+
+      .animate-on-scroll.in-view {
+        opacity: 1;
+        animation-play-state: running;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      class="grid place-content-center bg-emerald-950 px-4 py-24 text-yellow-50"
+    >
+      <h1 class="max-w-2xl text-center text-5xl leading-snug">
+        The
+        <span class="relative inline-block">
+          Mage UI
+          <svg
+            viewBox="0 0 286 73"
+            fill="none"
+            class="absolute -left-2 -right-2 -top-2 bottom-0 translate-y-1"
+          >
+            <path
+              class="draw-path animate-on-scroll"
+              d="M142.293 1C106.854 16.8908 6.08202 7.17705 1.23654 43.3756C-2.10604 68.3466 29.5633 73.2652 122.688 71.7518C215.814 70.2384 316.298 70.689 275.761 38.0785C230.14 1.37835 97.0503 24.4575 52.9384 1"
+              stroke="#FACC15"
+              stroke-width="3"
+            />
+          </svg>
+        </span>
+        is the best component library
+      </h1>
+    </div>
+
+    <script>
+      // JavaScript to trigger animation when element is in view
+      document.addEventListener("DOMContentLoaded", () => {
+        const elements = document.querySelectorAll(".animate-on-scroll");
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("in-view");
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+
+        elements.forEach((element) => observer.observe(element));
+      });
+    </script>
+  </body>
+</html>

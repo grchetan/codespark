@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gen Z BG</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700;900&family=Syne:wght@800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --c1:#ff2d55;--c2:#7c3aed;--c3:#00f5d4;--c4:#f5d300;
+  --bg:#0a0a0f;--text:#f0f0f0;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Space Grotesk',sans-serif;cursor:none}
+
+/* Custom cursor */
+#cursor{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--c3);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s,background .2s;mix-blend-mode:difference}
+#cursor-ring{position:fixed;width:40px;height:40px;border-radius:50%;border:1px solid rgba(0,245,212,.4);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:left .12s ease,top .12s ease}
+
+/* BG canvas */
+#c{position:fixed;inset:0;z-index:0}
+
+/* Scanlines */
+.scan{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px)}
+
+/* Glitch border frame */
+.frame{position:fixed;inset:16px;z-index:3;pointer-events:none;border:1px solid rgba(255,255,255,.06)}
+.frame::before,.frame::after{content:'';position:absolute;background:var(--c3);opacity:.7}
+.frame::before{top:-1px;left:20%;width:60px;height:1px;animation:scanH 3s linear infinite}
+.frame::after{left:-1px;top:20%;width:1px;height:60px;animation:scanV 4s linear infinite}
+@keyframes scanH{0%{left:0;opacity:1}100%{left:100%;opacity:0}}
+@keyframes scanV{0%{top:0;opacity:1}100%{top:100%;opacity:0}}
+
+/* Corner decorations */
+.corner{position:fixed;width:20px;height:20px;z-index:4;pointer-events:none}
+.corner.tl{top:16px;left:16px;border-top:2px solid var(--c3);border-left:2px solid var(--c3)}
+.corner.tr{top:16px;right:16px;border-top:2px solid var(--c3);border-right:2px solid var(--c3)}
+.corner.bl{bottom:16px;left:16px;border-bottom:2px solid var(--c3);border-left:2px solid var(--c3)}
+.corner.br{bottom:16px;right:16px;border-bottom:2px solid var(--c3);border-right:2px solid var(--c3)}
+
+/* Floating tags */
+.tag{position:fixed;font-size:10px;letter-spacing:.15em;text-transform:uppercase;opacity:.25;color:var(--text);z-index:4;pointer-events:none;white-space:nowrap}
+.tag.t1{top:20px;left:44px}
+.tag.t2{top:20px;right:44px;text-align:right}
+.tag.t3{bottom:20px;left:44px}
+.tag.t4{bottom:20px;right:44px}
+
+/* Main hero content */
+.hero{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+
+.eyebrow{
+  font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:var(--c3);
+  margin-bottom:1.5rem;opacity:.8;
+  display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before,.eyebrow::after{content:'';flex:1;max-width:40px;height:1px;background:var(--c3);opacity:.5}
+
+h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(3rem,9vw,7.5rem);
+  font-weight:900;
+  line-height:.9;
+  letter-spacing:-.03em;
+  color:var(--text);
+  position:relative;
+}
+h1 span.line{display:block}
+h1 .accent{
+  -webkit-text-stroke:2px var(--c1);
+  color:transparent;
+  font-style:italic;
+}
+h1 .highlight{
+  position:relative;
+  color:var(--c4);
+  display:inline-block;
+}
+h1 .highlight::after{
+  content:'';position:absolute;left:0;bottom:-4px;width:100%;height:2px;background:var(--c4);
+}
+
+/* Glitch effect on hover */
+.glitch{animation:glitch1 8s infinite}
+@keyframes glitch1{
+  0%,90%,100%{clip-path:none;transform:none}
+  92%{clip-path:inset(20% 0 60% 0);transform:translate(-4px,0);color:var(--c1)}
+  94%{clip-path:inset(60% 0 20% 0);transform:translate(4px,0);color:var(--c2)}
+  96%{clip-path:none;transform:none;color:var(--text)}
+}
+
+.sub{
+  font-size:clamp(.85rem,2vw,1.1rem);color:rgba(240,240,240,.45);
+  margin-top:1.8rem;font-weight:300;letter-spacing:.02em;max-width:440px;
+  line-height:1.7;
+}
+
+.ctas{margin-top:2.5rem;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn{
+  padding:.75rem 2rem;font-family:'Space Grotesk',sans-serif;
+  font-size:.85rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  text-decoration:none;border:none;cursor:none;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.btn-fill{
+  background:var(--c3);color:#0a0a0f;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+}
+.btn-fill::before{content:'';position:absolute;inset:0;background:var(--c4);transform:translateX(-101%);transition:transform .3s}
+.btn-fill:hover::before{transform:translateX(0)}
+.btn-fill:hover span{position:relative;z-index:1}
+.btn-fill span{position:relative;z-index:1}
+.btn-ghost{
+  background:transparent;color:var(--text);
+  clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);
+}
+.btn-ghost:hover{box-shadow:inset 0 0 0 1px var(--c3);color:var(--c3)}
+
+/* Status pill */
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.25);
+  color:var(--c3);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 12px;border-radius:2px;margin-bottom:2.5rem;
+}
+.pill-dot{width:6px;height:6px;border-radius:50%;background:var(--c3);animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* Scroll indicator */
+.scroll-line{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;z-index:20;
+}
+.scroll-line span{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.25)}
+.scroll-line .bar{width:1px;height:40px;background:linear-gradient(var(--c3),transparent);animation:scrollBar 1.8s ease infinite}
+@keyframes scrollBar{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* Noise (CSS-only) */
+.noise{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:noiseShift .08s steps(2) infinite;
+}
+@keyframes noiseShift{0%{background-position:0 0}100%{background-position:50px 50px}}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+<div class="noise"></div>
+<div class="scan"></div>
+<div class="frame"></div>
+<div class="corner tl"></div><div class="corner tr"></div>
+<div class="corner bl"></div><div class="corner br"></div>
+
+<div class="tag t1">SYS://ONLINE</div>
+<div class="tag t2">© 2025 — v2.0</div>
+<div class="tag t3">LOC: EARTH_001</div>
+<div class="tag t4">STATUS: ACTIVE</div>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<div class="hero">
+  <div class="pill"><span class="pill-dot"></span>Now live</div>
+  <div class="eyebrow">Digital Experience</div>
+  <h1 class="glitch">
+    <span class="line">WE BUILD</span>
+    <span class="line accent">CRAZY</span>
+    <span class="line">STUFF<span class="highlight">.</span></span>
+  </h1>
+  <p class="sub">Apna tagline yahan likhein. Ye background effect har screen par fire lagti hai — mobile bhi, desktop bhi.</p>
+  <div class="ctas">
+    <a href="#" class="btn btn-fill"><span>Enter Site →</span></a>
+    <a href="#" class="btn btn-ghost">Watch Reel</a>
+  </div>
+</div>
+
+<div class="scroll-line"><span>Scroll</span><div class="bar"></div></div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H, mouse = {x:0,y:0}, t = 0;
+
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+
+document.addEventListener('mousemove', e => {
+  mouse.x = e.clientX; mouse.y = e.clientY;
+  cursor.style.left = e.clientX+'px'; cursor.style.top = e.clientY+'px';
+  ring.style.left   = e.clientX+'px'; ring.style.top   = e.clientY+'px';
+});
+
+function resize(){
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); initParticles(); });
+
+// ── Web of lines (constellation) ──
+class Node {
+  constructor(){
+    this.x  = Math.random()*W;
+    this.y  = Math.random()*H;
+    this.vx = (Math.random()-.5)*0.35;
+    this.vy = (Math.random()-.5)*0.35;
+    this.r  = Math.random()*1.5+.5;
+  }
+  update(){
+    this.x += this.vx; this.y += this.vy;
+    if(this.x<0||this.x>W) this.vx*=-1;
+    if(this.y<0||this.y>H) this.vy*=-1;
+    // gentle mouse pull
+    const dx=mouse.x-this.x, dy=mouse.y-this.y, d=Math.sqrt(dx*dx+dy*dy);
+    if(d<180){this.x+=dx/d*0.6; this.y+=dy/d*0.6;}
+  }
+}
+
+let nodes = [];
+function initParticles(){
+  const count = Math.floor((W*H)/14000);
+  nodes = Array.from({length: Math.min(count,90)}, ()=>new Node());
+}
+initParticles();
+
+// ── Ripple on click ──
+let ripples = [];
+document.addEventListener('click', e=>{
+  ripples.push({x:e.clientX,y:e.clientY,r:0,max:200,alpha:0.6});
+});
+
+// ── Color cycling blobs ──
+const blobs = [
+  {x:.2,y:.3,color:'#7c3aed',size:.5},
+  {x:.8,y:.7,color:'#ff2d55',size:.45},
+  {x:.5,y:.9,color:'#00f5d4',size:.4},
+];
+
+function draw(){
+  requestAnimationFrame(draw);
+  t += .004;
+
+  ctx.clearRect(0,0,W,H);
+
+  // Background blobs
+  blobs.forEach((b,i)=>{
+    const x = W*(b.x + Math.sin(t+i)*0.06);
+    const y = H*(b.y + Math.cos(t+i*1.3)*0.08);
+    const rad = Math.min(W,H)*b.size;
+    const g = ctx.createRadialGradient(x,y,0,x,y,rad);
+    g.addColorStop(0, b.color+'22');
+    g.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(x,y,rad,0,Math.PI*2);
+    ctx.fillStyle = g;
+    ctx.fill();
+  });
+
+  // Mouse glow
+  const mg = ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,180);
+  mg.addColorStop(0,'rgba(0,245,212,.07)');
+  mg.addColorStop(1,'transparent');
+  ctx.beginPath();
+  ctx.arc(mouse.x,mouse.y,180,0,Math.PI*2);
+  ctx.fillStyle=mg; ctx.fill();
+
+  // Constellation lines
+  for(let i=0;i<nodes.length;i++){
+    for(let j=i+1;j<nodes.length;j++){
+      const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<130){
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x,nodes[i].y);
+        ctx.lineTo(nodes[j].x,nodes[j].y);
+        ctx.strokeStyle=`rgba(0,245,212,${(1-d/130)*0.18})`;
+        ctx.lineWidth=.5;
+        ctx.stroke();
+      }
+    }
+    // Mouse connections
+    const mx=mouse.x-nodes[i].x, my=mouse.y-nodes[i].y;
+    const md=Math.sqrt(mx*mx+my*my);
+    if(md<200){
+      ctx.beginPath();
+      ctx.moveTo(nodes[i].x,nodes[i].y);
+      ctx.lineTo(mouse.x,mouse.y);
+      ctx.strokeStyle=`rgba(0,245,212,${(1-md/200)*0.5})`;
+      ctx.lineWidth=.7;
+      ctx.stroke();
+    }
+    nodes[i].update();
+  }
+
+  // Dots
+  nodes.forEach(n=>{
+    ctx.beginPath();
+    ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,245,212,.6)';
+    ctx.fill();
+  });
+
+  // Ripples
+  ripples = ripples.filter(r=>r.alpha>0);
+  ripples.forEach(r=>{
+    ctx.beginPath();
+    ctx.arc(r.x,r.y,r.r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,245,212,${r.alpha})`;
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+    // second ring
+    if(r.r>40){
+      ctx.beginPath();
+      ctx.arc(r.x,r.y,r.r-35,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(245,211,0,${r.alpha*.4})`;
+      ctx.lineWidth=.8;
+      ctx.stroke();
+    }
+    r.r += 4; r.alpha -= 0.018;
+  });
+
+  // Horizontal scan beam
+  const scanY = ((t*80)%H);
+  ctx.beginPath();
+  ctx.moveTo(0,scanY);
+  ctx.lineTo(W,scanY);
+  const sg = ctx.createLinearGradient(0,scanY-4,0,scanY+4);
+  sg.addColorStop(0,'transparent');
+  sg.addColorStop(.5,'rgba(0,245,212,.06)');
+  sg.addColorStop(1,'transparent');
+  ctx.strokeStyle='rgba(0,245,212,.04)';
+  ctx.lineWidth=4;
+  ctx.stroke();
+}
+
+draw();
+</script>
+</body>
+</html>

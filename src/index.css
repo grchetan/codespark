@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, ::before, ::after {
+    border-color: rgba(221, 208, 190, 0.5);
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: #FAF6EE;
+    color: #0F1115;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+    position: relative;
+    margin: 0;
+    padding: 0;
+  }
+
+  #root {
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-primary-500 font-body;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap;
+  }
+
+  .btn-primary {
+    @apply bg-primary-500 text-background-50 hover:bg-primary-600 active:scale-[0.98] font-semibold shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply border border-foreground-950/20 bg-transparent text-foreground-950 hover:bg-foreground-950 hover:text-background-50 active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply text-foreground-600 hover:text-foreground-950 hover:bg-background-200/50;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-background-400/80 bg-background-50 px-3.5 py-1.5 text-xs font-medium text-foreground-600 transition-all hover:border-foreground-950/40 hover:text-foreground-950 cursor-pointer select-none whitespace-nowrap;
+  }
+
+  .chip-active {
+    @apply bg-foreground-950 text-background-50 border-foreground-950 hover:bg-foreground-950 hover:text-background-50;
+  }
+
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-wider text-foreground-600 mb-1.5;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-background-400/90 bg-background-50 px-3.5 py-2.5 text-sm text-foreground-950 placeholder:text-foreground-400 outline-none transition-colors focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30;
+  }
+
+  .text-stroke {
+    -webkit-text-stroke: 1.5px rgba(250, 246, 238, 0.85);
+    color: transparent;
+  }
+
+  .text-stroke-dark {
+    -webkit-text-stroke: 1.5px rgba(15, 17, 21, 0.85);
+    color: transparent;
+  }
+
+  .bg-grid {
+    background-image: radial-gradient(rgba(20, 18, 16, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .bg-line-grid {
+    background-image: 
+      linear-gradient(to right, rgba(250, 246, 238, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(250, 246, 238, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  .code-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(250, 246, 238, 0.2) transparent;
+  }
+
+  .fx-hp {
+    display: none !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+}

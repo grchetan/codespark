@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      /* Reset and base styles */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      /* Animated Beam Container */
+      .animated-beam {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        min-height: 100vh;
+      }
+
+      /* Background */
+      .background {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(to top, #1e1b4b, #0f172a);
+        z-index: -1;
+      }
+
+      /* Radial Gradient Overlay */
+      .radial-gradient {
+        position: absolute;
+        inset: 0;
+        top: 50%;
+        height: 100%;
+        width: 100%;
+        border-radius: 50%;
+        opacity: 0.4;
+        background: radial-gradient(
+          50% 50% at 50% 50%,
+          #072a39 0%,
+          rgb(7, 42, 57) 50%,
+          rgba(7, 42, 57, 0) 100%
+        );
+      }
+
+      /* Grid Column */
+      .grid-column {
+        position: relative;
+        height: 100%;
+        width: 1px;
+        background: rgba(243, 244, 246, 0.1);
+        transform: rotate(12deg);
+        flex: 1;
+        min-width: 40px; /* Approximate cell size from useGridCount */
+      }
+
+      /* Beam Styles */
+      .beam {
+        height: 100%;
+        width: 6px;
+        transform: translateY(-20%);
+        animation: meteor linear infinite;
+      }
+
+      .beam-short {
+        animation-duration: 7s;
+      }
+
+      .beam-long {
+        animation-duration: 11s;
+      }
+
+      .beam:nth-child(4n) {
+        animation-delay: calc(var(--index) * 0.5s);
+      }
+
+      .beam > div {
+        width: 100%;
+        clip-path: polygon(54% 0, 54% 0, 60% 100%, 40% 100%);
+      }
+
+      .beam-short > div {
+        height: 2rem; /* h-8 */
+      }
+
+      .beam-long > div {
+        height: 3rem; /* h-12 */
+      }
+
+      .beam > div > div {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(
+          to bottom,
+          rgba(245, 245, 245, 0.5),
+          #f5f5f5 75%,
+          #f5f5f5
+        );
+      }
+
+      /* Meteor Animation */
+      @keyframes meteor {
+        0% {
+          transform: translateY(-20%);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh);
+          opacity: 0;
+        }
+      }
+
+      /* Content */
+      .content {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        padding: 2rem;
+        color: white;
+        z-index: 1;
+      }
+
+      /* Responsive Grid */
+      @media (max-width: 768px) {
+        .grid-column {
+          min-width: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Animated Beam</title>
+        <link rel="stylesheet" href="styles.css" />
+      </head>
+      <body>
+        <div class="animated-beam storybook-fix">
+          <div class="background">
+            <div class="radial-gradient"></div>
+            <!-- Grid columns with beams -->
+            <div class="grid-column"><div class="beam beam-short"></div></div>
+            <div class="grid-column"></div>
+            <div class="grid-column"></div>
+            <div class="grid-column"><div class="beam beam-long"></div></div>
+            <div class="grid-column"></div>
+            <div class="grid-column"></div>
+            <div class="grid-column"><div class="beam beam-short"></div></div>
+            <div class="grid-column"></div>
+            <div class="grid-column"></div>
+            <div class="grid-column"><div class="beam beam-long"></div></div>
+            <!-- Add more columns as needed -->
+          </div>
+          <div class="content">
+            <!-- Your content here -->
+            <h1>Sample Content</h1>
+            <p>This is a placeholder for your content.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  </body>
+</html>

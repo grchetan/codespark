@@ -1,0 +1,80 @@
+<!-- Maheswari Kachori - Masala Cursor Effect -->
+<!-- Is code ko </body> tag se pehle paste karo -->
+<style>
+  .masala-particle {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: 99999;
+    animation: masala-fall linear forwards;
+  }
+  @keyframes masala-fall {
+    0% {
+      transform: translate(0, 0) scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--dx), var(--dy)) scale(0.2) rotate(360deg);
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const colors = [
+      '#f5a623',
+      '#e8330a',
+      '#f7c948',
+      '#8b2500',
+      '#d4580a',
+      '#ffd700',
+      '#c0392b',
+      '#ff6b35',
+      '#e74c3c',
+      '#f39c12',
+    ];
+    let lastX = 0,
+      lastY = 0;
+
+    function createParticle(x, y) {
+      const p = document.createElement('div');
+      p.className = 'masala-particle';
+      const size = Math.random() * 6 + 3;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const dx = (Math.random() - 0.5) * 80;
+      const dy = Math.random() * 60 + 20;
+      const duration = Math.random() * 600 + 500;
+      const isSquare = Math.random() > 0.7;
+      p.style.cssText = `
+      left: ${x}px; top: ${y}px;
+      width: ${size}px; height: ${size}px;
+      background: ${color};
+      border-radius: ${isSquare ? '2px' : '50%'};
+      --dx: ${dx}px; --dy: ${dy}px;
+      animation-duration: ${duration}ms;
+    `;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), duration);
+    }
+
+    document.addEventListener('mousemove', function (e) {
+      const dx = Math.abs(e.clientX - lastX);
+      const dy = Math.abs(e.clientY - lastY);
+      if (dx < 3 && dy < 3) return;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      const count = Math.min(Math.floor((dx + dy) / 6) + 1, 4);
+      for (let i = 0; i < count; i++) {
+        setTimeout(
+          () =>
+            createParticle(
+              e.clientX + (Math.random() - 0.5) * 10,
+              e.clientY + (Math.random() - 0.5) * 10,
+            ),
+          i * 30,
+        );
+      }
+    });
+  })();
+</script>

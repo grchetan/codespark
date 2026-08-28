@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kotak Scroll Effect</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: sans-serif;
+      }
+
+      /* ===== STICKY SECTION ===== */
+      /* height zyada rakhte hain taaki scroll karne ki jagah mile */
+      .sticky-section {
+        position: relative;
+        height: 300vh; /* 3 cards ke liye 3x viewport height */
+      }
+
+      /* Yeh inner div screen par chipka rehta hai */
+      .sticky-inner {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        background: #1e3a4a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .section-heading {
+        color: #fff;
+        font-size: 32px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 48px;
+      }
+
+      /* ===== CARDS GRID ===== */
+      .cards-grid {
+        display: flex;
+        gap: 24px;
+        padding: 0 40px;
+        max-width: 960px;
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* ===== SINGLE CARD ===== */
+      .card {
+        background: #e8ecef;
+        border-radius: 16px;
+        padding: 32px 28px;
+        width: 280px;
+
+        /* Shuruaat mein hide aur side mein */
+        opacity: 0;
+        transform: translateX(60px);
+
+        /* Smooth animation */
+        transition:
+          opacity 0.5s ease,
+          transform 0.5s ease;
+      }
+
+      /* Jab .show class lagti hai tab card aata hai */
+      .card.show {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .card-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #2c4a5c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a2e3a;
+        margin-bottom: 8px;
+      }
+      .card-desc {
+        font-size: 14px;
+        color: #4a6070;
+        line-height: 1.5;
+      }
+
+      /* Baad ki normal content */
+      .next-section {
+        background: #fff;
+        padding: 80px 40px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- STICKY SCROLL SECTION -->
+    <div class="sticky-section" id="stickySection">
+      <div class="sticky-inner">
+        <h2 class="section-heading">Choosing Kotak811 for Personal Loan</h2>
+
+        <div class="cards-grid">
+          <div class="card" id="card1">
+            <div class="card-icon">%</div>
+            <div class="card-title">Attractive Interest Rates</div>
+            <div class="card-desc">
+              Interest rates starting at just 10.99% Interest* p.a.
+            </div>
+          </div>
+
+          <div class="card" id="card2">
+            <div class="card-icon">📋</div>
+            <div class="card-title">Minimal Documentation</div>
+            <div class="card-desc">
+              Get your loan easily with a fast and digital loan verification
+              process
+            </div>
+          </div>
+
+          <div class="card" id="card3">
+            <div class="card-icon">🏦</div>
+            <div class="card-title">Zero Collateral</div>
+            <div class="card-desc">
+              No need to mortgage property to secure a loan with us
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGLE SECTION KI CONTENT -->
+    <div class="next-section">
+      <h2>Apply Now</h2>
+      <p>Yahan baaki content aati hai...</p>
+    </div>
+
+    <script>
+      const section = document.getElementById('stickySection');
+      const card1 = document.getElementById('card1');
+      const card2 = document.getElementById('card2');
+      const card3 = document.getElementById('card3');
+
+      window.addEventListener(
+        'scroll',
+        function () {
+          // Section kitna scroll hua calculate karo
+          const rect = section.getBoundingClientRect();
+          const scrolled = -rect.top; // kitna upar gaya
+          const totalScroll = section.offsetHeight - window.innerHeight; // total scroll range
+          const progress = Math.min(Math.max(scrolled / totalScroll, 0), 1); // 0 to 1
+
+          // Progress ke hisaab se cards show karo
+          // 0% - 33%  → Card 1 aata hai
+          // 33% - 66% → Card 2 aata hai
+          // 66% - 100% → Card 3 aata hai
+
+          if (progress >= 0.05) card1.classList.add('show');
+          else card1.classList.remove('show');
+
+          if (progress >= 0.4) card2.classList.add('show');
+          else card2.classList.remove('show');
+
+          if (progress >= 0.75) card3.classList.add('show');
+          else card3.classList.remove('show');
+        },
+        { passive: true },
+      );
+    </script>
+  </body>
+</html>

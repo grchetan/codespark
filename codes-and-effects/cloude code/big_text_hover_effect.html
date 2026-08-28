@@ -1,0 +1,169 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+.wrap{
+  background:#080808;
+  min-height:340px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:3rem 2rem;
+  overflow:hidden;
+  position:relative;
+  border-radius:16px;
+}
+.hint{
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,255,255,0.2);margin-bottom:2.5rem;font-family:sans-serif;
+}
+.text-row{display:flex;gap:0;align-items:baseline;justify-content:center;flex-wrap:wrap;}
+.char{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(64px,14vw,130px);
+  line-height:1;
+  color:#fff;
+  display:inline-block;
+  cursor:default;
+  position:relative;
+  transition:none;
+  user-select:none;
+  will-change:transform,color;
+}
+.char.space{width:.35em;}
+
+.sub{
+  margin-top:1.8rem;
+  font-family:sans-serif;
+  font-size:12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.18);
+}
+canvas#trail{
+  position:absolute;inset:0;pointer-events:none;border-radius:16px;
+}
+</style>
+
+<div class="wrap" id="wrap">
+  <canvas id="trail"></canvas>
+  <p class="hint">hover over the text</p>
+  <div class="text-row" id="textRow"></div>
+  <p class="sub" id="sub">your name / brand / anything</p>
+</div>
+
+<script>
+const WORD = "CREATIVE";
+const COLORS = ["#b5ff2d","#ff3cff","#3cffee","#ff5733","#ffd93d","#ff6b6b","#a29bfe"];
+
+const row = document.getElementById("textRow");
+const chars = [];
+
+[...WORD].forEach((c,i)=>{
+  const el = document.createElement("span");
+  el.className = "char";
+  el.textContent = c;
+  el.dataset.i = i;
+  row.appendChild(el);
+  chars.push(el);
+});
+
+const canvas = document.getElementById("trail");
+const ctx = canvas.getContext("2d");
+const wrap = document.getElementById("wrap");
+
+function resizeCanvas(){
+  canvas.width = wrap.offsetWidth;
+  canvas.height = wrap.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+let particles = [];
+let mouseX = -999, mouseY = -999;
+let hovering = false;
+
+wrap.addEventListener("mousemove", e=>{
+  const r = wrap.getBoundingClientRect();
+  mouseX = e.clientX - r.left;
+  mouseY = e.clientY - r.top;
+  hovering = true;
+});
+wrap.addEventListener("mouseleave", ()=>{ hovering=false; });
+
+function spawnParticle(x,y,color){
+  const angle = Math.random()*Math.PI*2;
+  const speed = 1+Math.random()*3;
+  particles.push({
+    x,y,
+    vx: Math.cos(angle)*speed,
+    vy: Math.sin(angle)*speed - 1,
+    life:1,
+    decay: 0.018+Math.random()*0.02,
+    r: 2+Math.random()*4,
+    color,
+  });
+}
+
+let frame=0;
+function loop(){
+  requestAnimationFrame(loop);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  frame++;
+
+  if(hovering && frame%2===0){
+    const col = COLORS[Math.floor(Math.random()*COLORS.length)];
+    for(let k=0;k<3;k++) spawnParticle(mouseX, mouseY, col);
+  }
+
+  particles = particles.filter(p=>p.life>0.02);
+  particles.forEach(p=>{
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.08;
+    p.life -= p.decay;
+    p.vx *= 0.97;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+    ctx.fillStyle = p.color + Math.floor(p.life*200).toString(16).padStart(2,"0");
+    ctx.fill();
+  });
+
+  chars.forEach((el,i)=>{
+    const r = el.getBoundingClientRect();
+    const wr = wrap.getBoundingClientRect();
+    const cx = r.left - wr.left + r.width/2;
+    const cy = r.top - wr.top + r.height/2;
+    const dx = mouseX - cx;
+    const dy = mouseY - cy;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    const maxD = 160;
+
+    if(hovering && dist < maxD){
+      const t = 1 - dist/maxD;
+      const lift = t*t * -40;
+      const skew = (dx/maxD)*12*t;
+      const scale = 1 + t*0.22;
+      const colorIdx = Math.floor((i/WORD.length)*COLORS.length);
+      el.style.transform = `translateY(${lift}px) skewX(${skew}deg) scale(${scale})`;
+      el.style.color = COLORS[colorIdx];
+      el.style.textShadow = `0 0 ${30*t}px ${COLORS[colorIdx]}88, 0 0 ${60*t}px ${COLORS[colorIdx]}44`;
+      el.style.transition = "transform .12s cubic-bezier(.22,1,.36,1), color .15s, text-shadow .15s";
+
+      if(frame%4===0 && dist<80){
+        const ex = r.left - wr.left + Math.random()*r.width;
+        const ey = r.top - wr.top + Math.random()*r.height;
+        spawnParticle(ex,ey,COLORS[colorIdx]);
+      }
+    } else {
+      el.style.transform = "translateY(0) skewX(0) scale(1)";
+      el.style.color = "#ffffff";
+      el.style.textShadow = "none";
+      el.style.transition = "transform .5s cubic-bezier(.22,1,.36,1), color .4s, text-shadow .4s";
+    }
+  });
+}
+loop();
+</script>

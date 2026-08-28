@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animated Beam</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      .animated-beam {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        min-height: 100vh;
+      }
+
+      .background {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(to top, #1e1b4b, #0f172a);
+        z-index: -1;
+      }
+
+      .radial-gradient {
+        position: absolute;
+        inset: 0;
+        top: 50%;
+        height: 100%;
+        width: 100%;
+        border-radius: 50%;
+        opacity: 0.4;
+        background: radial-gradient(
+          50% 50% at 50% 50%,
+          #072a39 0%,
+          rgb(7, 42, 57) 50%,
+          rgba(7, 42, 57, 0) 100%
+        );
+      }
+
+      .grid-column {
+        position: relative;
+        height: 100%;
+        width: 1px;
+        background: rgba(243, 244, 246, 0.1);
+        transform: rotate(12deg);
+        flex: 1;
+        min-width: 40px;
+      }
+
+      .beam {
+        height: 100%;
+        width: 6px;
+        transform: translateY(-20%);
+        animation: meteor linear infinite;
+      }
+
+      .beam-short {
+        animation-duration: 7s;
+      }
+
+      .beam-long {
+        animation-duration: 11s;
+      }
+
+      .beam-inner {
+        width: 100%;
+        clip-path: polygon(54% 0, 54% 0, 60% 100%, 40% 100%);
+      }
+
+      .beam-short .beam-inner {
+        height: 2rem;
+      }
+
+      .beam-long .beam-inner {
+        height: 3rem;
+      }
+
+      .beam-inner > div {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(
+          to bottom,
+          rgba(245, 245, 245, 0.5),
+          #f5f5f5 75%,
+          #f5f5f5
+        );
+      }
+
+      @keyframes meteor {
+        0% {
+          transform: translateY(-20%);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh);
+          opacity: 0;
+        }
+      }
+
+      .content {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        padding: 2rem;
+        color: white;
+        z-index: 1;
+      }
+
+      @media (max-width: 768px) {
+        .grid-column {
+          min-width: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="animated-beam storybook-fix">
+      <div class="background" id="background"></div>
+      <div class="content">
+        <h1>Sample Content</h1>
+        <p>This is a placeholder for your content.</p>
+      </div>
+    </div>
+    <script>
+      function createBeam(index) {
+        const flag = index % 8 === 0;
+        const beam = document.createElement("div");
+        beam.className = `beam ${flag ? "beam-short" : "beam-long"}`;
+        beam.style.setProperty("--delay", `${index * 0.5}s`);
+
+        const inner = document.createElement("div");
+        inner.className = "beam-inner";
+
+        const gradient = document.createElement("div");
+        inner.appendChild(gradient);
+        beam.appendChild(inner);
+
+        return beam;
+      }
+
+      function updateGrid() {
+        const container = document.getElementById("background");
+        const rect = container.getBoundingClientRect();
+        const width = rect.width;
+        const cellSize = 40;
+        const count = Math.ceil(width / cellSize);
+
+        container.innerHTML = "";
+
+        const radialGradient = document.createElement("div");
+        radialGradient.className = "radial-gradient";
+        container.appendChild(radialGradient);
+
+        for (let i = 0; i < count; i++) {
+          const column = document.createElement("div");
+          column.className = "grid-column";
+          if ((1 + i) % 4 === 0) {
+            column.appendChild(createBeam(i + 1));
+          }
+          container.appendChild(column);
+        }
+      }
+
+      window.addEventListener("resize", updateGrid);
+      document.addEventListener("DOMContentLoaded", updateGrid);
+    </script>
+  </body>
+</html>

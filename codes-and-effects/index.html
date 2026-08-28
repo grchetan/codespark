@@ -1,0 +1,1798 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeSpark - Showcase Custom Front-end Effects</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { primary: '#6366f1', secondary: '#a855f7' },
+            borderRadius: {
+              none: '0px',
+              sm: '4px',
+              DEFAULT: '8px',
+              md: '12px',
+              lg: '16px',
+              xl: '20px',
+              '2xl': '24px',
+              '3xl': '32px',
+              full: '9999px',
+              button: '8px',
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"
+    />
+    <style>
+      :where([class^='ri-'])::before {
+        content: '\f3c2';
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+
+      .glassmorphism {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+      }
+
+      .neomorphism {
+        background: #f5f5f7;
+        box-shadow:
+          8px 8px 16px rgba(174, 174, 192, 0.4),
+          -8px -8px 16px rgba(255, 255, 255, 0.8);
+        border-radius: 16px;
+      }
+
+      .neomorphism-button {
+        background: #f5f5f7;
+        box-shadow:
+          4px 4px 8px rgba(174, 174, 192, 0.4),
+          -4px -4px 8px rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .neomorphism-button:hover {
+        box-shadow:
+          2px 2px 4px rgba(174, 174, 192, 0.4),
+          -2px -2px 4px rgba(255, 255, 255, 0.8);
+        transform: translateY(2px);
+      }
+
+      .glow-border {
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        transition: box-shadow 0.3s ease;
+      }
+
+      .glow-border:hover {
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+      }
+
+      .custom-cursor {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: rgba(99, 102, 241, 0.5);
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition:
+          width 0.3s,
+          height 0.3s,
+          background-color 0.3s;
+        mix-blend-mode: difference;
+      }
+
+      .cursor-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #6366f1;
+        border-radius: 50%;
+        position: fixed;
+        pointer-events: none;
+        z-index: 10000;
+        transform: translate(-50%, -50%);
+      }
+
+      .split-text span {
+        display: inline-block;
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .split-text:hover span {
+        transform: translateY(-10px);
+        color: #6366f1;
+      }
+
+      .nav-link {
+        position: relative;
+      }
+
+      .nav-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -4px;
+        left: 0;
+        background-color: #6366f1;
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover::after,
+      .nav-link.active::after {
+        width: 100%;
+      }
+
+      .code-card {
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .code-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .filter-button.active {
+        background: linear-gradient(145deg, #f5f5f7, #ffffff);
+        box-shadow:
+          inset 4px 4px 8px rgba(174, 174, 192, 0.4),
+          inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+        color: #6366f1;
+      }
+
+      input[type='number']::-webkit-inner-spin-button,
+      input[type='number']::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .bg-gradient {
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.1),
+          rgba(168, 85, 247, 0.1)
+        );
+      }
+
+      .copy-button {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .copy-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s ease;
+      }
+
+      .copy-button:hover::before {
+        left: 100%;
+      }
+
+      .hero-particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        overflow: hidden;
+      }
+
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        opacity: 0.2;
+        animation: float 15s infinite linear;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-100px) rotate(180deg);
+        }
+        100% {
+          transform: translateY(0) rotate(360deg);
+        }
+      }
+
+      .search-input {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow:
+          inset 2px 2px 5px rgba(174, 174, 192, 0.2),
+          inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+      }
+
+      .custom-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+
+      .custom-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .switch-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #e2e8f0;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+
+      .switch-slider:before {
+        position: absolute;
+        content: '';
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .switch-slider {
+        background-color: #6366f1;
+      }
+
+      input:checked + .switch-slider:before {
+        transform: translateX(26px);
+      }
+
+      .custom-checkbox {
+        position: relative;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+      }
+
+      .custom-checkbox input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .checkbox-mark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #f5f5f7;
+        border-radius: 4px;
+        box-shadow:
+          inset 2px 2px 5px rgba(174, 174, 192, 0.2),
+          inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+      }
+
+      .custom-checkbox input:checked ~ .checkbox-mark {
+        background-color: #6366f1;
+      }
+
+      .checkbox-mark:after {
+        content: '';
+        position: absolute;
+        display: none;
+      }
+
+      .custom-checkbox input:checked ~ .checkbox-mark:after {
+        display: block;
+      }
+
+      .custom-checkbox .checkbox-mark:after {
+        left: 7px;
+        top: 3px;
+        width: 6px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      .custom-radio {
+        position: relative;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+      }
+
+      .custom-radio input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .radio-mark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #f5f5f7;
+        border-radius: 50%;
+        box-shadow:
+          inset 2px 2px 5px rgba(174, 174, 192, 0.2),
+          inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+      }
+
+      .custom-radio input:checked ~ .radio-mark {
+        background-color: #f5f5f7;
+      }
+
+      .radio-mark:after {
+        content: '';
+        position: absolute;
+        display: none;
+      }
+
+      .custom-radio input:checked ~ .radio-mark:after {
+        display: block;
+      }
+
+      .custom-radio .radio-mark:after {
+        top: 6px;
+        left: 6px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #6366f1;
+      }
+
+      .custom-range {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: #f5f5f7;
+        box-shadow:
+          inset 2px 2px 5px rgba(174, 174, 192, 0.2),
+          inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+        outline: none;
+      }
+
+      .custom-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #6366f1;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .custom-range::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #6366f1;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        border: none;
+      }
+    </style>
+  </head>
+  <body class="bg-gradient min-h-screen">
+    <div class="custom-cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- Navbar -->
+    <nav class="glassmorphism fixed w-full top-0 z-50 py-4 px-6 md:px-12">
+      <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <a href="#" class="text-3xl font-['Pacifico'] text-primary"
+          >CodeSpark</a
+        >
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="#home" class="nav-link text-gray-800 font-medium active"
+            >Home</a
+          >
+          <a href="#effects" class="nav-link text-gray-800 font-medium"
+            >Effects</a
+          >
+          <a href="#about" class="nav-link text-gray-800 font-medium">About</a>
+          <a href="#contact" class="nav-link text-gray-800 font-medium"
+            >Contact</a
+          >
+          <button
+            class="neomorphism-button py-2 px-6 text-primary font-medium !rounded-button whitespace-nowrap"
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden w-10 h-10 flex items-center justify-center">
+          <button id="menu-toggle" class="text-gray-800">
+            <i class="ri-menu-line ri-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div
+        id="mobile-menu"
+        class="md:hidden hidden mt-4 p-4 glassmorphism rounded-lg"
+      >
+        <div class="flex flex-col space-y-4">
+          <a href="#home" class="nav-link text-gray-800 font-medium active"
+            >Home</a
+          >
+          <a href="#effects" class="nav-link text-gray-800 font-medium"
+            >Effects</a
+          >
+          <a href="#about" class="nav-link text-gray-800 font-medium">About</a>
+          <a href="#contact" class="nav-link text-gray-800 font-medium"
+            >Contact</a
+          >
+          <button
+            class="neomorphism-button py-2 px-6 text-primary font-medium !rounded-button whitespace-nowrap"
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section
+      id="home"
+      class="pt-32 pb-20 px-6 md:px-12 relative overflow-hidden"
+    >
+      <div class="hero-particles">
+        <!-- Particles will be added via JS -->
+      </div>
+
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-12 md:mb-0" data-aos="fade-right">
+          <h1 class="text-4xl md:text-6xl font-bold mb-6 split-text-container">
+            <span class="split-text">Craft Beautiful</span>
+            <br />
+            <span class="split-text text-primary">Frontend Effects</span>
+          </h1>
+          <p class="text-lg text-gray-700 mb-8 max-w-lg">
+            Discover, share and implement stunning UI effects to elevate your
+            web projects. A community-driven platform for developers to showcase
+            their creativity.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <button
+              class="neomorphism-button py-3 px-8 text-white bg-primary font-medium !rounded-button whitespace-nowrap"
+            >
+              Explore Effects
+            </button>
+            <button
+              class="neomorphism-button py-3 px-8 text-gray-700 font-medium !rounded-button whitespace-nowrap"
+            >
+              Share Your Code
+            </button>
+          </div>
+        </div>
+
+        <div class="md:w-1/2" data-aos="fade-left">
+          <div class="relative">
+            <div class="neomorphism p-4 md:p-6 glow-border">
+              <div class="bg-gray-900 rounded-lg p-6 text-white">
+                <div class="flex items-center mb-4">
+                  <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                  <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <pre
+                  class="text-sm md:text-base font-mono"
+                ><code><span class="text-pink-400">.hover-effect</span> <span class="text-purple-400">{</span>
+  <span class="text-blue-400">position</span>: <span class="text-green-400">relative</span>;
+  <span class="text-blue-400">overflow</span>: <span class="text-green-400">hidden</span>;
+<span class="text-purple-400">}</span>
+
+<span class="text-pink-400">.hover-effect::before</span> <span class="text-purple-400">{</span>
+  <span class="text-blue-400">content</span>: <span class="text-orange-400">''</span>;
+  <span class="text-blue-400">position</span>: <span class="text-green-400">absolute</span>;
+  <span class="text-blue-400">width</span>: <span class="text-green-400">100%</span>;
+  <span class="text-blue-400">height</span>: <span class="text-green-400">100%</span>;
+  <span class="text-blue-400">background</span>: <span class="text-green-400">linear-gradient</span>(<span class="text-orange-400">45deg</span>, <span class="text-orange-400">#6366f1</span>, <span class="text-orange-400">#a855f7</span>);
+  <span class="text-blue-400">transform</span>: <span class="text-green-400">translateY</span>(<span class="text-orange-400">100%</span>);
+  <span class="text-blue-400">transition</span>: <span class="text-green-400">transform</span> <span class="text-orange-400">0.3s ease</span>;
+<span class="text-purple-400">}</span>
+
+<span class="text-pink-400">.hover-effect:hover::before</span> <span class="text-purple-400">{</span>
+  <span class="text-blue-400">transform</span>: <span class="text-green-400">translateY</span>(<span class="text-orange-400">0</span>);
+<span class="text-purple-400">}</span></code></pre>
+              </div>
+            </div>
+            <div
+              class="absolute -bottom-6 -right-6 w-24 h-24 bg-primary rounded-full opacity-20 blur-xl"
+            ></div>
+            <div
+              class="absolute -top-6 -left-6 w-16 h-16 bg-secondary rounded-full opacity-20 blur-xl"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Effects Section -->
+    <section id="effects" class="py-20 px-6 md:px-12">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12" data-aos="fade-up">
+          <h2 class="text-3xl md:text-4xl font-bold mb-4">Discover Effects</h2>
+          <p class="text-gray-700 max-w-2xl mx-auto">
+            Browse our collection of handcrafted frontend effects to enhance
+            your projects. Each effect comes with ready-to-use code snippets.
+          </p>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="mb-12 glassmorphism p-6 rounded-lg" data-aos="fade-up">
+          <div class="flex flex-col md:flex-row gap-6">
+            <div class="md:w-1/2 relative">
+              <div
+                class="absolute inset-y-0 left-3 flex items-center pointer-events-none w-5 h-5 flex items-center justify-center"
+              >
+                <i class="ri-search-line text-gray-500"></i>
+              </div>
+              <input
+                type="text"
+                placeholder="Search effects..."
+                class="search-input w-full pl-10 pr-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div class="md:w-1/2 flex flex-wrap gap-3">
+              <button
+                class="filter-button neomorphism-button py-2 px-4 text-gray-700 font-medium active !rounded-button whitespace-nowrap"
+              >
+                All
+              </button>
+              <button
+                class="filter-button neomorphism-button py-2 px-4 text-gray-700 font-medium !rounded-button whitespace-nowrap"
+              >
+                Hover
+              </button>
+              <button
+                class="filter-button neomorphism-button py-2 px-4 text-gray-700 font-medium !rounded-button whitespace-nowrap"
+              >
+                Animation
+              </button>
+              <button
+                class="filter-button neomorphism-button py-2 px-4 text-gray-700 font-medium !rounded-button whitespace-nowrap"
+              >
+                Text
+              </button>
+              <button
+                class="filter-button neomorphism-button py-2 px-4 text-gray-700 font-medium !rounded-button whitespace-nowrap"
+              >
+                Cards
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Effects Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Effect Card 1 -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <div
+              class="bg-white rounded-t-lg p-6 h-48 flex items-center justify-center relative overflow-hidden"
+            >
+              <div
+                class="hover-effect-demo w-full max-w-xs p-4 text-center bg-gray-100 rounded-lg"
+              >
+                <p class="font-medium">Hover Me</p>
+              </div>
+              <div class="absolute top-4 right-4 flex space-x-2">
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >CSS</span
+                >
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >Hover</span
+                >
+              </div>
+            </div>
+            <div class="p-6 bg-white rounded-b-lg">
+              <h3 class="text-lg font-semibold mb-2">Gradient Reveal Hover</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                A smooth gradient reveal effect that transitions on hover,
+                perfect for buttons and cards.
+              </p>
+              <div class="flex justify-between items-center">
+                <div class="flex space-x-3">
+                  <button
+                    class="copy-button flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-file-copy-line"></i>
+                    </div>
+                    <span>Copy Code</span>
+                  </button>
+                  <button
+                    class="flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-heart-line"></i>
+                    </div>
+                    <span>42</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1.5 px-4 text-primary text-sm font-medium !rounded-button whitespace-nowrap"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Effect Card 2 -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div
+              class="bg-white rounded-t-lg p-6 h-48 flex items-center justify-center relative overflow-hidden"
+            >
+              <div class="text-effect-demo text-2xl font-bold">
+                <span class="text-split-char">S</span>
+                <span class="text-split-char">p</span>
+                <span class="text-split-char">l</span>
+                <span class="text-split-char">i</span>
+                <span class="text-split-char">t</span>
+                <span class="text-split-char">&nbsp;</span>
+                <span class="text-split-char">T</span>
+                <span class="text-split-char">e</span>
+                <span class="text-split-char">x</span>
+                <span class="text-split-char">t</span>
+              </div>
+              <div class="absolute top-4 right-4 flex space-x-2">
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >JS</span
+                >
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >Text</span
+                >
+              </div>
+            </div>
+            <div class="p-6 bg-white rounded-b-lg">
+              <h3 class="text-lg font-semibold mb-2">Split Text Animation</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Animate individual characters in text with custom transitions
+                for eye-catching typography.
+              </p>
+              <div class="flex justify-between items-center">
+                <div class="flex space-x-3">
+                  <button
+                    class="copy-button flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-file-copy-line"></i>
+                    </div>
+                    <span>Copy Code</span>
+                  </button>
+                  <button
+                    class="flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-heart-line"></i>
+                    </div>
+                    <span>78</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1.5 px-4 text-primary text-sm font-medium !rounded-button whitespace-nowrap"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Effect Card 3 -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
+            <div
+              class="bg-white rounded-t-lg p-6 h-48 flex items-center justify-center relative overflow-hidden"
+            >
+              <div
+                class="cursor-effect-demo w-16 h-16 bg-primary bg-opacity-20 rounded-full flex items-center justify-center"
+              >
+                <div class="w-8 h-8 bg-primary rounded-full"></div>
+              </div>
+              <div class="absolute top-4 right-4 flex space-x-2">
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >JS</span
+                >
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >Cursor</span
+                >
+              </div>
+            </div>
+            <div class="p-6 bg-white rounded-b-lg">
+              <h3 class="text-lg font-semibold mb-2">Custom Cursor Follower</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Replace the default cursor with a custom animated element that
+                follows mouse movements.
+              </p>
+              <div class="flex justify-between items-center">
+                <div class="flex space-x-3">
+                  <button
+                    class="copy-button flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-file-copy-line"></i>
+                    </div>
+                    <span>Copy Code</span>
+                  </button>
+                  <button
+                    class="flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-heart-line"></i>
+                    </div>
+                    <span>56</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1.5 px-4 text-primary text-sm font-medium !rounded-button whitespace-nowrap"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Effect Card 4 -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <div
+              class="bg-white rounded-t-lg p-6 h-48 flex items-center justify-center relative overflow-hidden"
+            >
+              <div
+                class="card-3d-demo w-40 h-32 bg-gradient-to-r from-primary to-secondary rounded-lg shadow-lg transform perspective-demo"
+              >
+                <div
+                  class="w-full h-full flex items-center justify-center text-white font-medium"
+                >
+                  3D Card
+                </div>
+              </div>
+              <div class="absolute top-4 right-4 flex space-x-2">
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >CSS</span
+                >
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >3D</span
+                >
+              </div>
+            </div>
+            <div class="p-6 bg-white rounded-b-lg">
+              <h3 class="text-lg font-semibold mb-2">3D Card Tilt Effect</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Create an interactive 3D tilt effect that responds to mouse
+                position over cards.
+              </p>
+              <div class="flex justify-between items-center">
+                <div class="flex space-x-3">
+                  <button
+                    class="copy-button flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-file-copy-line"></i>
+                    </div>
+                    <span>Copy Code</span>
+                  </button>
+                  <button
+                    class="flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-heart-line"></i>
+                    </div>
+                    <span>93</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1.5 px-4 text-primary text-sm font-medium !rounded-button whitespace-nowrap"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Effect Card 5 -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div
+              class="bg-white rounded-t-lg p-6 h-48 flex items-center justify-center relative overflow-hidden"
+            >
+              <div class="loader-demo flex space-x-2">
+                <div
+                  class="w-4 h-4 bg-primary rounded-full animate-bounce"
+                ></div>
+                <div
+                  class="w-4 h-4 bg-primary rounded-full animate-bounce"
+                  style="animation-delay: 0.2s"
+                ></div>
+                <div
+                  class="w-4 h-4 bg-primary rounded-full animate-bounce"
+                  style="animation-delay: 0.4s"
+                ></div>
+              </div>
+              <div class="absolute top-4 right-4 flex space-x-2">
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >CSS</span
+                >
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >Animation</span
+                >
+              </div>
+            </div>
+            <div class="p-6 bg-white rounded-b-lg">
+              <h3 class="text-lg font-semibold mb-2">Animated Loaders</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                A collection of stylish loading animations using pure CSS for
+                better user experience.
+              </p>
+              <div class="flex justify-between items-center">
+                <div class="flex space-x-3">
+                  <button
+                    class="copy-button flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-file-copy-line"></i>
+                    </div>
+                    <span>Copy Code</span>
+                  </button>
+                  <button
+                    class="flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-heart-line"></i>
+                    </div>
+                    <span>64</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1.5 px-4 text-primary text-sm font-medium !rounded-button whitespace-nowrap"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Effect Card 6 -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
+            <div
+              class="bg-white rounded-t-lg p-6 h-48 flex items-center justify-center relative overflow-hidden"
+            >
+              <div
+                class="glassmorphism-demo p-6 rounded-lg bg-white bg-opacity-20 backdrop-blur-lg border border-white border-opacity-20"
+              >
+                <h4 class="text-lg font-medium mb-2">Glass Card</h4>
+                <p class="text-sm">Modern glassmorphism effect</p>
+              </div>
+              <div class="absolute top-4 right-4 flex space-x-2">
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >CSS</span
+                >
+                <span
+                  class="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-600"
+                  >Cards</span
+                >
+              </div>
+            </div>
+            <div class="p-6 bg-white rounded-b-lg">
+              <h3 class="text-lg font-semibold mb-2">Glassmorphism Effect</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Create modern frosted glass UI elements with backdrop filters
+                and transparency.
+              </p>
+              <div class="flex justify-between items-center">
+                <div class="flex space-x-3">
+                  <button
+                    class="copy-button flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-file-copy-line"></i>
+                    </div>
+                    <span>Copy Code</span>
+                  </button>
+                  <button
+                    class="flex items-center space-x-1 text-sm text-gray-600 hover:text-primary"
+                  >
+                    <div class="w-5 h-5 flex items-center justify-center">
+                      <i class="ri-heart-line"></i>
+                    </div>
+                    <span>87</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1.5 px-4 text-primary text-sm font-medium !rounded-button whitespace-nowrap"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Load More Button -->
+        <div class="mt-12 text-center" data-aos="fade-up">
+          <button
+            class="neomorphism-button py-3 px-8 text-primary font-medium !rounded-button whitespace-nowrap"
+          >
+            Load More Effects
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-6 md:px-12 bg-white">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12" data-aos="fade-up">
+          <h2 class="text-3xl md:text-4xl font-bold mb-4">About CodeSpark</h2>
+          <p class="text-gray-700 max-w-2xl mx-auto">
+            A platform built by developers, for developers. Our mission is to
+            inspire creativity and share knowledge.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div
+            class="neomorphism p-8 text-center"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <div
+              class="w-16 h-16 mx-auto mb-6 bg-primary bg-opacity-10 rounded-full flex items-center justify-center"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center text-primary"
+              >
+                <i class="ri-code-box-line ri-2x"></i>
+              </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Share Your Code</h3>
+            <p class="text-gray-600">
+              Showcase your frontend creations with the community. Get feedback
+              and recognition for your innovative solutions.
+            </p>
+          </div>
+
+          <div
+            class="neomorphism p-8 text-center"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div
+              class="w-16 h-16 mx-auto mb-6 bg-primary bg-opacity-10 rounded-full flex items-center justify-center"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center text-primary"
+              >
+                <i class="ri-download-cloud-line ri-2x"></i>
+              </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Use Ready Solutions</h3>
+            <p class="text-gray-600">
+              Find and implement beautiful UI effects in your projects. Save
+              time with ready-to-use code snippets.
+            </p>
+          </div>
+
+          <div
+            class="neomorphism p-8 text-center"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
+            <div
+              class="w-16 h-16 mx-auto mb-6 bg-primary bg-opacity-10 rounded-full flex items-center justify-center"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center text-primary"
+              >
+                <i class="ri-team-line ri-2x"></i>
+              </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Join Community</h3>
+            <p class="text-gray-600">
+              Connect with like-minded developers. Learn, collaborate, and grow
+              your skills together.
+            </p>
+          </div>
+        </div>
+
+        <div class="neomorphism p-8 md:p-12" data-aos="fade-up">
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-8 md:mb-0 md:pr-12">
+              <h3 class="text-2xl font-semibold mb-4">Why Use CodeSpark?</h3>
+              <div class="space-y-4">
+                <div class="flex items-start">
+                  <div
+                    class="w-6 h-6 flex items-center justify-center text-primary mr-3 mt-0.5"
+                  >
+                    <i class="ri-check-line ri-lg"></i>
+                  </div>
+                  <p class="text-gray-700">
+                    <span class="font-medium">Time-saving solutions</span> -
+                    Implement beautiful effects without starting from scratch
+                  </p>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-6 h-6 flex items-center justify-center text-primary mr-3 mt-0.5"
+                  >
+                    <i class="ri-check-line ri-lg"></i>
+                  </div>
+                  <p class="text-gray-700">
+                    <span class="font-medium">Learning resource</span> - Study
+                    code from experienced developers
+                  </p>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-6 h-6 flex items-center justify-center text-primary mr-3 mt-0.5"
+                  >
+                    <i class="ri-check-line ri-lg"></i>
+                  </div>
+                  <p class="text-gray-700">
+                    <span class="font-medium">Community feedback</span> - Get
+                    insights and improvements for your code
+                  </p>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-6 h-6 flex items-center justify-center text-primary mr-3 mt-0.5"
+                  >
+                    <i class="ri-check-line ri-lg"></i>
+                  </div>
+                  <p class="text-gray-700">
+                    <span class="font-medium">Portfolio building</span> -
+                    Showcase your skills to potential employers
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="md:w-1/2">
+              <div class="glassmorphism p-6 rounded-lg">
+                <h4 class="text-xl font-semibold mb-4">Join Our Community</h4>
+                <p class="text-gray-700 mb-6">
+                  Sign up today and become part of our growing community of
+                  creative developers.
+                </p>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Email</label
+                    >
+                    <input
+                      type="email"
+                      class="search-input w-full px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary border-none"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                      >Password</label
+                    >
+                    <input
+                      type="password"
+                      class="search-input w-full px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary border-none"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <div class="flex items-center">
+                    <label class="custom-checkbox">
+                      <input type="checkbox" />
+                      <span class="checkbox-mark"></span>
+                    </label>
+                    <span class="text-sm text-gray-700"
+                      >I agree to the Terms and Privacy Policy</span
+                    >
+                  </div>
+                  <button
+                    class="w-full neomorphism-button py-3 px-6 text-white bg-primary font-medium !rounded-button whitespace-nowrap"
+                  >
+                    Create Free Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-6 md:px-12">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12" data-aos="fade-up">
+          <h2 class="text-3xl md:text-4xl font-bold mb-4">Get In Touch</h2>
+          <p class="text-gray-700 max-w-2xl mx-auto">
+            Have questions or suggestions? We'd love to hear from you. Reach out
+            to our team.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div class="neomorphism p-8" data-aos="fade-right">
+            <h3 class="text-2xl font-semibold mb-6">Contact Us</h3>
+            <form class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >First Name</label
+                  >
+                  <input
+                    type="text"
+                    class="search-input w-full px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary border-none"
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >Last Name</label
+                  >
+                  <input
+                    type="text"
+                    class="search-input w-full px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary border-none"
+                    placeholder="Doe"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Email</label
+                >
+                <input
+                  type="email"
+                  class="search-input w-full px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary border-none"
+                  placeholder="your@email.com"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Subject</label
+                >
+                <input
+                  type="text"
+                  class="search-input w-full px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary border-none"
+                  placeholder="How can we help?"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Message</label
+                >
+                <textarea
+                  rows="4"
+                  class="search-input w-full px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary border-none"
+                  placeholder="Your message here..."
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                class="neomorphism-button py-3 px-8 text-white bg-primary font-medium !rounded-button whitespace-nowrap"
+              >
+                Send Message
+              </button>
+            </form>
+          </div>
+
+          <div data-aos="fade-left">
+            <div class="neomorphism p-8 mb-8">
+              <h3 class="text-2xl font-semibold mb-6">Connect With Us</h3>
+              <div class="space-y-4">
+                <div class="flex items-start">
+                  <div
+                    class="w-10 h-10 flex items-center justify-center bg-primary bg-opacity-10 rounded-full text-primary mr-4"
+                  >
+                    <i class="ri-mail-line ri-lg"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium">Email</h4>
+                    <p class="text-gray-600">support@codespark.dev</p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-10 h-10 flex items-center justify-center bg-primary bg-opacity-10 rounded-full text-primary mr-4"
+                  >
+                    <i class="ri-map-pin-line ri-lg"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium">Location</h4>
+                    <p class="text-gray-600">
+                      123 Developer Street, San Francisco, CA 94107
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-10 h-10 flex items-center justify-center bg-primary bg-opacity-10 rounded-full text-primary mr-4"
+                  >
+                    <i class="ri-time-line ri-lg"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium">Working Hours</h4>
+                    <p class="text-gray-600">
+                      Monday - Friday: 9:00 AM - 6:00 PM
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-8">
+                <h4 class="font-medium mb-4">Follow Us</h4>
+                <div class="flex space-x-4">
+                  <a
+                    href="#"
+                    class="w-10 h-10 flex items-center justify-center neomorphism-button rounded-full text-primary"
+                  >
+                    <i class="ri-github-fill ri-lg"></i>
+                  </a>
+                  <a
+                    href="#"
+                    class="w-10 h-10 flex items-center justify-center neomorphism-button rounded-full text-primary"
+                  >
+                    <i class="ri-twitter-fill ri-lg"></i>
+                  </a>
+                  <a
+                    href="#"
+                    class="w-10 h-10 flex items-center justify-center neomorphism-button rounded-full text-primary"
+                  >
+                    <i class="ri-linkedin-fill ri-lg"></i>
+                  </a>
+                  <a
+                    href="#"
+                    class="w-10 h-10 flex items-center justify-center neomorphism-button rounded-full text-primary"
+                  >
+                    <i class="ri-discord-fill ri-lg"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="neomorphism p-8">
+              <h3 class="text-2xl font-semibold mb-6">Newsletter</h3>
+              <p class="text-gray-700 mb-6">
+                Subscribe to our newsletter to get updates on new effects,
+                tutorials, and community events.
+              </p>
+              <div class="flex">
+                <input
+                  type="email"
+                  class="search-input flex-1 px-4 py-3 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary border-none"
+                  placeholder="your@email.com"
+                />
+                <button
+                  class="neomorphism-button py-3 px-6 text-white bg-primary font-medium rounded-r-lg !rounded-button whitespace-nowrap"
+                >
+                  Subscribe
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 md:px-12 glassmorphism mt-12">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          <div>
+            <a
+              href="#"
+              class="text-3xl font-['Pacifico'] text-primary mb-4 inline-block"
+              >CodeSpark</a
+            >
+            <p class="text-gray-600 mb-6">
+              A platform for developers to discover, share, and implement
+              beautiful frontend effects.
+            </p>
+            <div class="flex space-x-4">
+              <a
+                href="#"
+                class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-primary"
+              >
+                <i class="ri-github-fill ri-lg"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-primary"
+              >
+                <i class="ri-twitter-fill ri-lg"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-primary"
+              >
+                <i class="ri-linkedin-fill ri-lg"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-primary"
+              >
+                <i class="ri-discord-fill ri-lg"></i>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+            <ul class="space-y-2">
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary">Home</a>
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Effects Gallery</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >About Us</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary">Contact</a>
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Submit Effect</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Resources</h4>
+            <ul class="space-y-2">
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Documentation</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Tutorials</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary">Blog</a>
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Community</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary">API</a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Legal</h4>
+            <ul class="space-y-2">
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Terms of Service</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Privacy Policy</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Cookie Policy</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-600 hover:text-primary"
+                  >Licensing</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pt-8 border-t border-gray-200">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <p class="text-gray-600 mb-4 md:mb-0">
+              © 2025 CodeSpark. All rights reserved.
+            </p>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center">
+                <div class="w-8 h-8 flex items-center justify-center mr-2">
+                  <i class="ri-visa-fill ri-lg text-blue-700"></i>
+                </div>
+                <div class="w-8 h-8 flex items-center justify-center mr-2">
+                  <i class="ri-mastercard-fill ri-lg text-red-500"></i>
+                </div>
+                <div class="w-8 h-8 flex items-center justify-center mr-2">
+                  <i class="ri-paypal-fill ri-lg text-blue-500"></i>
+                </div>
+                <div class="w-8 h-8 flex items-center justify-center">
+                  <i class="ri-apple-fill ri-lg"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+    <script id="cursor-animation">
+      document.addEventListener('DOMContentLoaded', function () {
+        const cursor = document.querySelector('.custom-cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+
+        document.addEventListener('mousemove', function (e) {
+          cursor.style.left = e.clientX + 'px';
+          cursor.style.top = e.clientY + 'px';
+
+          cursorDot.style.left = e.clientX + 'px';
+          cursorDot.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mousedown', function () {
+          cursor.style.width = '15px';
+          cursor.style.height = '15px';
+          cursor.style.backgroundColor = 'rgba(99, 102, 241, 0.7)';
+        });
+
+        document.addEventListener('mouseup', function () {
+          cursor.style.width = '20px';
+          cursor.style.height = '20px';
+          cursor.style.backgroundColor = 'rgba(99, 102, 241, 0.5)';
+        });
+
+        // Hover effect on interactive elements
+        const interactiveElements = document.querySelectorAll(
+          'a, button, input, textarea, .code-card, .filter-button',
+        );
+
+        interactiveElements.forEach((element) => {
+          element.addEventListener('mouseenter', function () {
+            cursor.style.width = '40px';
+            cursor.style.height = '40px';
+            cursor.style.backgroundColor = 'rgba(99, 102, 241, 0.2)';
+          });
+
+          element.addEventListener('mouseleave', function () {
+            cursor.style.width = '20px';
+            cursor.style.height = '20px';
+            cursor.style.backgroundColor = 'rgba(99, 102, 241, 0.5)';
+          });
+        });
+      });
+    </script>
+
+    <script id="split-text-animation">
+      document.addEventListener('DOMContentLoaded', function () {
+        // Split text animation
+        const splitTextContainers = document.querySelectorAll('.split-text');
+
+        splitTextContainers.forEach((container) => {
+          const text = container.textContent;
+          container.textContent = '';
+
+          for (let i = 0; i < text.length; i++) {
+            const span = document.createElement('span');
+            span.textContent = text[i];
+            span.style.transitionDelay = `${i * 0.03}s`;
+            container.appendChild(span);
+          }
+        });
+
+        // Text effect demo
+        const textSplitChars = document.querySelectorAll('.text-split-char');
+
+        textSplitChars.forEach((char, index) => {
+          char.style.display = 'inline-block';
+          char.style.transition = 'transform 0.3s ease, color 0.3s ease';
+          char.style.transitionDelay = `${index * 0.03}s`;
+
+          char.addEventListener('mouseover', function () {
+            this.style.transform = 'translateY(-10px)';
+            this.style.color = '#6366f1';
+          });
+
+          char.addEventListener('mouseout', function () {
+            this.style.transform = 'translateY(0)';
+            this.style.color = '';
+          });
+        });
+      });
+    </script>
+
+    <script id="particles-animation">
+      document.addEventListener('DOMContentLoaded', function () {
+        const heroParticles = document.querySelector('.hero-particles');
+
+        // Create particles
+        for (let i = 0; i < 20; i++) {
+          const particle = document.createElement('div');
+          particle.classList.add('particle');
+
+          // Random size
+          const size = Math.random() * 80 + 20;
+          particle.style.width = `${size}px`;
+          particle.style.height = `${size}px`;
+
+          // Random position
+          const posX = Math.random() * 100;
+          const posY = Math.random() * 100;
+          particle.style.left = `${posX}%`;
+          particle.style.top = `${posY}%`;
+
+          // Random animation duration and delay
+          const duration = Math.random() * 20 + 10;
+          const delay = Math.random() * 10;
+          particle.style.animationDuration = `${duration}s`;
+          particle.style.animationDelay = `${delay}s`;
+
+          heroParticles.appendChild(particle);
+        }
+      });
+    </script>
+
+    <script id="mobile-menu-toggle">
+      document.addEventListener('DOMContentLoaded', function () {
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuToggle.addEventListener('click', function () {
+          mobileMenu.classList.toggle('hidden');
+
+          // Change icon based on menu state
+          const icon = menuToggle.querySelector('i');
+          if (mobileMenu.classList.contains('hidden')) {
+            icon.classList.remove('ri-close-line');
+            icon.classList.add('ri-menu-line');
+          } else {
+            icon.classList.remove('ri-menu-line');
+            icon.classList.add('ri-close-line');
+          }
+        });
+      });
+    </script>
+
+    <script id="filter-buttons">
+      document.addEventListener('DOMContentLoaded', function () {
+        const filterButtons = document.querySelectorAll('.filter-button');
+
+        filterButtons.forEach((button) => {
+          button.addEventListener('click', function () {
+            // Remove active class from all buttons
+            filterButtons.forEach((btn) => {
+              btn.classList.remove('active');
+            });
+
+            // Add active class to clicked button
+            this.classList.add('active');
+
+            // Filter logic would go here
+          });
+        });
+      });
+    </script>
+
+    <script id="copy-buttons">
+      document.addEventListener('DOMContentLoaded', function () {
+        const copyButtons = document.querySelectorAll('.copy-button');
+
+        copyButtons.forEach((button) => {
+          button.addEventListener('click', function () {
+            const icon = this.querySelector('i');
+            const text = this.querySelector('span');
+
+            // Change icon and text temporarily
+            icon.classList.remove('ri-file-copy-line');
+            icon.classList.add('ri-check-line');
+            text.textContent = 'Copied!';
+
+            // Reset after 2 seconds
+            setTimeout(() => {
+              icon.classList.remove('ri-check-line');
+              icon.classList.add('ri-file-copy-line');
+              text.textContent = 'Copy Code';
+            }, 2000);
+
+            // Copy logic would go here
+          });
+        });
+      });
+    </script>
+
+    <script id="perspective-demo">
+      document.addEventListener('DOMContentLoaded', function () {
+        const card = document.querySelector('.perspective-demo');
+
+        if (card) {
+          card.addEventListener('mousemove', function (e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+
+            this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+          });
+
+          card.addEventListener('mouseleave', function () {
+            this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+          });
+        }
+      });
+    </script>
+
+    <script id="hover-effect-demo">
+      document.addEventListener('DOMContentLoaded', function () {
+        const hoverDemo = document.querySelector('.hover-effect-demo');
+
+        if (hoverDemo) {
+          hoverDemo.style.position = 'relative';
+          hoverDemo.style.overflow = 'hidden';
+
+          // Create pseudo-element
+          const before = document.createElement('div');
+          before.style.position = 'absolute';
+          before.style.width = '100%';
+          before.style.height = '100%';
+          before.style.top = '0';
+          before.style.left = '0';
+          before.style.background = 'linear-gradient(45deg, #6366f1, #a855f7)';
+          before.style.transform = 'translateY(100%)';
+          before.style.transition = 'transform 0.3s ease';
+          before.style.zIndex = '-1';
+
+          hoverDemo.appendChild(before);
+
+          hoverDemo.addEventListener('mouseenter', function () {
+            before.style.transform = 'translateY(0)';
+            this.style.color = 'white';
+          });
+
+          hoverDemo.addEventListener('mouseleave', function () {
+            before.style.transform = 'translateY(100%)';
+            this.style.color = '';
+          });
+        }
+      });
+    </script>
+
+    <script id="aos-init">
+      document.addEventListener('DOMContentLoaded', function () {
+        AOS.init({
+          duration: 800,
+          easing: 'ease-out',
+          once: true,
+        });
+      });
+    </script>
+
+    <script id="nav-active">
+      document.addEventListener('DOMContentLoaded', function () {
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', function () {
+          let current = '';
+
+          sections.forEach((section) => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+
+            if (pageYOffset >= sectionTop - 200) {
+              current = section.getAttribute('id');
+            }
+          });
+
+          navLinks.forEach((link) => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').substring(1) === current) {
+              link.classList.add('active');
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

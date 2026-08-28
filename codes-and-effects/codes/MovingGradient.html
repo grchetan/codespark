@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moving Gradient</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #f0f0f0; /* For visibility */
+      }
+
+      .moving-gradient {
+        position: relative;
+        overflow: hidden;
+        background: #ffffff; /* bg-white */
+        width: 100%;
+        min-height: 400px; /* Arbitrary height for demo */
+        padding: 20px;
+      }
+
+      .gradient {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        pointer-events: none;
+        background: linear-gradient(
+          to right,
+          #eab308 30%,
+          /* from-yellow-500 */ #ca8a04 50%,
+          /* via-yellow-700 */ #ec4899 80% /* to-pink-500 */
+        );
+        opacity: 0.15;
+      }
+
+      .animated {
+        background-size: 300% auto; /* bg-[length:300%_auto] */
+        animation: bg-position 5s linear infinite;
+      }
+
+      @keyframes bg-position {
+        0% {
+          background-position: 0% 50%;
+        }
+        100% {
+          background-position: 300% 50%;
+        }
+      }
+
+      .blur-overlay {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        pointer-events: none;
+        z-index: 1;
+        filter: blur(24px); /* blur-lg, approximated */
+      }
+
+      .content {
+        position: relative;
+        z-index: 2;
+        color: #000000;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="moving-gradient">
+      <div class="gradient animated"></div>
+      <div class="blur-overlay"></div>
+      <div class="content">
+        <h1>Sample Content</h1>
+        <p>This is a placeholder for your content.</p>
+      </div>
+    </div>
+  </body>
+</html>

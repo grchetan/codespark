@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sparkles Preview (CSS Only)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #f0f0f0; /* For visibility */
+      }
+
+      .sparkles-preview {
+        height: 640px; /* h-[40rem] */
+        width: 100%;
+        background: #000000; /* bg-black */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 0.375rem; /* rounded-md */
+      }
+
+      h1 {
+        font-size: 2.25rem; /* text-3xl (36px) */
+        font-weight: 700; /* font-bold */
+        text-align: center;
+        color: #ffffff; /* text-white */
+        position: relative;
+        z-index: 20;
+      }
+
+      @media (min-width: 768px) {
+        h1 {
+          font-size: 4.5rem; /* md:text-7xl (72px) */
+        }
+      }
+
+      @media (min-width: 1024px) {
+        h1 {
+          font-size: 8rem; /* lg:text-9xl (144px) */
+        }
+      }
+
+      .gradient-container {
+        width: 640px; /* w-[40rem] */
+        height: 160px; /* h-40 */
+        position: relative;
+      }
+
+      .gradient {
+        position: absolute;
+        left: 20%; /* inset-x-20 */
+        right: 20%;
+        top: 0;
+      }
+
+      .gradient-indigo {
+        background: linear-gradient(
+          to right,
+          transparent,
+          #6366f1,
+          transparent
+        ); /* via-indigo-500 */
+      }
+
+      .gradient-sky {
+        left: 60%; /* inset-x-60 */
+        right: 60%;
+      }
+
+      .gradient-thin {
+        height: 2px; /* h-[2px] */
+        width: 75%; /* w-3/4 */
+        filter: blur(1px); /* blur-sm */
+      }
+
+      .gradient-px {
+        height: 1px; /* h-px */
+        width: 75%; /* w-3/4 */
+      }
+
+      .gradient-thick {
+        height: 5px; /* h-[5px] */
+        width: 25%; /* w-1/4 */
+        filter: blur(1px); /* blur-sm */
+      }
+
+      .sparkles {
+        width: 100%; /* w-full */
+        height: 100%; /* h-full */
+        position: relative;
+        z-index: 1;
+        opacity: 0;
+        animation: fade-in 1s forwards;
+      }
+
+      .sparkle {
+        position: absolute;
+        width: 4px; /* Between minSize (0.4) and maxSize (1) in pixels */
+        height: 4px;
+        background: #ffffff; /* particleColor */
+        border-radius: 50%; /* shape: circle */
+        opacity: 0.1;
+        animation: sparkle-move 3s linear infinite;
+      }
+
+      .sparkle:hover {
+        opacity: 1;
+        transform: scale(1.5); /* Simulate push on click */
+      }
+
+      @keyframes fade-in {
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes sparkle-move {
+        0% {
+          transform: translate(0, 0);
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate(50px, 50px); /* Approximate particle movement */
+          opacity: 0.1;
+        }
+      }
+
+      .radial-mask {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: #000000; /* bg-black */
+        mask-image: radial-gradient(350px 200px at top, transparent 20%, white);
+        -webkit-mask-image: radial-gradient(
+          350px 200px at top,
+          transparent 20%,
+          white
+        );
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sparkles-preview">
+      <h1>Mage UI</h1>
+      <div class="gradient-container">
+        <!-- Gradients -->
+        <div class="gradient gradient-indigo gradient-thin"></div>
+        <div class="gradient gradient-indigo gradient-px"></div>
+        <div class="gradient gradient-sky gradient-thick"></div>
+        <div class="gradient gradient-sky gradient-px"></div>
+        <!-- Sparkles -->
+        <div class="sparkles">
+          <div
+            class="sparkle"
+            style="left: 10%; top: 20%; animation-delay: 0s"
+          ></div>
+          <div
+            class="sparkle"
+            style="left: 30%; top: 40%; animation-delay: 0.5s"
+          ></div>
+          <div
+            class="sparkle"
+            style="left: 50%; top: 60%; animation-delay: 1s"
+          ></div>
+          <div
+            class="sparkle"
+            style="left: 70%; top: 30%; animation-delay: 1.5s"
+          ></div>
+          <div
+            class="sparkle"
+            style="left: 20%; top: 70%; animation-delay: 2s"
+          ></div>
+          <div
+            class="sparkle"
+            style="left: 80%; top: 50%; animation-delay: 2.5s"
+          ></div>
+          <!-- Add more sparkles as needed -->
+        </div>
+        <!-- Radial Gradient Mask -->
+        <div class="radial-mask"></div>
+      </div>
+    </div>
+  </body>
+</html>

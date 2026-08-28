@@ -1,0 +1,1120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeSpark - Showcase Custom Front-end Effects</title>
+
+    <!-- External CSS (Tailwind CDN hata diya, ab yeh file use hogi) -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"
+    />
+  </head>
+  <body>
+    <!-- Custom Cursor -->
+    <div class="custom-cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- ════════════════════════════
+       NAVBAR
+  ════════════════════════════ -->
+    <nav
+      class="glassmorphism fixed w-full top-0"
+      style="z-index: 50; padding: 0 1.5rem"
+    >
+      <div class="topbar-inner">
+        <!-- Logo -->
+        <a href="#" class="navbar-logo">CodeSpark</a>
+
+        <!-- Desktop Menu -->
+        <div class="navbar-desktop">
+          <a href="#home" class="nav-link active">Home</a>
+          <a href="#effects" class="nav-link">Effects</a>
+          <a href="#about" class="nav-link">About</a>
+          <a href="#contact" class="nav-link">Contact</a>
+          <button
+            class="neomorphism-button py-2 px-6"
+            style="color: var(--primary); font-weight: 500"
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Mobile Toggle -->
+        <div>
+          <button id="menu-toggle" class="navbar-mobile-btn">
+            <i class="ri-menu-line ri-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="mobile-menu glassmorphism hidden">
+        <a href="#home" class="nav-link active">Home</a>
+        <a href="#effects" class="nav-link">Effects</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#contact" class="nav-link">Contact</a>
+        <button
+          class="neomorphism-button py-2 px-6"
+          style="color: var(--primary); font-weight: 500"
+        >
+          Sign Up
+        </button>
+      </div>
+    </nav>
+
+    <!-- ════════════════════════════
+       HERO SECTION
+  ════════════════════════════ -->
+    <section id="home" class="hero-section">
+      <div class="hero-particles"></div>
+
+      <div class="hero-inner">
+        <!-- Left -->
+        <div class="hero-left" data-aos="fade-right">
+          <h1 class="hero-title">
+            <span class="split-text">Craft Beautiful</span><br />
+            <span class="split-text" style="color: var(--primary)"
+              >Frontend Effects</span
+            >
+          </h1>
+          <p class="hero-desc">
+            Discover, share and implement stunning UI effects to elevate your
+            web projects. A community-driven platform for developers to showcase
+            their creativity.
+          </p>
+          <div class="hero-buttons">
+            <button class="neomorphism-button btn-primary">
+              Explore Effects
+            </button>
+            <button class="neomorphism-button btn-secondary">
+              Share Your Code
+            </button>
+          </div>
+        </div>
+
+        <!-- Right — code preview -->
+        <div class="hero-right" data-aos="fade-left">
+          <div class="code-preview-wrap">
+            <div class="neomorphism code-preview-inner glow-border">
+              <div class="bg-code">
+                <div class="code-dots">
+                  <div class="dot-red"></div>
+                  <div class="dot-yellow"></div>
+                  <div class="dot-green"></div>
+                </div>
+                <pre
+                  style="font-size: 0.875rem; line-height: 1.6"
+                ><code><span class="text-pink-400">.hover-effect</span> <span class="text-purple-400">{</span>
+  <span class="text-blue-400">position</span>: <span class="text-green-400">relative</span>;
+  <span class="text-blue-400">overflow</span>: <span class="text-green-400">hidden</span>;
+<span class="text-purple-400">}</span>
+
+<span class="text-pink-400">.hover-effect::before</span> <span class="text-purple-400">{</span>
+  <span class="text-blue-400">content</span>: <span class="text-orange-400">''</span>;
+  <span class="text-blue-400">position</span>: <span class="text-green-400">absolute</span>;
+  <span class="text-blue-400">width</span>: <span class="text-green-400">100%</span>;
+  <span class="text-blue-400">height</span>: <span class="text-green-400">100%</span>;
+  <span class="text-blue-400">background</span>: <span class="text-green-400">linear-gradient</span>(<span class="text-orange-400">45deg</span>, <span class="text-orange-400">#6366f1</span>, <span class="text-orange-400">#a855f7</span>);
+  <span class="text-blue-400">transform</span>: <span class="text-green-400">translateY</span>(<span class="text-orange-400">100%</span>);
+  <span class="text-blue-400">transition</span>: <span class="text-green-400">transform</span> <span class="text-orange-400">0.3s ease</span>;
+<span class="text-purple-400">}</span>
+
+<span class="text-pink-400">.hover-effect:hover::before</span> <span class="text-purple-400">{</span>
+  <span class="text-blue-400">transform</span>: <span class="text-green-400">translateY</span>(<span class="text-orange-400">0</span>);
+<span class="text-purple-400">}</span></code></pre>
+              </div>
+            </div>
+            <div class="blob-bottom"></div>
+            <div class="blob-top"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════
+       EFFECTS SECTION
+  ════════════════════════════ -->
+    <section id="effects" style="padding: 5rem 1.5rem">
+      <div class="section-inner">
+        <!-- Heading -->
+        <div class="section-head" data-aos="fade-up">
+          <h2 class="section-title">Discover Effects</h2>
+          <p class="section-desc">
+            Browse our collection of handcrafted frontend effects to enhance
+            your projects. Each effect comes with ready-to-use code snippets.
+          </p>
+        </div>
+
+        <!-- Search + Filter -->
+        <div class="search-filter-row glassmorphism" data-aos="fade-up">
+          <div class="search-wrap">
+            <div class="search-icon">
+              <i class="ri-search-line"></i>
+            </div>
+            <input
+              type="text"
+              placeholder="Search effects..."
+              class="search-input w-full form-input"
+              style="padding-left: 2.5rem"
+            />
+          </div>
+          <div class="filter-row">
+            <button
+              class="filter-button neomorphism-button py-2 px-4 active"
+              style="color: #374151; font-weight: 500"
+            >
+              All
+            </button>
+            <button
+              class="filter-button neomorphism-button py-2 px-4"
+              style="color: #374151; font-weight: 500"
+            >
+              Hover
+            </button>
+            <button
+              class="filter-button neomorphism-button py-2 px-4"
+              style="color: #374151; font-weight: 500"
+            >
+              Animation
+            </button>
+            <button
+              class="filter-button neomorphism-button py-2 px-4"
+              style="color: #374151; font-weight: 500"
+            >
+              Text
+            </button>
+            <button
+              class="filter-button neomorphism-button py-2 px-4"
+              style="color: #374151; font-weight: 500"
+            >
+              Cards
+            </button>
+          </div>
+        </div>
+
+        <!-- Cards Grid -->
+        <div class="cards-grid">
+          <!-- Card 1 — Gradient Reveal -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <div class="card-preview">
+              <div
+                class="hover-effect-demo"
+                style="
+                  width: 100%;
+                  max-width: 20rem;
+                  padding: 1rem;
+                  text-align: center;
+                  background: #f5f5f7;
+                  border-radius: 0.5rem;
+                "
+              >
+                <p style="font-weight: 500">Hover Me</p>
+              </div>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Hover</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Gradient Reveal Hover</h3>
+              <p class="card-desc">
+                A smooth gradient reveal effect that transitions on hover,
+                perfect for buttons and cards.
+              </p>
+              <div class="card-footer">
+                <div class="card-actions">
+                  <button class="copy-button">
+                    <i class="ri-file-copy-line"></i>
+                    <span>Copy Code</span>
+                  </button>
+                  <button class="like-btn">
+                    <i class="ri-heart-line"></i>
+                    <span>42</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1 px-4"
+                  style="
+                    color: var(--primary);
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                  "
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 — Split Text -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div class="card-preview">
+              <div
+                class="text-effect-demo"
+                style="font-size: 1.5rem; font-weight: 700"
+              >
+                <span class="text-split-char">S</span
+                ><span class="text-split-char">p</span
+                ><span class="text-split-char">l</span>
+                <span class="text-split-char">i</span
+                ><span class="text-split-char">t</span
+                ><span class="text-split-char">&nbsp;</span>
+                <span class="text-split-char">T</span
+                ><span class="text-split-char">e</span
+                ><span class="text-split-char">x</span>
+                <span class="text-split-char">t</span>
+              </div>
+              <div class="card-tags">
+                <span class="tag">JS</span>
+                <span class="tag">Text</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Split Text Animation</h3>
+              <p class="card-desc">
+                Animate individual characters in text with custom transitions
+                for eye-catching typography.
+              </p>
+              <div class="card-footer">
+                <div class="card-actions">
+                  <button class="copy-button">
+                    <i class="ri-file-copy-line"></i><span>Copy Code</span>
+                  </button>
+                  <button class="like-btn">
+                    <i class="ri-heart-line"></i><span>78</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1 px-4"
+                  style="
+                    color: var(--primary);
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                  "
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 — Custom Cursor -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
+            <div class="card-preview">
+              <div class="cursor-effect-demo">
+                <div class="cursor-inner"></div>
+              </div>
+              <div class="card-tags">
+                <span class="tag">JS</span>
+                <span class="tag">Cursor</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Custom Cursor Follower</h3>
+              <p class="card-desc">
+                Replace the default cursor with a custom animated element that
+                follows mouse movements.
+              </p>
+              <div class="card-footer">
+                <div class="card-actions">
+                  <button class="copy-button">
+                    <i class="ri-file-copy-line"></i><span>Copy Code</span>
+                  </button>
+                  <button class="like-btn">
+                    <i class="ri-heart-line"></i><span>56</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1 px-4"
+                  style="
+                    color: var(--primary);
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                  "
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4 — 3D Card -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <div class="card-preview">
+              <div class="card-3d-demo perspective-demo">3D Card</div>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">3D</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">3D Card Tilt Effect</h3>
+              <p class="card-desc">
+                Create an interactive 3D tilt effect that responds to mouse
+                position over cards.
+              </p>
+              <div class="card-footer">
+                <div class="card-actions">
+                  <button class="copy-button">
+                    <i class="ri-file-copy-line"></i><span>Copy Code</span>
+                  </button>
+                  <button class="like-btn">
+                    <i class="ri-heart-line"></i><span>93</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1 px-4"
+                  style="
+                    color: var(--primary);
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                  "
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5 — Loaders -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div class="card-preview">
+              <div class="loader-demo">
+                <div class="loader-dot"></div>
+                <div class="loader-dot"></div>
+                <div class="loader-dot"></div>
+              </div>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Animation</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Animated Loaders</h3>
+              <p class="card-desc">
+                A collection of stylish loading animations using pure CSS for
+                better user experience.
+              </p>
+              <div class="card-footer">
+                <div class="card-actions">
+                  <button class="copy-button">
+                    <i class="ri-file-copy-line"></i><span>Copy Code</span>
+                  </button>
+                  <button class="like-btn">
+                    <i class="ri-heart-line"></i><span>64</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1 px-4"
+                  style="
+                    color: var(--primary);
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                  "
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 6 — Glassmorphism -->
+          <div
+            class="code-card neomorphism overflow-hidden"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
+            <div class="card-preview">
+              <div class="glass-demo">
+                <h4
+                  style="
+                    font-size: 1.125rem;
+                    font-weight: 500;
+                    margin-bottom: 0.5rem;
+                  "
+                >
+                  Glass Card
+                </h4>
+                <p style="font-size: 0.875rem">Modern glassmorphism effect</p>
+              </div>
+              <div class="card-tags">
+                <span class="tag">CSS</span>
+                <span class="tag">Cards</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">Glassmorphism Effect</h3>
+              <p class="card-desc">
+                Create modern frosted glass UI elements with backdrop filters
+                and transparency.
+              </p>
+              <div class="card-footer">
+                <div class="card-actions">
+                  <button class="copy-button">
+                    <i class="ri-file-copy-line"></i><span>Copy Code</span>
+                  </button>
+                  <button class="like-btn">
+                    <i class="ri-heart-line"></i><span>87</span>
+                  </button>
+                </div>
+                <button
+                  class="neomorphism-button py-1 px-4"
+                  style="
+                    color: var(--primary);
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                  "
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /cards-grid -->
+
+        <!-- Load More -->
+        <div class="load-more-wrap" data-aos="fade-up">
+          <button
+            class="neomorphism-button py-3 px-8"
+            style="color: var(--primary); font-weight: 500"
+          >
+            Load More Effects
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════
+       ABOUT SECTION
+  ════════════════════════════ -->
+    <section id="about" class="about-section">
+      <div class="section-inner">
+        <div class="section-head" data-aos="fade-up">
+          <h2 class="section-title">About CodeSpark</h2>
+          <p class="section-desc">
+            A platform built by developers, for developers. Our mission is to
+            inspire creativity and share knowledge.
+          </p>
+        </div>
+
+        <!-- Features -->
+        <div class="features-grid">
+          <div
+            class="neomorphism feature-card"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <div class="feature-icon-wrap">
+              <i class="ri-code-box-line ri-2x"></i>
+            </div>
+            <h3 class="feature-title">Share Your Code</h3>
+            <p class="feature-desc">
+              Showcase your frontend creations with the community. Get feedback
+              and recognition for your innovative solutions.
+            </p>
+          </div>
+          <div
+            class="neomorphism feature-card"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div class="feature-icon-wrap">
+              <i class="ri-download-cloud-line ri-2x"></i>
+            </div>
+            <h3 class="feature-title">Use Ready Solutions</h3>
+            <p class="feature-desc">
+              Find and implement beautiful UI effects in your projects. Save
+              time with ready-to-use code snippets.
+            </p>
+          </div>
+          <div
+            class="neomorphism feature-card"
+            data-aos="fade-up"
+            data-aos-delay="300"
+          >
+            <div class="feature-icon-wrap">
+              <i class="ri-team-line ri-2x"></i>
+            </div>
+            <h3 class="feature-title">Join Community</h3>
+            <p class="feature-desc">
+              Connect with like-minded developers. Learn, collaborate, and grow
+              your skills together.
+            </p>
+          </div>
+        </div>
+
+        <!-- Why Use -->
+        <div class="neomorphism why-panel" data-aos="fade-up">
+          <div class="why-inner">
+            <div class="why-left">
+              <h3
+                style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem"
+              >
+                Why Use CodeSpark?
+              </h3>
+              <div class="why-list">
+                <div class="why-item">
+                  <div class="why-check">
+                    <i class="ri-check-line ri-lg"></i>
+                  </div>
+                  <p style="color: #374151">
+                    <span style="font-weight: 500">Time-saving solutions</span>
+                    — Implement beautiful effects without starting from scratch
+                  </p>
+                </div>
+                <div class="why-item">
+                  <div class="why-check">
+                    <i class="ri-check-line ri-lg"></i>
+                  </div>
+                  <p style="color: #374151">
+                    <span style="font-weight: 500">Learning resource</span> —
+                    Study code from experienced developers
+                  </p>
+                </div>
+                <div class="why-item">
+                  <div class="why-check">
+                    <i class="ri-check-line ri-lg"></i>
+                  </div>
+                  <p style="color: #374151">
+                    <span style="font-weight: 500">Community feedback</span> —
+                    Get insights and improvements for your code
+                  </p>
+                </div>
+                <div class="why-item">
+                  <div class="why-check">
+                    <i class="ri-check-line ri-lg"></i>
+                  </div>
+                  <p style="color: #374151">
+                    <span style="font-weight: 500">Portfolio building</span> —
+                    Showcase your skills to potential employers
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Signup form -->
+            <div class="why-right">
+              <div class="signup-form-wrap glassmorphism">
+                <h4
+                  style="
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    margin-bottom: 1rem;
+                  "
+                >
+                  Join Our Community
+                </h4>
+                <p style="color: #374151; margin-bottom: 1.5rem">
+                  Sign up today and become part of our growing community of
+                  creative developers.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 1rem">
+                  <div>
+                    <label class="form-label">Email</label>
+                    <input
+                      type="email"
+                      class="search-input form-input"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label">Password</label>
+                    <input
+                      type="password"
+                      class="search-input form-input"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <div class="checkbox-row">
+                    <label class="custom-checkbox">
+                      <input type="checkbox" />
+                      <span class="checkbox-mark"></span>
+                    </label>
+                    <span style="font-size: 0.875rem; color: #374151"
+                      >I agree to the Terms and Privacy Policy</span
+                    >
+                  </div>
+                  <button
+                    class="neomorphism-button btn-primary w-full"
+                    style="padding: 0.75rem"
+                  >
+                    Create Free Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════
+       CONTACT SECTION
+  ════════════════════════════ -->
+    <section id="contact" style="padding: 5rem 1.5rem">
+      <div class="section-inner">
+        <div class="section-head" data-aos="fade-up">
+          <h2 class="section-title">Get In Touch</h2>
+          <p class="section-desc">
+            Have questions or suggestions? We'd love to hear from you. Reach out
+            to our team.
+          </p>
+        </div>
+
+        <div class="contact-grid">
+          <!-- Contact Form -->
+          <div class="neomorphism contact-form-panel" data-aos="fade-right">
+            <h3
+              style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem"
+            >
+              Contact Us
+            </h3>
+            <form style="display: flex; flex-direction: column; gap: 1.5rem">
+              <div class="form-grid-2">
+                <div>
+                  <label class="form-label">First Name</label>
+                  <input
+                    type="text"
+                    class="search-input form-input"
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <label class="form-label">Last Name</label>
+                  <input
+                    type="text"
+                    class="search-input form-input"
+                    placeholder="Doe"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Email</label>
+                <input
+                  type="email"
+                  class="search-input form-input"
+                  placeholder="your@email.com"
+                />
+              </div>
+              <div>
+                <label class="form-label">Subject</label>
+                <input
+                  type="text"
+                  class="search-input form-input"
+                  placeholder="How can we help?"
+                />
+              </div>
+              <div>
+                <label class="form-label">Message</label>
+                <textarea
+                  rows="4"
+                  class="search-input form-input"
+                  placeholder="Your message here..."
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                class="neomorphism-button btn-primary"
+                style="width: fit-content; padding: 0.75rem 2rem"
+              >
+                Send Message
+              </button>
+            </form>
+          </div>
+
+          <!-- Right Side -->
+          <div data-aos="fade-left">
+            <!-- Connect -->
+            <div class="neomorphism connect-panel">
+              <h3
+                style="
+                  font-size: 1.5rem;
+                  font-weight: 600;
+                  margin-bottom: 1.5rem;
+                "
+              >
+                Connect With Us
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 1rem">
+                <div class="connect-item">
+                  <div class="connect-icon">
+                    <i class="ri-mail-line ri-lg"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-weight: 500">Email</h4>
+                    <p style="color: #4b5563">support@codespark.dev</p>
+                  </div>
+                </div>
+                <div class="connect-item">
+                  <div class="connect-icon">
+                    <i class="ri-map-pin-line ri-lg"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-weight: 500">Location</h4>
+                    <p style="color: #4b5563">
+                      123 Developer Street, San Francisco, CA 94107
+                    </p>
+                  </div>
+                </div>
+                <div class="connect-item">
+                  <div class="connect-icon">
+                    <i class="ri-time-line ri-lg"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-weight: 500">Working Hours</h4>
+                    <p style="color: #4b5563">
+                      Monday - Friday: 9:00 AM - 6:00 PM
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top: 2rem">
+                <h4 style="font-weight: 500; margin-bottom: 1rem">Follow Us</h4>
+                <div class="social-links">
+                  <a href="#" class="neomorphism-button social-link"
+                    ><i class="ri-github-fill ri-lg"></i
+                  ></a>
+                  <a href="#" class="neomorphism-button social-link"
+                    ><i class="ri-twitter-fill ri-lg"></i
+                  ></a>
+                  <a href="#" class="neomorphism-button social-link"
+                    ><i class="ri-linkedin-fill ri-lg"></i
+                  ></a>
+                  <a href="#" class="neomorphism-button social-link"
+                    ><i class="ri-discord-fill ri-lg"></i
+                  ></a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Newsletter -->
+            <div class="neomorphism newsletter-panel">
+              <h3
+                style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem"
+              >
+                Newsletter
+              </h3>
+              <p style="color: #374151; margin-bottom: 1.5rem">
+                Subscribe to get updates on new effects, tutorials, and
+                community events.
+              </p>
+              <div class="newsletter-form">
+                <input
+                  type="email"
+                  class="search-input newsletter-input"
+                  placeholder="your@email.com"
+                />
+                <button class="newsletter-btn">Subscribe</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════
+       FOOTER
+  ════════════════════════════ -->
+    <footer class="footer glassmorphism">
+      <div class="section-inner">
+        <div class="footer-grid">
+          <!-- Brand -->
+          <div>
+            <a href="#" class="footer-logo">CodeSpark</a>
+            <p class="footer-desc">
+              A platform for developers to discover, share, and implement
+              beautiful frontend effects.
+            </p>
+            <div class="footer-social">
+              <a href="#"><i class="ri-github-fill ri-lg"></i></a>
+              <a href="#"><i class="ri-twitter-fill ri-lg"></i></a>
+              <a href="#"><i class="ri-linkedin-fill ri-lg"></i></a>
+              <a href="#"><i class="ri-discord-fill ri-lg"></i></a>
+            </div>
+          </div>
+          <!-- Quick Links -->
+          <div>
+            <h4 class="footer-col-title">Quick Links</h4>
+            <ul class="footer-links">
+              <li><a href="#">Home</a></li>
+              <li><a href="#">Effects Gallery</a></li>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Contact</a></li>
+              <li><a href="#">Submit Effect</a></li>
+            </ul>
+          </div>
+          <!-- Resources -->
+          <div>
+            <h4 class="footer-col-title">Resources</h4>
+            <ul class="footer-links">
+              <li><a href="#">Documentation</a></li>
+              <li><a href="#">Tutorials</a></li>
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Community</a></li>
+              <li><a href="#">API</a></li>
+            </ul>
+          </div>
+          <!-- Legal -->
+          <div>
+            <h4 class="footer-col-title">Legal</h4>
+            <ul class="footer-links">
+              <li><a href="#">Terms of Service</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Cookie Policy</a></li>
+              <li><a href="#">Licensing</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p class="footer-copy">© 2025 CodeSpark. All rights reserved.</p>
+          <div class="payment-icons">
+            <i class="ri-visa-fill ri-lg"></i>
+            <i class="ri-mastercard-fill ri-lg" style="color: #ef4444"></i>
+            <i class="ri-paypal-fill ri-lg" style="color: #3b82f6"></i>
+            <i class="ri-apple-fill ri-lg"></i>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ════ SCRIPTS ════ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+    <script>
+      /* ─── AOS Init ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        AOS.init({ duration: 800, easing: 'ease-out', once: true });
+      });
+
+      /* ─── Custom Cursor ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        const cursor = document.querySelector('.custom-cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+
+        document.addEventListener('mousemove', function (e) {
+          cursor.style.left = e.clientX + 'px';
+          cursor.style.top = e.clientY + 'px';
+          cursorDot.style.left = e.clientX + 'px';
+          cursorDot.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mousedown', function () {
+          cursor.style.width = '15px';
+          cursor.style.height = '15px';
+          cursor.style.backgroundColor = 'rgba(99,102,241,0.7)';
+        });
+        document.addEventListener('mouseup', function () {
+          cursor.style.width = '20px';
+          cursor.style.height = '20px';
+          cursor.style.backgroundColor = 'rgba(99,102,241,0.5)';
+        });
+
+        document
+          .querySelectorAll(
+            'a, button, input, textarea, .code-card, .filter-button',
+          )
+          .forEach((el) => {
+            el.addEventListener('mouseenter', () => {
+              cursor.style.width = '40px';
+              cursor.style.height = '40px';
+              cursor.style.backgroundColor = 'rgba(99,102,241,0.2)';
+            });
+            el.addEventListener('mouseleave', () => {
+              cursor.style.width = '20px';
+              cursor.style.height = '20px';
+              cursor.style.backgroundColor = 'rgba(99,102,241,0.5)';
+            });
+          });
+      });
+
+      /* ─── Split Text ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.split-text').forEach((container) => {
+          const text = container.textContent;
+          container.textContent = '';
+          for (let i = 0; i < text.length; i++) {
+            const span = document.createElement('span');
+            span.textContent = text[i];
+            span.style.transitionDelay = `${i * 0.03}s`;
+            container.appendChild(span);
+          }
+        });
+
+        document.querySelectorAll('.text-split-char').forEach((char, i) => {
+          char.style.display = 'inline-block';
+          char.style.transition = 'transform 0.3s ease, color 0.3s ease';
+          char.style.transitionDelay = `${i * 0.03}s`;
+          char.addEventListener('mouseover', function () {
+            this.style.transform = 'translateY(-10px)';
+            this.style.color = '#6366f1';
+          });
+          char.addEventListener('mouseout', function () {
+            this.style.transform = 'translateY(0)';
+            this.style.color = '';
+          });
+        });
+      });
+
+      /* ─── Hero Particles ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        const heroParticles = document.querySelector('.hero-particles');
+        for (let i = 0; i < 20; i++) {
+          const p = document.createElement('div');
+          p.classList.add('particle');
+          const size = Math.random() * 80 + 20;
+          p.style.width = `${size}px`;
+          p.style.height = `${size}px`;
+          p.style.left = `${Math.random() * 100}%`;
+          p.style.top = `${Math.random() * 100}%`;
+          p.style.animationDuration = `${Math.random() * 20 + 10}s`;
+          p.style.animationDelay = `${Math.random() * 10}s`;
+          heroParticles.appendChild(p);
+        }
+      });
+
+      /* ─── Mobile Menu ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.getElementById('menu-toggle');
+        const menu = document.getElementById('mobile-menu');
+        toggle.addEventListener('click', function () {
+          menu.classList.toggle('hidden');
+          const icon = toggle.querySelector('i');
+          if (menu.classList.contains('hidden')) {
+            icon.classList.replace('ri-close-line', 'ri-menu-line');
+          } else {
+            icon.classList.replace('ri-menu-line', 'ri-close-line');
+          }
+        });
+      });
+
+      /* ─── Filter Buttons ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.filter-button').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            document
+              .querySelectorAll('.filter-button')
+              .forEach((b) => b.classList.remove('active'));
+            this.classList.add('active');
+          });
+        });
+      });
+
+      /* ─── Copy Buttons ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.copy-button').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            const icon = this.querySelector('i');
+            const text = this.querySelector('span');
+            icon.classList.replace('ri-file-copy-line', 'ri-check-line');
+            text.textContent = 'Copied!';
+            setTimeout(() => {
+              icon.classList.replace('ri-check-line', 'ri-file-copy-line');
+              text.textContent = 'Copy Code';
+            }, 2000);
+          });
+        });
+      });
+
+      /* ─── 3D Tilt Demo ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        const card = document.querySelector('.perspective-demo');
+        if (card) {
+          card.addEventListener('mousemove', function (e) {
+            const rect = this.getBoundingClientRect();
+            const rotateX = (e.clientY - rect.top - rect.height / 2) / 10;
+            const rotateY = (rect.width / 2 - (e.clientX - rect.left)) / 10;
+            this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+          });
+          card.addEventListener('mouseleave', function () {
+            this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+          });
+        }
+      });
+
+      /* ─── Hover Effect Demo ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        const hoverDemo = document.querySelector('.hover-effect-demo');
+        if (hoverDemo) {
+          hoverDemo.style.position = 'relative';
+          hoverDemo.style.overflow = 'hidden';
+          const overlay = document.createElement('div');
+          Object.assign(overlay.style, {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            top: '0',
+            left: '0',
+            zIndex: '-1',
+            background: 'linear-gradient(45deg, #6366f1, #a855f7)',
+            transform: 'translateY(100%)',
+            transition: 'transform 0.3s ease',
+          });
+          hoverDemo.appendChild(overlay);
+          hoverDemo.addEventListener('mouseenter', () => {
+            overlay.style.transform = 'translateY(0)';
+            hoverDemo.style.color = 'white';
+          });
+          hoverDemo.addEventListener('mouseleave', () => {
+            overlay.style.transform = 'translateY(100%)';
+            hoverDemo.style.color = '';
+          });
+        }
+      });
+
+      /* ─── Active Nav on Scroll ─── */
+      document.addEventListener('DOMContentLoaded', function () {
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        window.addEventListener('scroll', function () {
+          let current = '';
+          sections.forEach((s) => {
+            if (pageYOffset >= s.offsetTop - 200)
+              current = s.getAttribute('id');
+          });
+          navLinks.forEach((link) => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current)
+              link.classList.add('active');
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

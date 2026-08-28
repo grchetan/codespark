@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Trail</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        background: #f0f0f0; /* For visibility */
+      }
+
+      #trail-container {
+        position: relative;
+        overflow: hidden;
+        width: 90vw; /* w-[90vw] */
+        height: 100vh; /* h-screen */
+        margin: 0 auto;
+      }
+
+      .content {
+        display: grid;
+        place-content: center; /* place-content-center */
+        height: 100%;
+        background: #ffffff; /* bg-white */
+      }
+
+      .hover-text {
+        display: flex;
+        align-items: center; /* items-center */
+        gap: 8px; /* gap-2 */
+        font-size: 1.875rem; /* text-3xl */
+        font-weight: 700; /* font-bold */
+        text-transform: uppercase; /* uppercase */
+        color: #000000; /* text-black */
+      }
+
+      .mouse-icon {
+        width: 1.5em;
+        height: 1.5em;
+        stroke: currentColor;
+      }
+
+      .trail-image {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: auto;
+        height: 192px; /* h-48 */
+        border-radius: 0.75rem; /* rounded-xl */
+        border: 2px solid #000000; /* border-2 border-black */
+        background: #171717; /* bg-neutral-900 */
+        object-fit: cover; /* object-cover */
+        opacity: 0;
+        pointer-events: none; /* pointer-events-none */
+        will-change: transform, opacity;
+      }
+
+      @keyframes spring-in {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -25%) scale(0.5);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      @keyframes fade-out {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="trail-container">
+      <section class="content">
+        <p class="hover-text">
+          <svg
+            class="mouse-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v4m0 4v4m6-6h-4m-4 0H6"
+            />
+          </svg>
+          <span>Hover me</span>
+        </p>
+      </section>
+    </div>
+    <script>
+      const config = {
+        images: [
+          "https://images.unsplash.com/photo-1635373670332-43ea883bb081?q=80&w=2781&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          "https://images.unsplash.com/photo-1576174464184-fb78fe882bfd?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          "https://images.unsplash.com/photo-1503751071777-d2918b21bbd9?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          "https://images.unsplash.com/photo-1620428268482-cf1851a36764?q=80&w=2609&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          "https://images.unsplash.com/photo-1602212096437-d0af1ce0553e?q=80&w=2671&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          "https://images.unsplash.com/photo-1622313762347-3c09fe5f2719?q=80&w=2640&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        ],
+        renderImageBuffer: 50,
+        rotationRange: 25,
+      };
+
+      const container = document.getElementById("trail-container");
+      const lastRenderPosition = { x: 0, y: 0 };
+      let imageRenderCount = 0;
+
+      function calculateDistance(x1, y1, x2, y2) {
+        const deltaX = x2 - x1;
+        const deltaY = y2 - y1;
+        return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      }
+
+      function renderNextImage(clientX, clientY) {
+        const imageIndex = imageRenderCount % config.images.length;
+        const selector = `img[data-mouse-move-index="${imageIndex}"]`;
+        const el = document.querySelector(selector);
+
+        if (!el) return;
+
+        el.style.top = `${clientY}px`;
+        el.style.left = `${clientX}px`;
+        el.style.zIndex = imageRenderCount.toString();
+
+        const rotation = Math.random() * config.rotationRange;
+        const rotationStyle =
+          imageIndex % 2 ? `rotate(${rotation}deg)` : `rotate(-${rotation}deg)`;
+        const reverseRotation =
+          imageIndex % 2 ? `rotate(-${rotation}deg)` : `rotate(${rotation}deg)`;
+
+        el.style.animation = "none";
+        el.offsetHeight; // Trigger reflow
+        el.style.animation = `spring-in 0.5s forwards, fade-out 0.5s 5s linear forwards`;
+        el.style.transform = `translate(-50%, -50%) scale(1) ${reverseRotation}`;
+
+        // Set initial transform for spring-in animation
+        el.setAttribute("data-rotation", rotationStyle);
+
+        imageRenderCount++;
+      }
+
+      function handleMouseMove(e) {
+        const { clientX, clientY } = e;
+        const distance = calculateDistance(
+          clientX,
+          clientY,
+          lastRenderPosition.x,
+          lastRenderPosition.y
+        );
+
+        if (distance >= config.renderImageBuffer) {
+          lastRenderPosition.x = clientX;
+          lastRenderPosition.y = clientY;
+          renderNextImage(clientX, clientY);
+        }
+      }
+
+      function init() {
+        if (!container) return;
+
+        // Add images to DOM
+        config.images.forEach((img, index) => {
+          const image = document.createElement("img");
+          image.src = img;
+          image.alt = `Mouse move image ${index}`;
+          image.className = "trail-image";
+          image.dataset.mouseMoveIndex = index.toString();
+          container.appendChild(image);
+        });
+
+        // Add mouse move listener
+        container.addEventListener("mousemove", handleMouseMove);
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>

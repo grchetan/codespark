@@ -1,0 +1,337 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+.scene{
+  width:100%;min-height:560px;
+  background:#06080f;
+  border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2rem;padding:3rem 2rem;
+  font-family:'Space Grotesk',sans-serif;
+  position:relative;
+}
+.hint{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.18);
+}
+.cards-row{
+  display:flex;gap:24px;flex-wrap:wrap;justify-content:center;
+}
+.card{
+  width:220px;height:280px;
+  border-radius:20px;
+  position:relative;overflow:hidden;
+  cursor:none;
+  transform-style:preserve-3d;
+  transition:box-shadow .4s;
+}
+.card canvas{
+  position:absolute;inset:0;width:100%;height:100%;
+  border-radius:20px;pointer-events:none;
+}
+.card-body{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  justify-content:flex-end;
+  padding:22px;
+  background:transparent;
+  z-index:2;
+  border-radius:20px;
+}
+.card-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:auto;
+  backdrop-filter:blur(6px);
+}
+.card-title{
+  font-size:17px;font-weight:600;color:#fff;
+  margin-bottom:5px;line-height:1.2;
+}
+.card-sub{
+  font-size:12px;color:rgba(255,255,255,.45);
+  line-height:1.5;
+}
+.card-tag{
+  display:inline-block;margin-top:10px;
+  padding:4px 12px;border-radius:999px;
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);
+}
+.border-glow{
+  position:absolute;inset:0;border-radius:20px;z-index:3;
+  pointer-events:none;
+  border:1px solid transparent;
+  transition:border-color .3s;
+}
+</style>
+
+<div class="scene" id="scene">
+  <p class="hint">move your mouse over the cards</p>
+  <div class="cards-row" id="cardsRow">
+
+    <div class="card" data-palette="0">
+      <canvas></canvas>
+      <div class="card-body">
+        <div class="card-icon" style="background:rgba(100,180,255,.15);color:#64b4ff;">⬡</div>
+        <div class="card-title">Design System</div>
+        <div class="card-sub">Consistent tokens across every surface.</div>
+        <div class="card-tag">UI / UX</div>
+      </div>
+      <div class="border-glow"></div>
+    </div>
+
+    <div class="card" data-palette="1">
+      <canvas></canvas>
+      <div class="card-body">
+        <div class="card-icon" style="background:rgba(180,100,255,.15);color:#b46aff;">◈</div>
+        <div class="card-title">Motion Lab</div>
+        <div class="card-sub">Physics-based animations, fluid feel.</div>
+        <div class="card-tag">Animation</div>
+      </div>
+      <div class="border-glow"></div>
+    </div>
+
+    <div class="card" data-palette="2">
+      <canvas></canvas>
+      <div class="card-body">
+        <div class="card-icon" style="background:rgba(100,255,180,.15);color:#64ffb4;">⟁</div>
+        <div class="card-title">Dev Tools</div>
+        <div class="card-sub">Ship faster with the right stack.</div>
+        <div class="card-tag">Engineering</div>
+      </div>
+      <div class="border-glow"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PALETTES = [
+  { deep:'#0a1628', mid:'#1a3a6e', light:'#64b4ff', shine:'rgba(100,180,255,' },
+  { deep:'#150a28', mid:'#3a1a6e', light:'#b46aff', shine:'rgba(180,106,255,' },
+  { deep:'#0a2818', mid:'#1a6e3a', light:'#64ffb4', shine:'rgba(100,255,180,' },
+];
+
+const cards = document.querySelectorAll('.card');
+
+cards.forEach((card, ci) => {
+  const pal = PALETTES[ci % PALETTES.length];
+  const cvs = card.querySelector('canvas');
+  const ctx = cvs.getContext('2d');
+  const glow = card.querySelector('.border-glow');
+
+  let W = 0, H = 0;
+  let mx = -999, my = -999;
+  let inside = false;
+  let rotX = 0, rotY = 0, tRotX = 0, tRotY = 0;
+  let frame = 0;
+
+  // Wave grid
+  const COLS = 28, ROWS = 28;
+  let grid = [], tgrid = [];
+  for(let r=0;r<=ROWS;r++){
+    grid[r]=[];tgrid[r]=[];
+    for(let c=0;c<=COLS;c++){ grid[r][c]=0; tgrid[r][c]=0; }
+  }
+
+  function resize(){
+    const rect = card.getBoundingClientRect();
+    W = cvs.width = rect.width || 220;
+    H = cvs.height = rect.height || 280;
+  }
+  resize();
+
+  // Ripple sources
+  let ripples = [];
+
+  card.addEventListener('mouseenter', e => {
+    inside = true;
+    const r = card.getBoundingClientRect();
+    mx = e.clientX - r.left;
+    my = e.clientY - r.top;
+  });
+  card.addEventListener('mouseleave', () => {
+    inside = false;
+    tRotX = 0; tRotY = 0;
+    ripples = [];
+  });
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    mx = e.clientX - r.left;
+    my = e.clientY - r.top;
+    tRotY = ((mx / W) - 0.5) * 22;
+    tRotX = -((my / H) - 0.5) * 18;
+
+    // spawn ripple at mouse
+    if(frame % 4 === 0){
+      ripples.push({ x: mx, y: my, r: 0, life: 1, speed: 1.8 + Math.random() });
+    }
+  });
+  card.addEventListener('click', e => {
+    const r = card.getBoundingClientRect();
+    const cx = e.clientX - r.left, cy = e.clientY - r.top;
+    for(let i = 0; i < 3; i++){
+      ripples.push({ x: cx, y: cy, r: i * 8, life: 1, speed: 2.5 });
+    }
+  });
+
+  function drawWater(t){
+    ctx.clearRect(0, 0, W, H);
+
+    // Base background gradient
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, pal.deep);
+    bg.addColorStop(1, pal.mid);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Wave mesh via grid distortion
+    const cellW = W / COLS, cellH = H / ROWS;
+
+    // Update wave simulation
+    for(let r = 1; r < ROWS; r++){
+      for(let c = 1; c < COLS; c++){
+        const neighbors = grid[r-1][c] + grid[r+1][c] + grid[r][c-1] + grid[r][c+1];
+        tgrid[r][c] = (neighbors / 2 - tgrid[r][c]) * 0.96;
+      }
+    }
+    const swap = grid; grid = tgrid; tgrid = swap;
+
+    // Inject ripples into grid
+    ripples.forEach(rp => {
+      const gx = Math.floor((rp.x / W) * COLS);
+      const gy = Math.floor((rp.y / H) * ROWS);
+      for(let r = 0; r <= ROWS; r++){
+        for(let c = 0; c <= COLS; c++){
+          const dx = c - gx, dy = r - gy;
+          const d = Math.sqrt(dx*dx+dy*dy);
+          if(Math.abs(d - rp.r / (W/COLS)) < 1.5){
+            grid[Math.max(0,Math.min(ROWS,r))][Math.max(0,Math.min(COLS,c))] += rp.life * 1.8;
+          }
+        }
+      }
+    });
+
+    // Ambient wave (always on)
+    for(let r = 0; r <= ROWS; r++){
+      for(let c = 0; c <= COLS; c++){
+        const wx = (c/COLS)*Math.PI*3 - t*.04;
+        const wy = (r/ROWS)*Math.PI*2 - t*.03;
+        const ambient = Math.sin(wx + t*.02)*Math.cos(wy)*.18;
+        grid[r][c] += ambient * .06;
+      }
+    }
+
+    // Mouse proximity wave
+    if(inside && mx > 0){
+      const gx = (mx/W)*COLS, gy = (my/H)*ROWS;
+      for(let r = 0; r <= ROWS; r++){
+        for(let c = 0; c <= COLS; c++){
+          const dx = c - gx, dy = r - gy;
+          const d = Math.sqrt(dx*dx+dy*dy);
+          if(d < 3.5){
+            grid[r][c] += (1 - d/3.5) * .5 * Math.sin(t*.12);
+          }
+        }
+      }
+    }
+
+    // Draw water quads
+    for(let r = 0; r < ROWS; r++){
+      for(let c = 0; c < COLS; c++){
+        const h00 = grid[r][c];
+        const h10 = grid[r][c+1];
+        const h01 = grid[r+1][c];
+        const h11 = grid[r+1][c+1];
+        const avgH = (h00+h10+h01+h11)/4;
+        const bright = Math.max(0, Math.min(1, .08 + avgH * .38));
+
+        const x0=c*cellW, y0=r*cellH;
+        const x1=(c+1)*cellW, y1=(r+1)*cellH;
+
+        // distort corners
+        const sc = 4;
+        const px0=x0+h00*sc, py0=y0+h00*sc*.5;
+        const px1=x1+h10*sc, py1=y0+h10*sc*.5;
+        const px2=x1+h11*sc, py2=y1+h11*sc*.5;
+        const px3=x0+h01*sc, py3=y1+h01*sc*.5;
+
+        ctx.beginPath();
+        ctx.moveTo(px0,py0);
+        ctx.lineTo(px1,py1);
+        ctx.lineTo(px2,py2);
+        ctx.lineTo(px3,py3);
+        ctx.closePath();
+
+        const alpha = 0.04 + bright * 0.55;
+        ctx.fillStyle = pal.shine + alpha + ')';
+        ctx.fill();
+
+        // shimmer line on high spots
+        if(avgH > .25){
+          ctx.strokeStyle = pal.shine + (avgH*.5).toFixed(2) + ')';
+          ctx.lineWidth = .5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Caustic light spots
+    for(let i = 0; i < 6; i++){
+      const cx = W*(.15+.7*(i/6)) + Math.sin(t*.008+i*1.3)*22;
+      const cy = H*(.2+.6*((i%3)/3)) + Math.cos(t*.006+i)*18;
+      const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,30+i*8);
+      grad.addColorStop(0, pal.shine + '.07)');
+      grad.addColorStop(1, pal.shine + '0)');
+      ctx.beginPath();
+      ctx.ellipse(cx,cy,28+i*6,14+i*3,t*.003+i,0,Math.PI*2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    // Mouse spotlight
+    if(inside && mx > 0){
+      const sg = ctx.createRadialGradient(mx,my,0,mx,my,90);
+      sg.addColorStop(0, pal.shine + '.22)');
+      sg.addColorStop(1, pal.shine + '0)');
+      ctx.beginPath();
+      ctx.arc(mx,my,90,0,Math.PI*2);
+      ctx.fillStyle = sg;
+      ctx.fill();
+    }
+  }
+
+  function tick(t){
+    requestAnimationFrame(tick);
+    frame++;
+
+    // Smooth tilt
+    rotX += (tRotX - rotX) * .1;
+    rotY += (tRotY - rotY) * .1;
+    card.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${inside?1.04:1})`;
+    card.style.transition = inside ? 'transform .05s' : 'transform .6s cubic-bezier(.22,1,.36,1)';
+    card.style.boxShadow = inside
+      ? `0 24px 60px rgba(0,0,0,.6), 0 0 40px ${pal.light}33`
+      : `0 8px 30px rgba(0,0,0,.4)`;
+
+    // Border glow on hover
+    glow.style.borderColor = inside ? pal.light + '44' : 'transparent';
+
+    // Update ripples
+    ripples = ripples.filter(rp => rp.life > .01);
+    ripples.forEach(rp => {
+      rp.r += rp.speed;
+      rp.life -= .025;
+    });
+
+    drawWater(t);
+  }
+
+  requestAnimationFrame(tick);
+  window.addEventListener('resize', resize);
+});
+</script>
