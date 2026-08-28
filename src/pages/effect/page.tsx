@@ -674,23 +674,20 @@ export default function EffectDetail() {
                       </p>
                     </div>
 
-                    {/* Author Box */}
+                    {/* Official Verified Author Box */}
                     <div className="flex items-center gap-3 rounded-2xl border border-background-300/60 bg-background-50 p-4 shadow-sm">
-                      <img
-                        src={
-                          effect.author?.avatar ||
-                          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80'
-                        }
-                        alt={effect.author?.name || 'Creator'}
-                        className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-background-400 object-cover shrink-0"
-                      />
+                      <span className="grid h-10 w-10 sm:h-11 sm:w-11 place-items-center rounded-2xl bg-primary-500 text-lg font-bold text-white shadow-md shrink-0">
+                        ⚡
+                      </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-foreground-950 truncate">{effect.author?.name || 'CodeSpark Creator'}</p>
-                        <p className="text-xs text-foreground-500 truncate">{effect.author?.handle || '@creator'}</p>
+                        <p className="text-sm font-bold text-foreground-950 truncate flex items-center gap-1.5">
+                          {effect.author?.name || 'CodeSpark Official'}
+                          <i className="ri-verified-badge-fill text-primary-500 text-sm shrink-0" title="Verified Official Component" />
+                        </p>
+                        <p className="text-xs text-foreground-500 truncate">{effect.author?.handle || '@codespark'} · Official Component</p>
                       </div>
-                      <span className="text-xs text-foreground-500 shrink-0">
-                        <i className="ri-fire-line mr-1 text-primary-500" />
-                        {formatCount(effect.author?.followers || 12000)}
+                      <span className="rounded-full bg-primary-500/10 px-2.5 py-1 text-[11px] font-bold text-primary-600 border border-primary-500/20 shrink-0">
+                        Verified
                       </span>
                     </div>
 

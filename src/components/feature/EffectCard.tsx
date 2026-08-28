@@ -194,18 +194,14 @@ export default function EffectCard({
 
         {/* Bottom Actions Row */}
         <div className="mt-4 flex items-center justify-between border-t border-background-300/50 pt-3">
-          {/* Author Badge */}
-          <div className="flex items-center gap-2 min-w-0">
-            <img
-              src={
-                effect.author?.avatar ||
-                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=80'
-              }
-              alt={effect.author?.name || 'Creator'}
-              className="h-6 w-6 rounded-full object-cover border border-background-400/60 shrink-0"
-            />
-            <span className="truncate text-xs font-medium text-foreground-600">
-              {effect.author?.handle || '@maker'}
+          {/* Official Verified Author Badge */}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-primary-500 text-[10px] font-bold text-white shadow-sm shrink-0">
+              ⚡
+            </span>
+            <span className="truncate text-xs font-semibold text-foreground-800 flex items-center gap-1">
+              {effect.author?.name || 'CodeSpark Official'}
+              <i className="ri-verified-badge-fill text-primary-500 text-xs shrink-0" title="Verified Official Component" />
             </span>
           </div>
 

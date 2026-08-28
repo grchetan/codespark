@@ -8,6 +8,7 @@ export interface Creator {
   effects: number;
   bio: string;
   tags: string[];
+  verified?: boolean;
 }
 
 export interface EffectStep {
@@ -40,6 +41,7 @@ export interface Effect {
   steps?: EffectStep[];
   createdAt: string;
   interactions: string[];
+  isOfficial?: boolean;
 }
 
 export const categories: { key: string; label: string; icon: string; blurb: string }[] = [
@@ -54,146 +56,167 @@ export const categories: { key: string; label: string; icon: string; blurb: stri
   { key: 'misc', label: 'Creative', icon: 'ri-sparkling-2-line', blurb: 'Grain, blob, aurora, misc' },
 ];
 
+export const officialCreator: Creator = {
+  id: 'u_chetan',
+  name: 'CodeSpark Official',
+  handle: '@codespark',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
+  role: 'Core Effect System',
+  followers: 48200,
+  effects: 18,
+  bio: 'Official interactive UI micro-interactions created by Chetan Prajapat & CodeSpark Core.',
+  tags: ['official', 'verified', 'ui-motion', 'micro-interactions'],
+  verified: true,
+};
+
+export const founderCreator: Creator = {
+  id: 'u_chetan_founder',
+  name: 'Chetan Prajapat',
+  handle: '@chetan',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
+  role: 'Founder & Lead Architect',
+  followers: 52000,
+  effects: 18,
+  bio: 'Building the next generation of copy-paste interactive UI motion components for developers.',
+  tags: ['founder', 'verified', 'architect', 'design-engineer'],
+  verified: true,
+};
+
 export const creators: Creator[] = [
-  { id: 'c1', name: 'Mara Voss', handle: '@mara', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', role: 'Creative Developer', followers: 12840, effects: 32, bio: 'Pushing pixels and easing curves since the jQuery days.', tags: ['hover', 'cursor', 'motion'] },
-  { id: 'c2', name: 'Kenji Sato', handle: '@kenji', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80', role: 'Frontend Engineer', followers: 9420, effects: 21, bio: 'I build tiny interactions that make big interfaces feel alive.', tags: ['3d', 'cards', 'motion'] },
-  { id: 'c3', name: 'Ava Laurent', handle: '@ava', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80', role: 'Motion Designer', followers: 18730, effects: 47, bio: 'Type is a playground. Most of my work lives between two keyframes.', tags: ['text', 'transition', 'creative'] },
-  { id: 'c4', name: 'Dimitri Okafor', handle: '@dimi', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80', role: 'UI Engineer', followers: 6120, effects: 15, bio: 'Loaders, states and micro-moments. Performance obsessed.', tags: ['loader', 'hover', 'cards'] },
-  { id: 'c5', name: 'Noor Haddad', handle: '@noor', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&h=120&q=80', role: 'Design Engineer', followers: 22300, effects: 58, bio: 'Where design systems meet the canvas. I ship the in-between.', tags: ['cards', 'cursor', 'text'] },
-  { id: 'c6', name: 'Theo Marchand', handle: '@theo', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&h=120&q=80', role: 'Creative Coder', followers: 7910, effects: 26, bio: 'Shaders by night, semantic HTML by day.', tags: ['creative', '3d', 'transition'] },
+  officialCreator,
+  founderCreator
 ];
 
 export const effects: Effect[] = [
   {
     id: 'e1', slug: 'magnetic-button', name: 'Magnetic Button', category: 'hover', categoryLabel: 'Hover',
     description: 'A CTA that is subtly pulled toward your cursor — the button leans in just before you commit.',
-    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    image: '',
     tags: ['magnetic', 'button', 'cursor', 'micro-interaction'],
-    difficulty: 'medium', license: 'MIT', likes: 4820, saves: 1730, views: 96000, author: creators[0], createdAt: '2026-08-01',
-    interactions: ['hover', 'magnetic', 'spring'],
+    difficulty: 'medium', license: 'MIT', likes: 4820, saves: 1730, views: 96000, author: officialCreator, createdAt: '2026-08-01',
+    interactions: ['hover', 'magnetic', 'spring'], isOfficial: true
   },
   {
     id: 'e2', slug: '3d-tilt-card', name: '3D Tilt Card', category: '3d', categoryLabel: '3D / Tilt',
     description: 'A perspective card that rotates on the X and Y axes as you move, with a glare highlight that follows.',
-    image: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80',
+    image: '',
     tags: ['3d', 'perspective', 'card', 'tilt'],
-    difficulty: 'medium', license: 'MIT', likes: 9310, saves: 4020, views: 210000, author: creators[1], createdAt: '2026-07-28',
-    interactions: ['hover', 'tilt', 'depth', 'glare'],
+    difficulty: 'medium', license: 'MIT', likes: 9310, saves: 4020, views: 210000, author: officialCreator, createdAt: '2026-07-28',
+    interactions: ['hover', 'tilt', 'depth', 'glare'], isOfficial: true
   },
   {
     id: 'e3', slug: 'text-scramble', name: 'Text Scramble', category: 'text', categoryLabel: 'Text',
     description: 'Characters violently scramble and settle into the final word. Perfect for hero headlines and reveals.',
-    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+    image: '',
     tags: ['text', 'scramble', 'animation', 'decoder'],
-    difficulty: 'advanced', license: 'BSD-2', likes: 7640, saves: 2980, views: 150000, author: creators[2], createdAt: '2026-08-10',
-    interactions: ['scroll', 'text', 'js'],
+    difficulty: 'advanced', license: 'MIT', likes: 7640, saves: 2980, views: 150000, author: officialCreator, createdAt: '2026-08-10',
+    interactions: ['scroll', 'text', 'js'], isOfficial: true
   },
   {
     id: 'e4', slug: 'cursor-spotlight', name: 'Cursor Spotlight', category: 'cursor', categoryLabel: 'Cursor',
     description: 'A radial spotlight that reveals the text beneath as your cursor glides across the section.',
-    image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80',
+    image: '',
     tags: ['cursor', 'spotlight', 'text', 'reveal'],
-    difficulty: 'easy', license: 'MIT', likes: 5280, saves: 1890, views: 88000, author: creators[4], createdAt: '2026-08-05',
-    interactions: ['cursor', 'hover', 'spotlight'],
+    difficulty: 'easy', license: 'MIT', likes: 5280, saves: 1890, views: 88000, author: officialCreator, createdAt: '2026-08-05',
+    interactions: ['cursor', 'hover', 'spotlight'], isOfficial: true
   },
   {
     id: 'e5', slug: 'aurora-loader', name: 'Aurora Loader', category: 'loader', categoryLabel: 'Loaders',
-    description: 'Three flowing blobs orbit a core, blending into a calm aurora while your content loads.',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
-    tags: ['loader', 'aurora', 'blur', 'css'],
-    difficulty: 'easy', license: 'MIT', likes: 3140, saves: 1210, views: 52000, author: creators[3], createdAt: '2026-08-15',
-    interactions: ['css', 'spin', 'blend'],
+    description: 'Soft blurred color blobs that rotate in opposing directions — an organic, ambient loading state.',
+    image: '',
+    tags: ['loader', 'aurora', 'blur', 'ambient', 'css-only'],
+    difficulty: 'easy', license: 'MIT', likes: 6190, saves: 2430, views: 112000, author: officialCreator, createdAt: '2026-08-12',
+    interactions: ['loader', 'ambient', 'gradient'], isOfficial: true
   },
   {
-    id: 'e6', slug: 'gradient-marquee-text', name: 'Gradient Marquee', category: 'text', categoryLabel: 'Text',
-    description: 'An infinite horizontal marquee with a shifting gradient fill — loud, confident, on-brand.',
-    image: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=800&q=80',
-    tags: ['text', 'marquee', 'gradient', 'css'],
-    difficulty: 'easy', license: 'MIT', likes: 4060, saves: 1540, views: 71000, author: creators[2], createdAt: '2026-07-20',
-    interactions: ['css', 'marquee', 'infinite'],
+    id: 'e6', slug: 'gradient-marquee', name: 'Gradient Marquee', category: 'text', categoryLabel: 'Text',
+    description: 'Dual-track marquee that scrolls infinitely in opposing directions with masked edge falloffs.',
+    image: '',
+    tags: ['marquee', 'text', 'ticker', 'infinite', 'css-only'],
+    difficulty: 'easy', license: 'MIT', likes: 4120, saves: 1490, views: 74000, author: officialCreator, createdAt: '2026-07-22',
+    interactions: ['scroll', 'infinite', 'text'], isOfficial: true
   },
   {
     id: 'e7', slug: 'ripple-button', name: 'Ripple Button', category: 'hover', categoryLabel: 'Hover',
-    description: 'A click ripple that radiates from the point of impact across a glassy button.',
-    image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80',
-    tags: ['button', 'ripple', 'click', 'css'],
-    difficulty: 'easy', license: 'MIT', likes: 2750, saves: 980, views: 44000, author: creators[3], createdAt: '2026-08-18',
-    interactions: ['click', 'ripple', 'button'],
+    description: 'Material-inspired ripple wave expanding outward from the exact coordinate where you clicked.',
+    image: '',
+    tags: ['button', 'ripple', 'click', 'physics'],
+    difficulty: 'easy', license: 'MIT', likes: 3880, saves: 1220, views: 61000, author: officialCreator, createdAt: '2026-07-15',
+    interactions: ['click', 'ripple', 'hover'], isOfficial: true
   },
   {
     id: 'e8', slug: 'spotlight-card', name: 'Spotlight Card', category: 'card', categoryLabel: 'Cards',
-    description: 'A card whose inner glow follows the mouse, illuminating a radial highlight across the surface.',
-    image: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80',
-    tags: ['card', 'spotlight', 'glow', 'cursor'],
-    difficulty: 'medium', license: 'MIT', likes: 6230, saves: 2410, views: 104000, author: creators[4], createdAt: '2026-07-31',
-    interactions: ['hover', 'glow', 'radial'],
+    description: 'The border and inner glow illuminate dynamically toward the cursor position on hover.',
+    image: '',
+    tags: ['card', 'spotlight', 'border-glow', 'cursor'],
+    difficulty: 'medium', license: 'MIT', likes: 8750, saves: 3640, views: 184000, author: officialCreator, createdAt: '2026-08-08',
+    interactions: ['hover', 'spotlight', 'glow'], isOfficial: true
   },
   {
     id: 'e9', slug: 'blob-morph', name: 'Blob Morph', category: 'misc', categoryLabel: 'Creative',
-    description: 'A liquid blob that continuously morphs between organic shapes — perfect as a soft animated backdrop.',
-    image: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=800&q=80',
-    tags: ['blob', 'morph', 'organic', 'css'],
-    difficulty: 'medium', license: 'MIT', likes: 3520, saves: 1330, views: 61000, author: creators[5], createdAt: '2026-08-08',
-    interactions: ['css', 'morph', 'infinite'],
+    description: 'Organic SVG blob morphing smoothly between random border-radius keyframes in an infinite loop.',
+    image: '',
+    tags: ['blob', 'morph', 'organic', 'shape', 'css-only'],
+    difficulty: 'medium', license: 'MIT', likes: 4530, saves: 1680, views: 79000, author: officialCreator, createdAt: '2026-08-03',
+    interactions: ['infinite', 'morph', 'ambient'], isOfficial: true
   },
   {
     id: 'e10', slug: 'page-reveal-transition', name: 'Page Reveal Transition', category: 'transition', categoryLabel: 'Transitions',
-    description: 'A curtain reveal that wipes between pages using clip-path — buttery and native-feeling.',
-    image: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80',
-    tags: ['transition', 'clip-path', 'page', 'reveal'],
-    difficulty: 'advanced', license: 'MIT', likes: 4510, saves: 1780, views: 83000, author: creators[5], createdAt: '2026-07-25',
-    interactions: ['click', 'clip-path', 'page'],
+    description: 'Curved clip-path wipe animation that smoothly expands across the viewport between route changes.',
+    image: '',
+    tags: ['transition', 'page', 'clip-path', 'reveal'],
+    difficulty: 'advanced', license: 'MIT', likes: 6920, saves: 2810, views: 134000, author: officialCreator, createdAt: '2026-07-30',
+    interactions: ['click', 'page', 'wipe'], isOfficial: true
   },
   {
-    id: 'e11', slug: 'glass-stack-cards', name: 'Glass Stack', category: 'card', categoryLabel: 'Cards',
-    description: 'Stacked frosted-glass panels that fan out and lift on hover, giving depth without clutter.',
-    image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80',
-    tags: ['card', 'glass', 'stack', 'depth'],
-    difficulty: 'medium', license: 'MIT', likes: 2980, saves: 1140, views: 49000, author: creators[1], createdAt: '2026-08-12',
-    interactions: ['hover', 'glass', 'stack'],
+    id: 'e11', slug: 'glass-stack', name: 'Glass Stack', category: 'card', categoryLabel: 'Cards',
+    description: 'Layered frosted glass cards that fan out on hover with subtle backdrop-filter blur and refraction.',
+    image: '',
+    tags: ['glass', 'stack', 'frosted', 'fan-out', 'cards'],
+    difficulty: 'medium', license: 'MIT', likes: 5840, saves: 2190, views: 104000, author: officialCreator, createdAt: '2026-08-07',
+    interactions: ['hover', 'fan-out', 'glass'], isOfficial: true
   },
   {
-    id: 'e12', slug: 'text-gradient-shimmer', name: 'Shimmer Text', category: 'text', categoryLabel: 'Text',
-    description: 'A metallic sheen sweeps across gradient text, catching the eye on logos and headers.',
-    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80',
-    tags: ['text', 'shimmer', 'gradient', 'logo'],
-    difficulty: 'easy', license: 'MIT', likes: 3890, saves: 1420, views: 67000, author: creators[2], createdAt: '2026-07-16',
-    interactions: ['css', 'shimmer', 'infinite'],
+    id: 'e12', slug: 'shimmer-text', name: 'Shimmer Text', category: 'text', categoryLabel: 'Text',
+    description: 'A metallic beam of light continuously glides across the letterforms with high contrast.',
+    image: '',
+    tags: ['text', 'shimmer', 'metallic', 'gradient', 'css-only'],
+    difficulty: 'easy', license: 'MIT', likes: 3670, saves: 1140, views: 57000, author: officialCreator, createdAt: '2026-07-18',
+    interactions: ['infinite', 'gradient', 'text'], isOfficial: true
   },
   {
-    id: 'e13', slug: 'custom-cursor-follower', name: 'Cursor Follower', category: 'cursor', categoryLabel: 'Cursor',
-    description: 'A smooth trailing dot that chases your cursor with spring physics, leaving a soft glow in its wake.',
-    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-    tags: ['cursor', 'follower', 'spring', 'glow'],
-    difficulty: 'medium', license: 'MIT', likes: 5870, saves: 2260, views: 112000, author: creators[0], createdAt: '2026-07-22',
-    interactions: ['cursor', 'spring', 'trail'],
+    id: 'e13', slug: 'cursor-follower', name: 'Cursor Follower', category: 'cursor', categoryLabel: 'Cursor',
+    description: 'A smooth trailing dot with spring physics that expands when hovering over interactive elements.',
+    image: '',
+    tags: ['cursor', 'follower', 'spring', 'smooth', 'trailing'],
+    difficulty: 'medium', license: 'MIT', likes: 7210, saves: 3050, views: 147000, author: officialCreator, createdAt: '2026-08-02',
+    interactions: ['cursor', 'trailing', 'spring'], isOfficial: true
   },
   {
-    id: 'e14', slug: 'skeleton-loading', name: 'Skeleton Pulse', category: 'loader', categoryLabel: 'Loaders',
-    description: 'A shimmering skeleton that fills a card layout, giving structure while real content loads.',
-    image: 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=800&q=80',
-    tags: ['loader', 'skeleton', 'shimmer', 'state'],
-    difficulty: 'easy', license: 'MIT', likes: 2210, saves: 860, views: 38000, author: creators[3], createdAt: '2026-08-20',
-    interactions: ['css', 'shimmer', 'placeholder'],
+    id: 'e14', slug: 'skeleton-pulse', name: 'Skeleton Pulse', category: 'loader', categoryLabel: 'Loaders',
+    description: 'Content placeholder with a diagonal shimmer sweep to indicate loading data seamlessly.',
+    image: '',
+    tags: ['skeleton', 'loader', 'placeholder', 'pulse', 'css-only'],
+    difficulty: 'easy', license: 'MIT', likes: 3290, saves: 980, views: 49000, author: officialCreator, createdAt: '2026-07-12',
+    interactions: ['loader', 'shimmer', 'pulse'], isOfficial: true
   },
   {
     id: 'e15', slug: 'parallax-tilt-scene', name: 'Parallax Tilt Scene', category: '3d', categoryLabel: '3D / Tilt',
-    description: 'Multiple layers translate at different speeds as you tilt — a real sense of depth in a single element.',
-    image: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80',
-    tags: ['3d', 'parallax', 'depth', 'layers'],
-    difficulty: 'advanced', license: 'BSD-2', likes: 6920, saves: 2750, views: 139000, author: creators[1], createdAt: '2026-07-18',
-    interactions: ['hover', 'parallax', 'depth'],
+    description: 'Multi-layer foreground and background floating elements moving at different depths on mousemove.',
+    image: '',
+    tags: ['parallax', '3d', 'scene', 'multi-layer', 'tilt'],
+    difficulty: 'advanced', license: 'MIT', likes: 8430, saves: 3510, views: 176000, author: officialCreator, createdAt: '2026-08-09',
+    interactions: ['hover', 'tilt', 'parallax', 'depth'], isOfficial: true
   },
   {
-    id: 'e16', slug: 'magnetic-nav-link', name: 'Magnetic Nav Links', category: 'hover', categoryLabel: 'Hover',
-    description: 'Navigation links that breathe toward the cursor — a premium feel for header menus.',
-    image: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=800&q=80',
-    tags: ['magnetic', 'nav', 'menu', 'hover'],
-    difficulty: 'easy', license: 'MIT', likes: 1980, saves: 720, views: 33000, author: creators[0], createdAt: '2026-08-14',
-    interactions: ['hover', 'magnetic', 'nav'],
+    id: 'e16', slug: 'magnetic-nav-links', name: 'Magnetic Nav Links', category: 'hover', categoryLabel: 'Hover',
+    description: 'Navbar links that pull toward your cursor with a gliding pill indicator following beneath.',
+    image: '',
+    tags: ['nav', 'magnetic', 'pill', 'hover', 'menu'],
+    difficulty: 'medium', license: 'MIT', likes: 5120, saves: 1980, views: 92000, author: officialCreator, createdAt: '2026-08-04',
+    interactions: ['hover', 'magnetic', 'nav'], isOfficial: true
   },
 ];
 
-export const trendingEffects = effects.filter((e) => ['e2', 'e3', 'e8', 'e13', 'e15'].includes(e.id));
-export const newEffects = effects.filter((e) => ['e14', 'e7', 'e11', 'e3', 'e5', 'e9'].includes(e.id));
-export const featuredCreators = creators.filter((c) => ['c5', 'c3', 'c2', 'c1'].includes(c.id));
+export const featuredCreators: Creator[] = [founderCreator, officialCreator];
+export const trendingEffects: Effect[] = effects.slice(0, 6);

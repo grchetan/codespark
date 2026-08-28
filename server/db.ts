@@ -150,15 +150,9 @@ function seedData() {
 
   insertUser.run('u_admin_codespark', 'Chetan Prajapat', 'admin@codespark.dev', defaultPassword, 'admin', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'CodeSpark Platform Founder & Lead Architect', 18, now);
   insertUser.run('u_chetan', 'Chetan Prajapat', 'chetan@codespark.dev', defaultPassword, 'admin', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'CodeSpark Platform Founder & Lead Architect', 18, now);
-  insertUser.run('u_admin', 'Chetan Prajapat', 'admin@effekt.dev', defaultPassword, 'admin', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'CodeSpark Platform Founder & Lead Architect', 18, now);
-  insertUser.run('c1', 'Mara Voss', 'mara@codespark.dev', defaultPassword, 'member', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'Pushing pixels and easing curves since the jQuery days.', 32, '2026-07-02');
-  insertUser.run('c2', 'Kenji Sato', 'kenji@codespark.dev', defaultPassword, 'member', 'active', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80', 'I build tiny interactions that make big interfaces feel alive.', 21, '2026-07-11');
-  insertUser.run('c3', 'Ava Laurent', 'ava@codespark.dev', defaultPassword, 'member', 'active', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80', 'Type is a playground. Most of my work lives between two keyframes.', 47, '2026-07-18');
-  insertUser.run('c4', 'Dimitri Okafor', 'dimi@codespark.dev', defaultPassword, 'member', 'active', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80', 'Loaders, states and micro-moments. Performance obsessed.', 15, '2026-07-25');
-  insertUser.run('c5', 'Noor Haddad', 'noor@codespark.dev', defaultPassword, 'moderator', 'active', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&h=120&q=80', 'Where design systems meet the canvas. I ship the in-between.', 58, '2026-05-20');
-  insertUser.run('c6', 'Theo Marchand', 'theo@codespark.dev', defaultPassword, 'member', 'active', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&h=120&q=80', 'Shaders by night, semantic HTML by day.', 26, '2026-08-01');
+  insertUser.run('u_codespark', 'CodeSpark Official', 'core@codespark.dev', defaultPassword, 'admin', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'CodeSpark Core Component System', 18, now);
 
-  console.log('🌱 Seeding/Refreshing full CodeSpark effects database with step-by-step instructions...');
+  console.log('🌱 Seeding/Refreshing full CodeSpark effects database with official CodeSpark verified components...');
 
   const insertEffect = db.prepare(`
     INSERT OR REPLACE INTO effects (
@@ -174,7 +168,7 @@ function seedData() {
       description: 'A CTA that is subtly pulled toward your cursor — the button leans in just before you commit.',
       image: '',
       tags: ['magnetic', 'button', 'cursor', 'micro-interaction'], difficulty: 'medium', license: 'MIT',
-      likes: 4820, saves: 1730, views: 96000, author_id: 'c1', author_name: 'Mara Voss', author_handle: '@mara',
+      likes: 4820, saves: 1730, views: 96000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<button class="magnetic-btn">Magnetic CTA</button>`,
       css_code: `.magnetic-btn {
@@ -217,7 +211,7 @@ if (btn) {
       description: 'A perspective card that rotates on the X and Y axes as you move, with a glare highlight that follows.',
       image: '',
       tags: ['3d', 'perspective', 'card', 'tilt'], difficulty: 'medium', license: 'MIT',
-      likes: 9310, saves: 4020, views: 210000, author_id: 'c2', author_name: 'Kenji Sato', author_handle: '@kenji',
+      likes: 9310, saves: 4020, views: 210000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="tilt-card-box">
   <div class="tilt-inner">
@@ -275,7 +269,7 @@ if (card) {
       description: 'Characters violently scramble and settle into the final word. Perfect for hero headlines and reveals.',
       image: '',
       tags: ['text', 'scramble', 'animation', 'decoder'], difficulty: 'advanced', license: 'BSD-2',
-      likes: 7640, saves: 2980, views: 150000, author_id: 'c3', author_name: 'Ava Laurent', author_handle: '@ava',
+      likes: 7640, saves: 2980, views: 150000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="scramble-wrapper">
   <span class="scramble-tag">HOVER ME</span>
@@ -320,7 +314,7 @@ if (el) {
       description: 'A radial spotlight that reveals the text beneath as your cursor glides across the section.',
       image: '',
       tags: ['cursor', 'spotlight', 'text', 'reveal'], difficulty: 'easy', license: 'MIT',
-      likes: 5280, saves: 1890, views: 88000, author_id: 'c5', author_name: 'Noor Haddad', author_handle: '@noor',
+      likes: 5280, saves: 1890, views: 88000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="spotlight-box">
   <p class="spotlight-text">Move cursor to illuminate hidden interface layers.</p>
@@ -370,7 +364,7 @@ if (box) {
       description: 'Three flowing blobs orbit a core, blending into a calm aurora while your content loads.',
       image: '',
       tags: ['loader', 'aurora', 'blur', 'css'], difficulty: 'easy', license: 'MIT',
-      likes: 3140, saves: 1210, views: 52000, author_id: 'c4', author_name: 'Dimitri Okafor', author_handle: '@dimi',
+      likes: 3140, saves: 1210, views: 52000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="aurora-stage">
   <div class="blob b1"></div>
@@ -406,7 +400,7 @@ if (box) {
       description: 'An infinite horizontal marquee with a shifting gradient fill — loud, confident, on-brand.',
       image: '',
       tags: ['text', 'marquee', 'gradient', 'css'], difficulty: 'easy', license: 'MIT',
-      likes: 4060, saves: 1540, views: 71000, author_id: 'c3', author_name: 'Ava Laurent', author_handle: '@ava',
+      likes: 4060, saves: 1540, views: 71000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="marquee-track">
   <span>CODESPARK DROP ✦ INTERACTION DESIGN ✦ </span>
@@ -443,7 +437,7 @@ if (box) {
       description: 'A click ripple that radiates from the point of impact across a glassy button.',
       image: '',
       tags: ['button', 'ripple', 'click', 'css'], difficulty: 'easy', license: 'MIT',
-      likes: 2750, saves: 980, views: 44000, author_id: 'c4', author_name: 'Dimitri Okafor', author_handle: '@dimi',
+      likes: 2750, saves: 980, views: 44000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<button class="ripple-button">Click For Ripple</button>`,
       css_code: `.ripple-button {
@@ -495,7 +489,7 @@ if (btn) {
       description: 'A card whose inner glow follows the mouse, illuminating a radial highlight across the surface.',
       image: '',
       tags: ['card', 'spotlight', 'glow', 'cursor'], difficulty: 'medium', license: 'MIT',
-      likes: 6230, saves: 2410, views: 104000, author_id: 'c5', author_name: 'Noor Haddad', author_handle: '@noor',
+      likes: 6230, saves: 2410, views: 104000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="spotlight-card-demo">
   <div class="card-chip">PRO FEATURE</div>
@@ -550,7 +544,7 @@ if (card) {
       description: 'A liquid blob that continuously morphs between organic shapes — perfect as a soft animated backdrop.',
       image: '',
       tags: ['blob', 'morph', 'organic', 'css'], difficulty: 'medium', license: 'MIT',
-      likes: 3520, saves: 1330, views: 61000, author_id: 'c6', author_name: 'Theo Marchand', author_handle: '@theo',
+      likes: 3520, saves: 1330, views: 61000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="blob-stage">
   <div class="blob-item"></div>
@@ -585,7 +579,7 @@ if (card) {
       description: 'A curtain reveal that wipes between pages using clip-path — buttery and native-feeling.',
       image: '',
       tags: ['transition', 'clip-path', 'page', 'reveal'], difficulty: 'advanced', license: 'MIT',
-      likes: 4510, saves: 1780, views: 83000, author_id: 'c6', author_name: 'Theo Marchand', author_handle: '@theo',
+      likes: 4510, saves: 1780, views: 83000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="reveal-curtain-box">
   <div class="reveal-layer">HOVER TO REVEAL</div>
@@ -629,7 +623,7 @@ if (card) {
       description: 'Stacked frosted-glass panels that fan out and lift on hover, giving depth without clutter.',
       image: '',
       tags: ['card', 'glass', 'stack', 'depth'], difficulty: 'medium', license: 'MIT',
-      likes: 2980, saves: 1140, views: 49000, author_id: 'c2', author_name: 'Kenji Sato', author_handle: '@kenji',
+      likes: 2980, saves: 1140, views: 49000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="glass-stack-demo">
   <div class="glass-card">Layer 01</div>
@@ -673,7 +667,7 @@ if (card) {
       description: 'A metallic sheen sweeps across gradient text, catching the eye on logos and headers.',
       image: '',
       tags: ['text', 'shimmer', 'gradient', 'logo'], difficulty: 'easy', license: 'MIT',
-      likes: 3890, saves: 1420, views: 67000, author_id: 'c3', author_name: 'Ava Laurent', author_handle: '@ava',
+      likes: 3890, saves: 1420, views: 67000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<span class="fx-shimmer-title">CODESPARK</span>`,
       css_code: `.fx-shimmer-title {
@@ -704,7 +698,7 @@ if (card) {
       description: 'A smooth trailing dot that chases your cursor with spring physics, leaving a soft glow in its wake.',
       image: '',
       tags: ['cursor', 'follower', 'spring', 'glow'], difficulty: 'medium', license: 'MIT',
-      likes: 5870, saves: 2260, views: 112000, author_id: 'c1', author_name: 'Mara Voss', author_handle: '@mara',
+      likes: 5870, saves: 2260, views: 112000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="follower-stage">
   <div class="spring-dot"></div>
@@ -754,7 +748,7 @@ if (stage && dot) {
       description: 'A shimmering skeleton that fills a card layout, giving structure while real content loads.',
       image: '',
       tags: ['loader', 'skeleton', 'shimmer', 'state'], difficulty: 'easy', license: 'MIT',
-      likes: 2210, saves: 860, views: 38000, author_id: 'c4', author_name: 'Dimitri Okafor', author_handle: '@dimi',
+      likes: 2210, saves: 860, views: 38000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="skel-card">
   <div class="skel-bar skel-title"></div>
@@ -795,7 +789,7 @@ if (stage && dot) {
       description: 'Multiple layers translate at different speeds as you tilt — a real sense of depth in a single element.',
       image: '',
       tags: ['3d', 'parallax', 'depth', 'layers'], difficulty: 'advanced', license: 'BSD-2',
-      likes: 6920, saves: 2750, views: 139000, author_id: 'c2', author_name: 'Kenji Sato', author_handle: '@kenji',
+      likes: 6920, saves: 2750, views: 139000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<div class="parallax-scene-box">
   <div class="layer-bg">BACKGROUND</div>
@@ -851,7 +845,7 @@ if (scene && bg && fg) {
       description: 'Navigation links that breathe toward the cursor — a premium feel for header menus.',
       image: '',
       tags: ['magnetic', 'nav', 'menu', 'hover'], difficulty: 'easy', license: 'MIT',
-      likes: 1980, saves: 720, views: 33000, author_id: 'c1', author_name: 'Mara Voss', author_handle: '@mara',
+      likes: 1980, saves: 720, views: 33000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
       html_code: `<nav class="mag-nav">
   <a href="#demo" class="mag-link">Components</a>
