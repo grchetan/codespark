@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useMaintenance } from '@/context/MaintenanceContext';
 
@@ -6,16 +6,26 @@ export default function MaintenanceScreen() {
   const { login } = useAuth();
   const { enableBypass } = useMaintenance();
 
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    return localStorage.getItem('codespark_theme') === 'dark';
+  });
+
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
 
-  // Admin Bypass Modal State
+  // Admin Bypass Modal State (accessible discreetly from footer)
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminEmail, setAdminEmail] = useState('chetan@codespark.dev');
   const [adminPassword, setAdminPassword] = useState('Admin@123');
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    localStorage.setItem('codespark_theme', next ? 'dark' : 'light');
+  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,81 +61,114 @@ export default function MaintenanceScreen() {
         setShowAdminModal(false);
         window.location.reload();
       } else {
-        setAdminError(data.error || 'Access denied. Only Super Admins can bypass maintenance mode.');
+        setAdminError(data.error || 'Access denied. Super Admin credentials required.');
       }
     } catch {
-      setAdminError('Network error. Check backend connection.');
+      setAdminError('Network error. Make sure backend connection is active.');
     } finally {
       setAdminLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-between bg-background-950 text-foreground-50 px-4 py-8 sm:py-12 overflow-hidden selection:bg-primary-500 selection:text-white">
-      {/* Background Animated Grid & Glow Blobs */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(250, 246, 238, 0.2) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-        }}
-      />
-      <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-primary-500/15 blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-10 right-10 h-72 w-72 rounded-full bg-emerald-500/10 blur-[100px]" />
-
-      {/* Top Header */}
-      <header className="relative z-10 flex w-full max-w-5xl items-center justify-between">
+    <div
+      className={`min-h-screen w-full flex flex-col justify-between transition-colors duration-300 px-4 py-8 sm:py-10 select-none ${
+        isDark ? 'bg-[#0F1115] text-[#FAF6EE]' : 'bg-[#FAF6EE] text-[#0F1115]'
+      }`}
+    >
+      {/* Top Clean Header */}
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between">
+        {/* Exact Official Brand Logo */}
         <div className="flex items-center gap-2.5">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-500 text-lg font-bold text-white shadow-lg shadow-primary-500/30">
-            ⚡
+          <span
+            className={`grid h-8 w-8 place-items-center rounded-full border text-sm transition-colors ${
+              isDark ? 'border-[#FAF6EE]/20 bg-[#17191E]' : 'border-[#0F1115]/20 bg-[#FAF6EE]'
+            }`}
+          >
+            <i className="ri-sparkling-2-fill text-primary-500" />
           </span>
-          <span className="font-display text-xl font-bold tracking-tight text-white">CodeSpark</span>
+          <span
+            className={`font-display text-lg sm:text-xl font-bold tracking-tight ${
+              isDark ? 'text-[#FAF6EE]' : 'text-[#0F1115]'
+            }`}
+          >
+            CODESPARK
+          </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400 border border-amber-500/20">
-            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-            Testing / Maintenance Mode
+        {/* Right Actions: Clean Status Pill & Theme Toggle */}
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${
+              isDark
+                ? 'bg-[#17191E] text-[#FAF6EE]/80 border-[#FAF6EE]/10'
+                : 'bg-[#EDE7D9] text-[#0F1115]/80 border-[#0F1115]/10'
+            }`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-primary-500 animate-pulse" />
+            Scheduled Upgrade
           </span>
+
           <button
             type="button"
-            onClick={() => setShowAdminModal(true)}
-            className="flex items-center gap-1.5 rounded-xl border border-background-800 bg-background-900/80 px-3 py-1.5 text-xs font-semibold text-foreground-300 hover:border-primary-500 hover:text-white transition-all shadow-sm"
+            onClick={toggleTheme}
+            title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+            className={`grid h-8 w-8 place-items-center rounded-full border transition-all ${
+              isDark
+                ? 'border-[#FAF6EE]/15 bg-[#17191E] text-[#FAF6EE] hover:bg-[#20232A]'
+                : 'border-[#0F1115]/15 bg-[#FAF6EE] text-[#0F1115] hover:bg-[#EDE7D9]'
+            }`}
           >
-            <i className="ri-shield-keyhole-line text-primary-400" />
-            <span className="hidden sm:inline">Admin Bypass</span>
+            <i className={isDark ? 'ri-sun-line text-amber-400 text-sm' : 'ri-moon-line text-sm'} />
           </button>
         </div>
       </header>
 
-      {/* Main Center Content */}
-      <main className="relative z-10 my-auto flex flex-col items-center text-center max-w-2xl px-2 py-8">
-        {/* Animated Icon */}
-        <div className="relative mb-6 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-primary-500/30 blur-2xl animate-pulse" />
-          <div className="relative grid h-20 w-20 sm:h-24 sm:w-24 place-items-center rounded-3xl border border-primary-500/40 bg-background-900 text-3xl sm:text-4xl text-primary-500 shadow-2xl">
-            <i className="ri-tools-line animate-bounce" style={{ animationDuration: '2.5s' }} />
-          </div>
+      {/* Main Center Content (Clean Minimalist UI) */}
+      <main className="mx-auto my-auto flex w-full max-w-2xl flex-col items-center text-center px-4 py-12">
+        {/* Clean Center Icon Badge */}
+        <div
+          className={`mb-6 grid h-16 w-16 place-items-center rounded-2xl border shadow-sm ${
+            isDark
+              ? 'border-[#FAF6EE]/10 bg-[#17191E] text-primary-500'
+              : 'border-[#0F1115]/10 bg-[#FAF6EE] text-primary-500'
+          }`}
+        >
+          <i className="ri-sparkling-2-fill text-2xl" />
         </div>
 
-        <span className="rounded-full bg-primary-500/10 px-3.5 py-1 text-xs font-bold text-primary-400 border border-primary-500/20 uppercase tracking-widest mb-3">
-          Scheduled System Upgrade
+        <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary-500 mb-3">
+          Platform Maintenance & Upgrade
         </span>
 
-        <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight">
+        <h1
+          className={`font-display text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight ${
+            isDark ? 'text-[#FAF6EE]' : 'text-[#0F1115]'
+          }`}
+        >
           Upgrading the Engine to the Next Level
         </h1>
 
-        <p className="mt-4 text-sm sm:text-base text-foreground-300 max-w-lg leading-relaxed">
-          We're deploying high-performance interactive physics components, verified creator tools, and cloud optimizations. CodeSpark will be fully live shortly.
+        <p
+          className={`mt-4 text-xs sm:text-sm md:text-base max-w-lg leading-relaxed ${
+            isDark ? 'text-[#FAF6EE]/60' : 'text-[#0F1115]/60'
+          }`}
+        >
+          We're currently deploying high-performance interactive physics components, verified creator tools, and cloud optimizations. CodeSpark will be back online shortly.
         </p>
 
-        {/* Notify Form */}
+        {/* Email Notification Form */}
         <div className="mt-8 w-full max-w-md">
           {subscribed ? (
-            <div className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-500/10 p-4 text-sm font-semibold text-emerald-400 border border-emerald-500/30">
-              <i className="ri-checkbox-circle-fill text-lg" />
-              <span>You're on the list! We'll notify you the moment we launch.</span>
+            <div
+              className={`flex items-center justify-center gap-2 rounded-xl p-3.5 text-xs sm:text-sm font-semibold border ${
+                isDark
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                  : 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30'
+              }`}
+            >
+              <i className="ri-checkbox-circle-fill text-base" />
+              <span>You're on the list! We'll notify you as soon as we go live.</span>
             </div>
           ) : (
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
@@ -135,98 +178,137 @@ export default function MaintenanceScreen() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email for launch alert..."
                 required
-                className="input bg-background-900 border-background-800 text-white placeholder:text-foreground-500 h-12 rounded-xl text-sm flex-1 focus:border-primary-500"
+                className={`h-11 flex-1 rounded-xl px-4 text-xs sm:text-sm outline-none border transition-colors ${
+                  isDark
+                    ? 'bg-[#17191E] border-[#FAF6EE]/15 text-[#FAF6EE] placeholder:text-[#FAF6EE]/40 focus:border-primary-500'
+                    : 'bg-[#FAF6EE] border-[#0F1115]/20 text-[#0F1115] placeholder:text-[#0F1115]/40 focus:border-primary-500'
+                }`}
               />
               <button
                 type="submit"
                 disabled={subscribing}
-                className="btn btn-primary h-12 px-6 text-xs font-bold uppercase tracking-wider whitespace-nowrap rounded-xl shadow-lg shadow-primary-500/25"
+                className="btn btn-primary h-11 px-5 text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm"
               >
-                {subscribing ? <i className="ri-loader-4-line animate-spin text-base" /> : <i className="ri-notification-3-line" />}
+                {subscribing ? (
+                  <i className="ri-loader-4-line animate-spin text-sm" />
+                ) : (
+                  <i className="ri-notification-3-line text-sm" />
+                )}
                 Notify Me
               </button>
             </form>
           )}
         </div>
 
-        {/* Features preview pills */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-2 text-xs text-foreground-400">
-          <span className="flex items-center gap-1 rounded-full bg-background-900/80 px-3 py-1 border border-background-800">
-            <i className="ri-check-line text-emerald-400" /> 18+ Live Physics Effects
+        {/* Clean Highlights Badges */}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-2 text-xs">
+          <span
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 border font-medium ${
+              isDark
+                ? 'bg-[#17191E] border-[#FAF6EE]/10 text-[#FAF6EE]/70'
+                : 'bg-[#EDE7D9]/60 border-[#0F1115]/10 text-[#0F1115]/70'
+            }`}
+          >
+            <i className="ri-check-line text-emerald-500" /> 18+ Live Physics Effects
           </span>
-          <span className="flex items-center gap-1 rounded-full bg-background-900/80 px-3 py-1 border border-background-800">
-            <i className="ri-check-line text-emerald-400" /> Verified Creator Badges
+          <span
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 border font-medium ${
+              isDark
+                ? 'bg-[#17191E] border-[#FAF6EE]/10 text-[#FAF6EE]/70'
+                : 'bg-[#EDE7D9]/60 border-[#0F1115]/10 text-[#0F1115]/70'
+            }`}
+          >
+            <i className="ri-check-line text-emerald-500" /> Verified Creator Badges
           </span>
-          <span className="flex items-center gap-1 rounded-full bg-background-900/80 px-3 py-1 border border-background-800">
-            <i className="ri-check-line text-emerald-400" /> Zero Static Images
+          <span
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 border font-medium ${
+              isDark
+                ? 'bg-[#17191E] border-[#FAF6EE]/10 text-[#FAF6EE]/70'
+                : 'bg-[#EDE7D9]/60 border-[#0F1115]/10 text-[#0F1115]/70'
+            }`}
+          >
+            <i className="ri-check-line text-emerald-500" /> 100% Free & MIT Licensed
           </span>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 flex w-full max-w-5xl flex-col sm:flex-row items-center justify-between gap-3 text-xs text-foreground-500 border-t border-background-900 pt-6">
+      {/* Clean Footer with Discreet Admin Portal */}
+      <footer
+        className={`mx-auto flex w-full max-w-5xl flex-col sm:flex-row items-center justify-between gap-3 text-xs border-t pt-6 ${
+          isDark ? 'border-[#FAF6EE]/10 text-[#FAF6EE]/40' : 'border-[#0F1115]/10 text-[#0F1115]/40'
+        }`}
+      >
         <p>© 2026 CodeSpark Platform. Architecture by Chetan Prajapat.</p>
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setShowAdminModal(true)}
-            className="hover:text-primary-400 transition-colors flex items-center gap-1"
-          >
-            <i className="ri-admin-line" /> Staff / Admin Login
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowAdminModal(true)}
+          className="hover:text-primary-500 transition-colors flex items-center gap-1 opacity-60 hover:opacity-100"
+        >
+          <i className="ri-lock-line" /> Staff Portal
+        </button>
       </footer>
 
-      {/* ADMIN BYPASS MODAL */}
+      {/* Discreet Admin Login Modal */}
       {showAdminModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background-950/80 p-4 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-background-900 p-6 shadow-2xl border border-background-800 space-y-4">
-            <div className="flex items-center justify-between border-b border-background-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div
+            className={`w-full max-w-sm rounded-3xl p-6 shadow-2xl border space-y-4 ${
+              isDark ? 'bg-[#17191E] border-[#FAF6EE]/15 text-[#FAF6EE]' : 'bg-[#FAF6EE] border-[#0F1115]/20 text-[#0F1115]'
+            }`}
+          >
+            <div
+              className={`flex items-center justify-between border-b pb-3 ${
+                isDark ? 'border-[#FAF6EE]/10' : 'border-[#0F1115]/10'
+              }`}
+            >
               <div className="flex items-center gap-2">
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary-500 text-white text-xs font-bold">
-                  ⚡
+                <span className="grid h-6 w-6 place-items-center rounded-full border border-current text-xs">
+                  <i className="ri-sparkling-2-fill text-primary-500" />
                 </span>
-                <h3 className="font-display text-base font-bold text-white">Admin Bypass Access</h3>
+                <h3 className="font-display text-sm font-bold">Admin Portal</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAdminModal(false)}
-                className="text-foreground-400 hover:text-white text-lg"
+                className="opacity-60 hover:opacity-100 text-base"
               >
                 <i className="ri-close-line" />
               </button>
             </div>
 
-            <p className="text-xs text-foreground-400">
-              Enter Super Admin credentials to bypass the maintenance screen and preview/edit the platform live.
+            <p className="text-xs opacity-70">
+              Sign in with Super Admin credentials to bypass maintenance mode.
             </p>
 
             {adminError && (
-              <div className="rounded-xl bg-rose-500/10 p-3 text-xs font-semibold text-rose-400 border border-rose-500/30 flex items-center gap-2">
-                <i className="ri-error-warning-line text-base shrink-0" />
-                <span>{adminError}</span>
+              <div className="rounded-xl bg-rose-500/10 p-2.5 text-xs font-semibold text-rose-500 border border-rose-500/30">
+                {adminError}
               </div>
             )}
 
             <form onSubmit={handleAdminBypass} className="space-y-3">
               <div>
-                <label className="text-[11px] font-semibold text-foreground-300 block mb-1">Admin Email</label>
+                <label className="text-[11px] font-semibold block mb-1">Email</label>
                 <input
                   type="email"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
-                  className="input bg-background-950 border-background-800 text-white text-xs h-10"
+                  className={`input text-xs h-9 ${
+                    isDark ? 'bg-[#0F1115] border-[#FAF6EE]/20 text-[#FAF6EE]' : 'bg-white border-[#0F1115]/20'
+                  }`}
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-foreground-300 block mb-1">Password</label>
+                <label className="text-[11px] font-semibold block mb-1">Password</label>
                 <input
                   type="password"
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
-                  className="input bg-background-950 border-background-800 text-white text-xs h-10"
+                  className={`input text-xs h-9 ${
+                    isDark ? 'bg-[#0F1115] border-[#FAF6EE]/20 text-[#FAF6EE]' : 'bg-white border-[#0F1115]/20'
+                  }`}
                   required
                 />
               </div>
@@ -235,16 +317,16 @@ export default function MaintenanceScreen() {
                 <button
                   type="button"
                   onClick={() => setShowAdminModal(false)}
-                  className="btn btn-ghost h-10 text-xs flex-1 text-foreground-400"
+                  className="btn btn-secondary h-9 text-xs flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={adminLoading}
-                  className="btn btn-primary h-10 text-xs font-bold uppercase tracking-wider flex-1"
+                  className="btn btn-primary h-9 text-xs font-bold flex-1"
                 >
-                  {adminLoading ? 'Verifying...' : 'Bypass & Enter'}
+                  {adminLoading ? 'Signing in...' : 'Enter Admin'}
                 </button>
               </div>
             </form>
