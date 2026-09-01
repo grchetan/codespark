@@ -94,8 +94,8 @@ ON CONFLICT (id) DO UPDATE SET
 -- 3. Sync User Profiles
 INSERT INTO public.users (id, name, email, role, status, avatar, bio, effects_count)
 VALUES 
-  ('u_chetan', 'Chetan Prajapat', 'chetan@codespark.dev', 'admin', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'CodeSpark Platform Founder & Lead Architect', 18),
-  ('u_admin_codespark', 'Chetan Prajapat', 'admin@codespark.dev', 'admin', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'CodeSpark Platform Founder & Lead Architect', 18)
+  ('u_chetan', 'Chetan Prajapat', 'chetan@codespark.dev', 'admin', 'active', 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat', 'CodeSpark Platform Founder & Lead Architect', 18),
+  ('u_admin_codespark', 'Chetan Prajapat', 'admin@codespark.dev', 'admin', 'active', 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat', 'CodeSpark Platform Founder & Lead Architect', 18)
 ON CONFLICT (email) DO NOTHING;
 
 -- 4. Create and Configure Site Settings Table for Maintenance Mode

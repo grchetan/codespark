@@ -69,14 +69,9 @@ export interface ContactMessage {
 }
 
 export const adminUsers: AdminUser[] = [
-  { id: 'u1', name: 'Aarav Sharma', email: 'aarav@codespark.dev', role: 'member', status: 'active', joined: '2026-07-02', effects: 4, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Aarav' },
-  { id: 'u2', name: 'Priya Mehta', email: 'priya@codespark.dev', role: 'member', status: 'active', joined: '2026-07-11', effects: 7, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Priya' },
-  { id: 'u3', name: 'Rohan Verma', email: 'rohan@codespark.dev', role: 'member', status: 'banned', joined: '2026-06-18', effects: 2, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Rohan', reports: 4 },
-  { id: 'u4', name: 'Isha Kapoor', email: 'isha@codespark.dev', role: 'member', status: 'active', joined: '2026-08-01', effects: 1, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Isha' },
-  { id: 'u5', name: 'Kabir Singh', email: 'kabir@codespark.dev', role: 'moderator', status: 'active', joined: '2026-05-20', effects: 12, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Kabir' },
-  { id: 'u6', name: 'Meera Nair', email: 'meera@codespark.dev', role: 'member', status: 'pending', joined: '2026-08-22', effects: 0, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Meera' },
-  { id: 'u7', name: 'Vivaan Gupta', email: 'vivaan@codespark.dev', role: 'member', status: 'active', joined: '2026-07-28', effects: 3, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Vivaan' },
-  { id: 'u8', name: 'Chetan Prajapat', email: 'chetan@codespark.dev', role: 'admin', status: 'active', joined: '2026-03-08', effects: 24, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat' },
+  { id: 'u_admin_codespark', name: 'Chetan Prajapat', email: 'admin@codespark.dev', role: 'admin', status: 'active', joined: '2026-03-08', effects: 18, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat' },
+  { id: 'u_chetan', name: 'Chetan Prajapat', email: 'chetan@codespark.dev', role: 'admin', status: 'active', joined: '2026-03-08', effects: 18, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat' },
+  { id: 'u_codespark', name: 'CodeSpark Official', email: 'core@codespark.dev', role: 'admin', status: 'active', joined: '2026-03-08', effects: 18, avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore' },
 ];
 
 export const submissions: Submission[] = [

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, isMasterAdmin } from '@/context/AuthContext';
 import { useMaintenance } from '@/context/MaintenanceContext';
+import { supabase } from '@/lib/supabase';
 
 export default function MaintenanceScreen() {
   const { login } = useAuth();
@@ -13,14 +14,15 @@ export default function MaintenanceScreen() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'specs' | 'upcoming'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'specs'>('pipeline');
 
   // Admin Bypass Modal State (accessible discreetly from footer)
   const [showAdminModal, setShowAdminModal] = useState(false);
-  const [adminEmail, setAdminEmail] = useState('chetan@codespark.dev');
-  const [adminPassword, setAdminPassword] = useState('Admin@123');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Live Simulated Pipeline Progress Animation
   const [progress, setProgress] = useState(92);
@@ -53,6 +55,26 @@ export default function MaintenanceScreen() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setAdminError('');
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/admin',
+        },
+      });
+      if (error) {
+        setAdminError(error.message);
+      }
+    } catch (err: any) {
+      setAdminError(err.message || 'Failed to initialize Google login.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleAdminBypass = async (e: React.FormEvent) => {
     e.preventDefault();
     setAdminLoading(true);
@@ -61,11 +83,8 @@ export default function MaintenanceScreen() {
     const cleanEmail = adminEmail.trim().toLowerCase();
     const cleanPass = adminPassword.trim();
 
-    // 1. Direct Master Super Admin Bypass (Instant & reliable on Vercel & localhost)
-    if (
-      (cleanEmail === 'chetan@codespark.dev' || cleanEmail === 'admin@codespark.dev' || cleanEmail === 'admin@effekt.dev') &&
-      cleanPass === 'Admin@123'
-    ) {
+    // 1. Direct Master Super Admin Bypass for Chetan Prajapat
+    if (isMasterAdmin(cleanEmail) && cleanPass === 'Admin@123') {
       const adminUser = {
         id: 'u_chetan',
         name: 'Chetan Prajapat',
@@ -91,7 +110,7 @@ export default function MaintenanceScreen() {
 
       if (res && res.ok) {
         const data = await res.json().catch(() => null);
-        if (data && data.success && data.token && data.user?.role === 'admin') {
+        if (data && data.success && data.token && (data.user?.role === 'admin' || isMasterAdmin(data.user?.email))) {
           login(data.token, data.user);
           enableBypass();
           setShowAdminModal(false);
@@ -100,7 +119,7 @@ export default function MaintenanceScreen() {
         }
       }
 
-      setAdminError('Invalid credentials. Use Admin Email & Password (Admin@123).');
+      setAdminError('Invalid credentials. Use Chetan Admin Email & Password (Admin@123).');
     } catch {
       setAdminError('Invalid credentials. Please verify your password.');
     } finally {
@@ -186,7 +205,6 @@ export default function MaintenanceScreen() {
           >
             <i className="ri-cpu-line text-2xl animate-pulse" />
           </div>
-          {/* Subtle spinning outer orbit dots */}
           <div className="absolute -inset-1 rounded-2xl border border-dashed border-primary-500/30 animate-spin" style={{ animationDuration: '14s' }} />
         </div>
 
@@ -267,7 +285,7 @@ export default function MaintenanceScreen() {
                     </span>
                     <span className="text-emerald-500 font-bold">100%</span>
                   </div>
-                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DC CE]'}`}>
+                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DCCE]'}`}>
                     <div className="h-full bg-emerald-500 w-full rounded-full" />
                   </div>
                 </div>
@@ -281,7 +299,7 @@ export default function MaintenanceScreen() {
                     </span>
                     <span className="text-emerald-500 font-bold">100%</span>
                   </div>
-                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DC CE]'}`}>
+                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DCCE]'}`}>
                     <div className="h-full bg-emerald-500 w-full rounded-full" />
                   </div>
                 </div>
@@ -295,7 +313,7 @@ export default function MaintenanceScreen() {
                     </span>
                     <span className="text-primary-500 font-bold">{progress}%</span>
                   </div>
-                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DC CE]'}`}>
+                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DCCE]'}`}>
                     <div
                       className="h-full bg-primary-500 rounded-full transition-all duration-500"
                       style={{ width: `${progress}%` }}
@@ -382,7 +400,7 @@ export default function MaintenanceScreen() {
         </button>
       </footer>
 
-      {/* Discreet Admin Login Modal */}
+      {/* Discreet Admin Login Modal (with Google 1-Click Sign-In!) */}
       {showAdminModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
           <div
@@ -411,7 +429,7 @@ export default function MaintenanceScreen() {
             </div>
 
             <p className="text-xs opacity-70">
-              Sign in with Super Admin credentials to bypass maintenance mode.
+              Sign in with your Super Admin account to bypass maintenance mode.
             </p>
 
             {adminError && (
@@ -420,9 +438,31 @@ export default function MaintenanceScreen() {
               </div>
             )}
 
+            {/* Google 1-Click Sign In for Chetan */}
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={googleLoading}
+              className={`flex w-full items-center justify-center gap-2.5 rounded-xl border py-2.5 px-3 text-xs font-bold shadow-sm transition-all ${
+                isDark
+                  ? 'border-[#FAF6EE]/20 bg-[#222630] text-white hover:bg-[#2c313e]'
+                  : 'border-[#0F1115]/20 bg-white text-[#0F1115] hover:bg-neutral-100'
+              }`}
+            >
+              <i className="ri-google-fill text-rose-500 text-base" />
+              <span>{googleLoading ? 'Connecting Google...' : 'Continue with Google (1-Click)'}</span>
+            </button>
+
+            <div className="relative flex items-center justify-center my-1">
+              <div className="absolute inset-0 flex items-center"><div className={`w-full border-t ${isDark ? 'border-[#FAF6EE]/10' : 'border-[#0F1115]/10'}`} /></div>
+              <span className={`relative px-2 text-[10px] uppercase font-bold tracking-wider ${isDark ? 'bg-[#17191E] text-[#FAF6EE]/40' : 'bg-[#FAF6EE] text-[#0F1115]/40'}`}>
+                or with password
+              </span>
+            </div>
+
             <form onSubmit={handleAdminBypass} className="space-y-3">
               <div>
-                <label className="text-[11px] font-semibold block mb-1">Email</label>
+                <label className="text-[11px] font-semibold block mb-1">Admin Email</label>
                 <input
                   type="email"
                   value={adminEmail}

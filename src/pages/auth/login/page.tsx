@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import Reveal from '@/components/base/Reveal';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, isMasterAdmin } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
@@ -33,10 +33,7 @@ export default function LoginPage() {
     const cleanEmail = email.trim().toLowerCase();
 
     // 1. Instant Master Admin Login (Reliable on Vercel & localhost)
-    if (
-      (cleanEmail === 'chetan@codespark.dev' || cleanEmail === 'admin@codespark.dev' || cleanEmail === 'admin@effekt.dev') &&
-      password === 'Admin@123'
-    ) {
+    if (isMasterAdmin(cleanEmail) && password === 'Admin@123') {
       const adminUser = {
         id: 'u_chetan',
         name: 'Chetan Prajapat',
@@ -46,7 +43,7 @@ export default function LoginPage() {
         effects_count: 18,
       };
       login('token_admin_chetan_codespark', adminUser);
-      setSuccess('Welcome back, Chetan Prajapat! Redirecting...');
+      setSuccess('Welcome back, Chetan Prajapat! Redirecting to Admin Console...');
       setTimeout(() => {
         navigate('/admin');
       }, 700);
@@ -102,11 +99,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillCredentials = (userEmail: string, userPass: string) => {
-    setEmail(userEmail);
-    setPassword(userPass);
-    setError('');
-  };
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background-50">
@@ -137,33 +129,6 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* Demo Account Shortcut Pill */}
-              <div className="mb-5 rounded-xl border border-background-300/60 bg-background-100/70 p-3.5 text-xs text-foreground-600 space-y-2">
-                <p className="font-semibold uppercase tracking-wider text-foreground-700">Quick Test Credentials:</p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => fillCredentials('chetan@codespark.dev', 'Admin@123')}
-                    className="chip text-[11px] bg-background-50 hover:border-primary-500"
-                  >
-                    <i className="ri-shield-keyhole-line text-primary-500" /> Admin: chetan@codespark.dev
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fillCredentials('admin@codespark.dev', 'Admin@123')}
-                    className="chip text-[11px] bg-background-50 hover:border-primary-500"
-                  >
-                    <i className="ri-shield-user-line text-primary-500" /> admin@codespark.dev
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fillCredentials('mara@codespark.dev', 'Admin@123')}
-                    className="chip text-[11px] bg-background-50 hover:border-accent-500"
-                  >
-                    <i className="ri-user-smile-line text-accent-600" /> Creator: mara@codespark.dev
-                  </button>
-                </div>
-              </div>
 
               {/* OAuth Buttons (Google & GitHub) */}
               <div className="mb-5 grid grid-cols-2 gap-3">

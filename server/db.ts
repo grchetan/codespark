@@ -162,6 +162,7 @@ function seedData() {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
+  insertUser.run('u_chetan_gmail', 'Chetan Prajapat', 'chetanprajapat340@gmail.com', defaultPassword, 'admin', 'active', 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat', 'CodeSpark Platform Founder & Lead Architect', 18, now);
   insertUser.run('u_admin_codespark', 'Chetan Prajapat', 'admin@codespark.dev', defaultPassword, 'admin', 'active', 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat', 'CodeSpark Platform Founder & Lead Architect', 18, now);
   insertUser.run('u_chetan', 'Chetan Prajapat', 'chetan@codespark.dev', defaultPassword, 'admin', 'active', 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat', 'CodeSpark Platform Founder & Lead Architect', 18, now);
   insertUser.run('u_codespark', 'CodeSpark Official', 'core@codespark.dev', defaultPassword, 'admin', 'active', 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat', 'CodeSpark Core Component System', 18, now);
