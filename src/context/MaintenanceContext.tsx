@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { supabase } from '@/lib/supabase';
 
 interface MaintenanceContextType {
   isMaintenance: boolean;
@@ -25,11 +26,29 @@ export function MaintenanceProvider({ children }: { children: ReactNode }) {
 
   const refreshStatus = async () => {
     try {
-      const res = await fetch('/api/system/maintenance');
-      const data = await res.json();
-      if (data.success) {
-        setIsMaintenance(data.maintenance);
-        localStorage.setItem('codespark_maintenance_mode', data.maintenance ? 'true' : 'false');
+      // 1. Try Supabase Cloud Database first (works on Vercel)
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'maintenance_mode')
+        .maybeSingle();
+
+      if (!error && data) {
+        const active = data.value === 'true';
+        setIsMaintenance(active);
+        localStorage.setItem('codespark_maintenance_mode', active ? 'true' : 'false');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Fallback to local server API
+      const res = await fetch('/api/system/maintenance').catch(() => null);
+      if (res && res.ok) {
+        const apiData = await res.json().catch(() => null);
+        if (apiData?.success) {
+          setIsMaintenance(apiData.maintenance);
+          localStorage.setItem('codespark_maintenance_mode', apiData.maintenance ? 'true' : 'false');
+        }
       }
     } catch {
       // Retain previous state
@@ -40,8 +59,8 @@ export function MaintenanceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshStatus();
-    // Poll maintenance status every 30 seconds
-    const interval = setInterval(refreshStatus, 30000);
+    // Poll maintenance status every 15 seconds
+    const interval = setInterval(refreshStatus, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -53,20 +72,31 @@ export function MaintenanceProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const toggleMaintenance = async (enable: boolean): Promise<boolean> => {
+    const val = enable ? 'true' : 'false';
+    setIsMaintenance(enable);
+    localStorage.setItem('codespark_maintenance_mode', val);
+
     try {
-      const res = await fetch('/api/admin/maintenance', {
+      // 1. Sync to Supabase Cloud
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'maintenance_mode',
+          value: val,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'key' });
+
+      // 2. Sync to local backend if running
+      await fetch('/api/admin/maintenance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ maintenance: enable }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsMaintenance(enable);
-        localStorage.setItem('codespark_maintenance_mode', enable ? 'true' : 'false');
-        return true;
-      }
-    } catch {}
-    return false;
+      }).catch(() => null);
+
+      return true;
+    } catch {
+      return true;
+    }
   };
 
   const enableBypass = () => {

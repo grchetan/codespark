@@ -97,3 +97,23 @@ VALUES
   ('u_chetan', 'Chetan Prajapat', 'chetan@codespark.dev', 'admin', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'CodeSpark Platform Founder & Lead Architect', 18),
   ('u_admin_codespark', 'Chetan Prajapat', 'admin@codespark.dev', 'admin', 'active', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80', 'CodeSpark Platform Founder & Lead Architect', 18)
 ON CONFLICT (email) DO NOTHING;
+
+-- 4. Create and Configure Site Settings Table for Maintenance Mode
+CREATE TABLE IF NOT EXISTS public.site_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Site Settings" ON public.site_settings;
+DROP POLICY IF EXISTS "Public Insert Site Settings" ON public.site_settings;
+DROP POLICY IF EXISTS "Public Update Site Settings" ON public.site_settings;
+
+CREATE POLICY "Public Read Site Settings" ON public.site_settings FOR SELECT USING (true);
+CREATE POLICY "Public Insert Site Settings" ON public.site_settings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public Update Site Settings" ON public.site_settings FOR UPDATE USING (true);
+
+INSERT INTO public.site_settings (key, value, updated_at)
+VALUES ('maintenance_mode', 'false', NOW())
+ON CONFLICT (key) DO NOTHING;
