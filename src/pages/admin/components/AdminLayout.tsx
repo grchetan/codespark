@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/feature/Navbar';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, isMasterAdmin } from '@/context/AuthContext';
 import { useMaintenance } from '@/context/MaintenanceContext';
 
 import { supabase } from '@/lib/supabase';
@@ -140,36 +140,48 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
                 ))}
               </div>
 
-              {/* Admin Profile Box - Chetan Prajapat */}
-              <div className="rounded-2xl border border-background-300/60 bg-background-100/70 p-4 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-500 text-xl text-white shadow-md">
-                    <i className="ri-shield-star-fill" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground-950 truncate">Chetan Prajapat</p>
-                    <p className="text-[11px] font-semibold text-primary-600 uppercase tracking-wider">Super Admin</p>
+              {/* Admin Profile Box - Authenticated User */}
+              {user && (
+                <div className="rounded-2xl border border-background-300/60 bg-background-100/70 p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={
+                        isMasterAdmin(user.email)
+                          ? 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat'
+                          : user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email)}`
+                      }
+                      alt={user.name}
+                      className="h-11 w-11 rounded-full object-cover border border-background-300 bg-background-50 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-foreground-950 truncate">
+                        {isMasterAdmin(user.email) ? 'Chetan Prajapat' : user.name}
+                      </p>
+                      <p className="text-[11px] font-semibold text-primary-600 uppercase tracking-wider">
+                        {isMasterAdmin(user.email) ? 'Super Admin (Owner)' : user.role === 'admin' ? 'Administrator' : 'Moderator'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-background-300/50 space-y-2">
+                    <Link
+                      to="/effects"
+                      className="flex items-center gap-2 text-xs font-medium text-foreground-600 hover:text-foreground-950 transition-colors"
+                    >
+                      <i className="ri-eye-line text-sm" /> View Public Library
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        window.location.href = '/login';
+                      }}
+                      className="flex w-full items-center gap-2 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors text-left"
+                    >
+                      <i className="ri-logout-box-r-line text-sm" /> Sign Out
+                    </button>
                   </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-background-300/50 space-y-2">
-                  <Link
-                    to="/effects"
-                    className="flex items-center gap-2 text-xs font-medium text-foreground-600 hover:text-foreground-950 transition-colors"
-                  >
-                    <i className="ri-eye-line text-sm" /> View Public Library
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      logout();
-                      window.location.href = '/login';
-                    }}
-                    className="flex w-full items-center gap-2 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors text-left"
-                  >
-                    <i className="ri-logout-box-r-line text-sm" /> Sign Out
-                  </button>
-                </div>
-              </div>
+              )}
             </aside>
 
             {/* Dynamic Active Tab Content */}
