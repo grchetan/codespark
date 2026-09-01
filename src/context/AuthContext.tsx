@@ -15,13 +15,18 @@ export function isMasterAdmin(email?: string | null): boolean {
   if (!email) return false;
   const clean = email.trim().toLowerCase();
   
-  // Check private environment variable (gitignored, never exposed in public code)
+  // 1. Check private environment variable (gitignored)
   const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
     .split(',')
     .map((e: string) => e.trim().toLowerCase())
     .filter(Boolean);
 
-  return envAdmins.includes(clean);
+  if (envAdmins.includes(clean)) return true;
+
+  // 2. Unbreakable fallback for root Super Admin / Owner email
+  if (clean === 'chetanprajapat340@gmail.com') return true;
+
+  return false;
 }
 
 interface AuthContextType {
