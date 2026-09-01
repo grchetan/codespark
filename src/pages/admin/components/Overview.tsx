@@ -84,63 +84,83 @@ export default function Overview({ onNavigateTab }: { onNavigateTab?: (tab: stri
 
   return (
     <div className="space-y-6 w-full min-w-0">
-      {/* 🚀 Testing & Maintenance Mode Switch Card */}
-      <div className={`rounded-2xl border p-5 sm:p-6 shadow-sm transition-all ${
+      {/* Production Gateway & Site Availability HUD */}
+      <div className={`relative overflow-hidden rounded-2xl border p-5 sm:p-6 shadow-sm transition-all duration-300 ${
         isMaintenance 
-          ? 'bg-amber-500/10 border-amber-500/30' 
-          : 'bg-emerald-500/10 border-emerald-500/30'
+          ? 'border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-background-50 to-amber-500/5' 
+          : 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-background-50 to-emerald-500/5'
       }`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className={`grid h-10 w-10 place-items-center rounded-xl text-lg font-bold shadow-sm ${
-              isMaintenance ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="flex items-start sm:items-center gap-3.5">
+            {/* Status Beacon & Icon Container */}
+            <div className={`relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl border shadow-sm ${
+              isMaintenance
+                ? 'border-amber-500/30 bg-amber-500/10 text-amber-600'
+                : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
             }`}>
-              {isMaintenance ? '🛠️' : '🚀'}
-            </span>
-            <div>
-              <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950 flex items-center gap-2">
-                <span>{isMaintenance ? 'Testing / Maintenance Mode Active' : 'Site is LIVE & Public'}</span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${
-                  isMaintenance ? 'bg-amber-500/20 text-amber-700' : 'bg-emerald-500/20 text-emerald-700'
+              <i className={isMaintenance ? 'ri-tools-line text-2xl' : 'ri-global-line text-2xl'} />
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  isMaintenance ? 'bg-amber-400' : 'bg-emerald-400'
+                }`} />
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${
+                  isMaintenance ? 'bg-amber-500' : 'bg-emerald-500'
+                }`} />
+              </span>
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950">
+                  {isMaintenance ? 'Maintenance & Staging Sandbox' : 'Production Gateway — Public Live'}
+                </h3>
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border ${
+                  isMaintenance
+                    ? 'border-amber-500/30 bg-amber-500/15 text-amber-700'
+                    : 'border-emerald-500/30 bg-emerald-500/15 text-emerald-700'
                 }`}>
-                  {isMaintenance ? 'Testing Mode' : 'LIVE'}
+                  <span className={`h-1.5 w-1.5 rounded-full ${isMaintenance ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                  {isMaintenance ? 'Testing Mode' : 'Online'}
                 </span>
-              </h3>
-              <p className="text-xs text-foreground-600 mt-0.5">
-                {isMaintenance 
-                  ? 'Visitors see the clean maintenance pipeline HUD. You and your authorized admins can access all pages freely.' 
-                  : 'All visitors can freely browse, preview, and copy code from the catalog.'}
+              </div>
+              <p className="mt-1 text-xs text-foreground-600 leading-relaxed max-w-2xl">
+                {isMaintenance
+                  ? 'Public visitors are directed to the staging pipeline HUD. Authenticated administrators retain full bypass access.'
+                  : 'Public edge routing is open. Developers and visitors can explore, preview, and copy interactive components seamlessly.'}
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            disabled={toggling}
-            onClick={handleToggleMaintenance}
-            className={`btn h-10 px-5 text-xs font-bold shadow-sm transition-all text-white ${
-              isMaintenance 
-                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20' 
-                : 'bg-amber-600 hover:bg-amber-700 shadow-amber-500/20'
-            }`}
-          >
-            {toggling ? (
-              <span className="flex items-center gap-2">
-                <i className="ri-loader-4-line animate-spin text-sm" />
-                <span>Updating status...</span>
-              </span>
-            ) : isMaintenance ? (
-              <span className="flex items-center gap-2">
-                <i className="ri-rocket-line text-sm" />
-                <span>Turn Site LIVE</span>
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <i className="ri-tools-line text-sm" />
-                <span>Enable Testing Mode</span>
-              </span>
-            )}
-          </button>
+          {/* Action Trigger Button */}
+          <div className="flex items-center gap-3 shrink-0 self-start lg:self-center">
+            <button
+              type="button"
+              disabled={toggling}
+              onClick={handleToggleMaintenance}
+              className={`inline-flex h-10 items-center gap-2 rounded-xl px-5 text-xs font-bold transition-all shadow-sm active:scale-98 disabled:opacity-60 ${
+                isMaintenance
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                  : 'border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700'
+              }`}
+            >
+              {toggling ? (
+                <>
+                  <i className="ri-loader-4-line animate-spin text-sm" />
+                  <span>Updating Gateway...</span>
+                </>
+              ) : isMaintenance ? (
+                <>
+                  <i className="ri-broadcast-line text-sm" />
+                  <span>Deploy to Public Live</span>
+                </>
+              ) : (
+                <>
+                  <i className="ri-shield-flash-line text-sm" />
+                  <span>Switch to Testing Mode</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
