@@ -24,8 +24,8 @@ router.post('/signup', (req, res) => {
 
     const id = `u_${Date.now()}`;
     const passwordHash = bcrypt.hashSync(password, 10);
-    const now = new Date().toISOString().slice(0, 10);
-    const avatar = `https://images.unsplash.com/photo-${1534528741775 + Math.floor(Math.random() * 1000)}?auto=format&fit=crop&w=120&h=120&q=80`;
+    const cleanSeed = encodeURIComponent(name.trim() || email.trim() || 'User');
+    const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${cleanSeed}`;
 
     db.prepare(`
       INSERT INTO users (id, name, email, password_hash, role, status, avatar, bio, effects_count, created_at)

@@ -13,6 +13,7 @@ export default function MaintenanceScreen() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'specs' | 'upcoming'>('pipeline');
 
   // Admin Bypass Modal State (accessible discreetly from footer)
   const [showAdminModal, setShowAdminModal] = useState(false);
@@ -20,6 +21,15 @@ export default function MaintenanceScreen() {
   const [adminPassword, setAdminPassword] = useState('Admin@123');
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
+
+  // Live Simulated Pipeline Progress Animation
+  const [progress, setProgress] = useState(92);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((prev) => (prev >= 98 ? 92 : prev + 1));
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   const toggleTheme = () => {
     const next = !isDark;
@@ -72,12 +82,23 @@ export default function MaintenanceScreen() {
 
   return (
     <div
-      className={`min-h-screen w-full flex flex-col justify-between transition-colors duration-300 px-4 py-8 sm:py-10 select-none ${
+      className={`min-h-screen w-full flex flex-col justify-between transition-colors duration-300 px-4 py-6 sm:py-10 select-none relative overflow-x-hidden ${
         isDark ? 'bg-[#0F1115] text-[#FAF6EE]' : 'bg-[#FAF6EE] text-[#0F1115]'
       }`}
     >
+      {/* Precision Geometric Grid Background with Subtle Scanning Laser */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: isDark
+            ? 'linear-gradient(to right, #FAF6EE 1px, transparent 1px), linear-gradient(to bottom, #FAF6EE 1px, transparent 1px)'
+            : 'linear-gradient(to right, #0F1115 1px, transparent 1px), linear-gradient(to bottom, #0F1115 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      />
+
       {/* Top Clean Header */}
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between">
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between relative z-10">
         {/* Exact Official Brand Logo */}
         <div className="flex items-center gap-2.5">
           <span
@@ -105,8 +126,8 @@ export default function MaintenanceScreen() {
                 : 'bg-[#EDE7D9] text-[#0F1115]/80 border-[#0F1115]/10'
             }`}
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-primary-500 animate-pulse" />
-            Scheduled Upgrade
+            <span className="h-1.5 w-1.5 rounded-full bg-primary-500 animate-ping" />
+            System Upgrade v2.0
           </span>
 
           <button
@@ -124,21 +145,25 @@ export default function MaintenanceScreen() {
         </div>
       </header>
 
-      {/* Main Center Content (Clean Minimalist UI) */}
-      <main className="mx-auto my-auto flex w-full max-w-2xl flex-col items-center text-center px-4 py-12">
-        {/* Clean Center Icon Badge */}
-        <div
-          className={`mb-6 grid h-16 w-16 place-items-center rounded-2xl border shadow-sm ${
-            isDark
-              ? 'border-[#FAF6EE]/10 bg-[#17191E] text-primary-500'
-              : 'border-[#0F1115]/10 bg-[#FAF6EE] text-primary-500'
-          }`}
-        >
-          <i className="ri-sparkling-2-fill text-2xl" />
+      {/* Main Center Content */}
+      <main className="mx-auto my-auto flex w-full max-w-3xl flex-col items-center text-center px-2 py-8 sm:py-12 relative z-10">
+        {/* Animated Precision Circuit Icon */}
+        <div className="relative mb-6">
+          <div
+            className={`relative grid h-16 w-16 place-items-center rounded-2xl border shadow-sm ${
+              isDark
+                ? 'border-[#FAF6EE]/15 bg-[#17191E] text-primary-500'
+                : 'border-[#0F1115]/15 bg-[#FAF6EE] text-primary-500'
+            }`}
+          >
+            <i className="ri-cpu-line text-2xl animate-pulse" />
+          </div>
+          {/* Subtle spinning outer orbit dots */}
+          <div className="absolute -inset-1 rounded-2xl border border-dashed border-primary-500/30 animate-spin" style={{ animationDuration: '14s' }} />
         </div>
 
-        <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary-500 mb-3">
-          Platform Maintenance & Upgrade
+        <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary-500 mb-2">
+          Engineering In Progress
         </span>
 
         <h1
@@ -150,15 +175,127 @@ export default function MaintenanceScreen() {
         </h1>
 
         <p
-          className={`mt-4 text-xs sm:text-sm md:text-base max-w-lg leading-relaxed ${
-            isDark ? 'text-[#FAF6EE]/60' : 'text-[#0F1115]/60'
+          className={`mt-3 sm:mt-4 text-xs sm:text-sm md:text-base max-w-lg leading-relaxed ${
+            isDark ? 'text-[#FAF6EE]/65' : 'text-[#0F1115]/65'
           }`}
         >
-          We're currently deploying high-performance interactive physics components, verified creator tools, and cloud optimizations. CodeSpark will be back online shortly.
+          Deploying verified physics micro-interactions, zero-static live compilers, and cloud infrastructure. We'll be back live shortly.
         </p>
 
+        {/* 💻 INTERACTIVE UPGRADE PIPELINE HUD */}
+        <div
+          className={`mt-8 w-full rounded-2xl border text-left overflow-hidden shadow-sm transition-all ${
+            isDark ? 'bg-[#14171D] border-[#FAF6EE]/10' : 'bg-[#FAF7F2] border-[#0F1115]/10'
+          }`}
+        >
+          {/* Terminal Top Bar */}
+          <div
+            className={`flex items-center justify-between border-b px-4 py-2.5 text-xs font-mono ${
+              isDark ? 'border-[#FAF6EE]/10 bg-[#17191E]' : 'border-[#0F1115]/10 bg-[#EDE7D9]/80'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              <span className="ml-2 text-[11px] font-semibold opacity-70">engine-upgrade-daemon.sh</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab('pipeline')}
+                className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                  activeTab === 'pipeline'
+                    ? 'bg-primary-500 text-white'
+                    : 'opacity-60 hover:opacity-100'
+                }`}
+              >
+                Pipeline
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('specs')}
+                className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                  activeTab === 'specs'
+                    ? 'bg-primary-500 text-white'
+                    : 'opacity-60 hover:opacity-100'
+                }`}
+              >
+                System Specs
+              </button>
+            </div>
+          </div>
+
+          {/* Terminal Body */}
+          <div className="p-4 sm:p-5 font-mono text-xs space-y-3">
+            {activeTab === 'pipeline' ? (
+              <>
+                {/* Task 1 */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="flex items-center gap-2">
+                      <i className="ri-checkbox-circle-fill text-emerald-500" />
+                      <span>Zero-Dependency Micro-Interaction Physics</span>
+                    </span>
+                    <span className="text-emerald-500 font-bold">100%</span>
+                  </div>
+                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DC CE]'}`}>
+                    <div className="h-full bg-emerald-500 w-full rounded-full" />
+                  </div>
+                </div>
+
+                {/* Task 2 */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="flex items-center gap-2">
+                      <i className="ri-checkbox-circle-fill text-emerald-500" />
+                      <span>Dynamic Code Sandbox & Multi-Device Simulators</span>
+                    </span>
+                    <span className="text-emerald-500 font-bold">100%</span>
+                  </div>
+                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DC CE]'}`}>
+                    <div className="h-full bg-emerald-500 w-full rounded-full" />
+                  </div>
+                </div>
+
+                {/* Task 3 (Active Pulsing) */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="flex items-center gap-2">
+                      <i className="ri-loader-4-line text-primary-500 animate-spin" />
+                      <span>Cloud Database & Verified Registry Sync</span>
+                    </span>
+                    <span className="text-primary-500 font-bold">{progress}%</span>
+                  </div>
+                  <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-[#1E222A]' : 'bg-[#E2DC CE]'}`}>
+                    <div
+                      className="h-full bg-primary-500 rounded-full transition-all duration-500"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[11px]">
+                <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-[#17191E] border-[#FAF6EE]/10' : 'bg-white border-[#0F1115]/10'}`}>
+                  <p className="opacity-50 text-[10px]">FRAMEWORK</p>
+                  <p className="font-bold mt-0.5">React 18 + Vite</p>
+                </div>
+                <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-[#17191E] border-[#FAF6EE]/10' : 'bg-white border-[#0F1115]/10'}`}>
+                  <p className="opacity-50 text-[10px]">CLOUD DB</p>
+                  <p className="font-bold mt-0.5">PostgreSQL Cloud</p>
+                </div>
+                <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-[#17191E] border-[#FAF6EE]/10' : 'bg-white border-[#0F1115]/10'}`}>
+                  <p className="opacity-50 text-[10px]">LICENSE</p>
+                  <p className="font-bold mt-0.5 text-primary-500">100% Free MIT</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Email Notification Form */}
-        <div className="mt-8 w-full max-w-md">
+        <div className="mt-7 w-full max-w-md">
           {subscribed ? (
             <div
               className={`flex items-center justify-center gap-2 rounded-xl p-3.5 text-xs sm:text-sm font-semibold border ${
@@ -168,7 +305,7 @@ export default function MaintenanceScreen() {
               }`}
             >
               <i className="ri-checkbox-circle-fill text-base" />
-              <span>You're on the list! We'll notify you as soon as we go live.</span>
+              <span>You're on the list! We'll notify you the moment we launch.</span>
             </div>
           ) : (
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
@@ -180,7 +317,7 @@ export default function MaintenanceScreen() {
                 required
                 className={`h-11 flex-1 rounded-xl px-4 text-xs sm:text-sm outline-none border transition-colors ${
                   isDark
-                    ? 'bg-[#17191E] border-[#FAF6EE]/15 text-[#FAF6EE] placeholder:text-[#FAF6EE]/40 focus:border-primary-500'
+                    ? 'bg-[#14171D] border-[#FAF6EE]/15 text-[#FAF6EE] placeholder:text-[#FAF6EE]/40 focus:border-primary-500'
                     : 'bg-[#FAF6EE] border-[#0F1115]/20 text-[#0F1115] placeholder:text-[#0F1115]/40 focus:border-primary-500'
                 }`}
               />
@@ -199,42 +336,11 @@ export default function MaintenanceScreen() {
             </form>
           )}
         </div>
-
-        {/* Clean Highlights Badges */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-2 text-xs">
-          <span
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1 border font-medium ${
-              isDark
-                ? 'bg-[#17191E] border-[#FAF6EE]/10 text-[#FAF6EE]/70'
-                : 'bg-[#EDE7D9]/60 border-[#0F1115]/10 text-[#0F1115]/70'
-            }`}
-          >
-            <i className="ri-check-line text-emerald-500" /> 18+ Live Physics Effects
-          </span>
-          <span
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1 border font-medium ${
-              isDark
-                ? 'bg-[#17191E] border-[#FAF6EE]/10 text-[#FAF6EE]/70'
-                : 'bg-[#EDE7D9]/60 border-[#0F1115]/10 text-[#0F1115]/70'
-            }`}
-          >
-            <i className="ri-check-line text-emerald-500" /> Verified Creator Badges
-          </span>
-          <span
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1 border font-medium ${
-              isDark
-                ? 'bg-[#17191E] border-[#FAF6EE]/10 text-[#FAF6EE]/70'
-                : 'bg-[#EDE7D9]/60 border-[#0F1115]/10 text-[#0F1115]/70'
-            }`}
-          >
-            <i className="ri-check-line text-emerald-500" /> 100% Free & MIT Licensed
-          </span>
-        </div>
       </main>
 
-      {/* Clean Footer with Discreet Admin Portal */}
+      {/* Clean Footer with Discreet Staff Portal */}
       <footer
-        className={`mx-auto flex w-full max-w-5xl flex-col sm:flex-row items-center justify-between gap-3 text-xs border-t pt-6 ${
+        className={`mx-auto flex w-full max-w-5xl flex-col sm:flex-row items-center justify-between gap-3 text-xs border-t pt-6 relative z-10 ${
           isDark ? 'border-[#FAF6EE]/10 text-[#FAF6EE]/40' : 'border-[#0F1115]/10 text-[#0F1115]/40'
         }`}
       >
@@ -242,7 +348,7 @@ export default function MaintenanceScreen() {
         <button
           type="button"
           onClick={() => setShowAdminModal(true)}
-          className="hover:text-primary-500 transition-colors flex items-center gap-1 opacity-60 hover:opacity-100"
+          className="hover:text-primary-500 transition-colors flex items-center gap-1 opacity-50 hover:opacity-100"
         >
           <i className="ri-lock-line" /> Staff Portal
         </button>

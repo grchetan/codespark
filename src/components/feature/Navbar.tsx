@@ -142,9 +142,13 @@ export default function Navbar() {
                 className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-background-200/40"
               >
                 <img
-                  src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80'}
+                  src={
+                    user.avatar && !user.avatar.includes('unsplash')
+                      ? user.avatar
+                      : `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email || 'Chetan')}`
+                  }
                   alt={user.name}
-                  className="h-8 w-8 rounded-full border border-background-400 object-cover"
+                  className="h-8 w-8 rounded-full border border-background-400 bg-background-100 object-cover"
                 />
                 <i className={`ri-arrow-down-s-line text-xs ${actionIconClass}`} />
               </button>

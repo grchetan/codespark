@@ -103,7 +103,7 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
             status: 'active',
             joined: new Date().toISOString().slice(0, 10),
             effects: 0,
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
+            avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(newUserName.trim() || 'User')}`,
           },
           ...prev,
         ]);
@@ -200,9 +200,13 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <img
-                    src={u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80'}
+                    src={
+                      u.avatar && !u.avatar.includes('unsplash')
+                        ? u.avatar
+                        : `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.name || 'User')}`
+                    }
                     alt={u.name}
-                    className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover border border-background-300/80 shrink-0"
+                    className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover border border-background-300/80 bg-background-100 shrink-0"
                     loading="lazy"
                   />
                   <div className="min-w-0">
