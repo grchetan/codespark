@@ -13,7 +13,7 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { user, logout, isAdmin, isAuthenticated } = useAuth();
+  const { user, logout, isAdmin, isStaff, isSuperAdmin, isAuthenticated } = useAuth();
   const { savedCount } = useSaved();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -142,12 +142,17 @@ export default function Navbar() {
             )}
           </Link>
 
-          {isAdmin && (
+          {isStaff && (
             <Link
               to="/admin"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-amber-500/10 px-3 text-xs font-semibold text-amber-600 border border-amber-500/30 hover:bg-amber-500/20 transition-all"
+              className={`inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-bold border transition-all ${
+                isSuperAdmin
+                  ? 'bg-amber-500/15 text-amber-700 border-amber-500/30 hover:bg-amber-500/25'
+                  : 'bg-primary-500/10 text-primary-600 border-primary-500/30 hover:bg-primary-500/20'
+              }`}
             >
-              <i className="ri-shield-check-line text-sm" /> Admin
+              <i className={isSuperAdmin ? 'ri-vip-crown-fill text-amber-500 text-sm' : 'ri-shield-check-line text-sm'} />
+              <span>{isSuperAdmin ? 'Master Console' : user?.role === 'admin' ? 'Admin' : 'Moderation'}</span>
             </Link>
           )}
 
@@ -162,10 +167,12 @@ export default function Navbar() {
                   src={
                     user.avatar && !user.avatar.includes('unsplash')
                       ? user.avatar
-                      : `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email || 'Chetan')}`
+                      : `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email || 'User')}`
                   }
                   alt={user.name}
-                  className="h-8 w-8 rounded-full border border-background-400 bg-background-100 object-cover"
+                  className={`h-8 w-8 rounded-full border bg-background-100 object-cover ${
+                    isSuperAdmin ? 'border-amber-500 shadow-sm' : 'border-background-400'
+                  }`}
                 />
                 <i className={`ri-arrow-down-s-line text-xs ${actionIconClass}`} />
               </button>
@@ -175,18 +182,28 @@ export default function Navbar() {
                   <div className="border-b border-background-300/40 px-3 py-2.5">
                     <p className="font-semibold text-foreground-950 text-sm truncate">{user.name}</p>
                     <p className="text-xs text-foreground-400 truncate">{user.email}</p>
-                    <span className="mt-1 inline-block rounded bg-primary-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-600">
-                      {user.role}
+                    <span className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider border ${
+                      isSuperAdmin
+                        ? 'bg-amber-500/15 text-amber-700 border-amber-500/30'
+                        : user.role === 'admin'
+                          ? 'bg-primary-500/15 text-primary-600 border-primary-500/30'
+                          : user.role === 'moderator'
+                            ? 'bg-blue-500/15 text-blue-600 border-blue-500/30'
+                            : 'bg-background-200 text-foreground-700 border-background-300'
+                    }`}>
+                      {isSuperAdmin && <i className="ri-vip-crown-fill text-amber-500 text-[9px]" />}
+                      {isSuperAdmin ? 'Super Admin' : user.role}
                     </span>
                   </div>
 
                   <div className="py-1">
-                    {isAdmin && (
+                    {isStaff && (
                       <Link
                         to="/admin"
-                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-amber-600 hover:bg-amber-500/10"
+                        onClick={() => setUserDropdown(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-foreground-800 hover:bg-background-100 transition-colors"
                       >
-                        <i className="ri-shield-keyhole-line text-sm" /> Admin Console
+                        <i className="ri-shield-keyhole-line text-primary-500" /> Control Center
                       </Link>
                     )}
                     <Link
@@ -333,16 +350,30 @@ export default function Navbar() {
           {isAuthenticated && user && (
             <div className="flex items-center gap-3 rounded-xl bg-background-100 p-3.5 mb-4 border border-background-300/60">
               <img
-                src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80'}
+                src={
+                  user.avatar && !user.avatar.includes('unsplash')
+                    ? user.avatar
+                    : `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email || 'User')}`
+                }
                 alt={user.name}
-                className="h-10 w-10 rounded-full object-cover border border-background-400"
+                className={`h-10 w-10 rounded-full object-cover border bg-background-50 ${
+                  isSuperAdmin ? 'border-amber-500 shadow-sm' : 'border-background-400'
+                }`}
               />
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-sm text-foreground-950 truncate">{user.name}</p>
                 <p className="text-xs text-foreground-500 truncate">{user.email}</p>
               </div>
-              <span className="rounded bg-primary-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary-600">
-                {user.role}
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider border ${
+                isSuperAdmin
+                  ? 'bg-amber-500/15 text-amber-700 border-amber-500/30'
+                  : user.role === 'admin'
+                    ? 'bg-primary-500/15 text-primary-600 border-primary-500/30'
+                    : user.role === 'moderator'
+                      ? 'bg-blue-500/15 text-blue-600 border-blue-500/30'
+                      : 'bg-background-200 text-foreground-700 border-background-300'
+              }`}>
+                {isSuperAdmin ? 'Super Admin' : user.role}
               </span>
             </div>
           )}
@@ -355,6 +386,7 @@ export default function Navbar() {
                 <Link
                   key={l.to}
                   to={l.to}
+                  onClick={() => setOpen(false)}
                   className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                     active ? 'bg-foreground-950 text-background-50' : 'text-foreground-700 hover:bg-background-100 hover:text-foreground-950'
                   }`}
@@ -365,13 +397,19 @@ export default function Navbar() {
               );
             })}
 
-            {isAdmin && (
+            {isStaff && (
               <Link
                 to="/admin"
-                className="flex items-center justify-between rounded-xl bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-600 border border-amber-500/20"
+                onClick={() => setOpen(false)}
+                className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-bold border transition-all ${
+                  isSuperAdmin
+                    ? 'bg-amber-500/15 text-amber-700 border-amber-500/30'
+                    : 'bg-primary-500/10 text-primary-600 border-primary-500/20'
+                }`}
               >
                 <span className="flex items-center gap-2">
-                  <i className="ri-shield-keyhole-line text-lg" /> Admin Control Center
+                  <i className={isSuperAdmin ? 'ri-vip-crown-fill text-amber-500' : 'ri-shield-keyhole-line'} />
+                  <span>{isSuperAdmin ? 'Master Control Center' : 'Admin Control Center'}</span>
                 </span>
                 <i className="ri-arrow-right-s-line text-lg" />
               </Link>

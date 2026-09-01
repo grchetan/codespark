@@ -41,7 +41,7 @@ export default function LoginPage() {
         id: 'u_chetan',
         name: 'Chetan Prajapat',
         email: cleanEmail,
-        role: 'admin' as const,
+        role: 'superadmin' as const,
         avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat',
         effects_count: 18,
       };

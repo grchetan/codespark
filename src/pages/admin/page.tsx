@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import AdminLayout from './components/AdminLayout';
 import Overview from './components/Overview';
@@ -7,18 +7,32 @@ import OfficialEffects from './components/OfficialEffects';
 import Users from './components/Users';
 import Requirements from './components/Requirements';
 import Messages from './components/Messages';
-import { useAuth, isMasterAdmin } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
+import { getAccessibleTabs, hasPermission } from '@/lib/permissions';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 
 export default function AdminPage() {
-  const { user, isAuthenticated, isAdmin, loading } = useAuth();
+  const { user, isAuthenticated, isStaff, isSuperAdmin, loading } = useAuth();
   const [params, setParams] = useSearchParams();
+
+  const userRole = user?.role || 'member';
+  const allowedTabs = getAccessibleTabs(userRole);
   const initialTab = params.get('tab') || 'overview';
-  const validTabs = ['overview', 'verifications', 'official', 'users', 'requirements', 'banned', 'messages'];
-  const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : 'overview');
+
+  const [tab, setTab] = useState(() => {
+    return allowedTabs.includes(initialTab) ? initialTab : (allowedTabs[0] || 'overview');
+  });
+
+  // Keep tab in sync with permissions when user logs in/changes
+  useEffect(() => {
+    if (user && allowedTabs.length > 0 && !allowedTabs.includes(tab)) {
+      setTab(allowedTabs[0]);
+    }
+  }, [user, allowedTabs, tab]);
 
   const handleTabChange = (next: string) => {
+    if (!allowedTabs.includes(next)) return;
     setTab(next);
     if (next === 'overview') params.delete('tab');
     else params.set('tab', next);
@@ -46,13 +60,8 @@ export default function AdminPage() {
     );
   }
 
-  // 2. Strict Security Check: Only Admins, Moderators, or Master Super Admin can access
-  const hasAccess = isAuthenticated && user && (
-    isAdmin ||
-    user.role === 'admin' ||
-    user.role === 'moderator' ||
-    isMasterAdmin(user.email)
-  );
+  // 2. Strict Security Check: Only Staff (Super Admin, Admin, Moderator) can access
+  const hasAccess = isAuthenticated && isStaff && hasPermission(userRole, 'dashboard.view');
 
   if (!hasAccess) {
     return (
@@ -72,7 +81,7 @@ export default function AdminPage() {
                 Admin Clearance Required
               </h1>
               <p className="text-xs text-foreground-600 mt-2 leading-relaxed">
-                This area is strictly restricted. Only verified platform administrators and moderators appointed by Chetan Prajapat can access the Control Center.
+                This area is strictly restricted. Only verified platform administrators and moderators appointed by the platform owner can access the Control Center.
               </p>
             </div>
 
@@ -81,7 +90,7 @@ export default function AdminPage() {
                 to="/login?redirect=/admin"
                 className="btn btn-primary h-10 w-full text-xs font-bold flex items-center justify-center gap-2 shadow-md"
               >
-                <i className="ri-user-line" /> Sign In as Admin
+                <i className="ri-user-line" /> Sign In with Authorized Account
               </Link>
               <Link
                 to="/effects"
@@ -97,14 +106,14 @@ export default function AdminPage() {
     );
   }
 
-  // 3. Authorized Admin: Render Full Control Center
+  // 3. Authorized Staff: Render Dynamic Control Center based on exact permissions
   return (
     <AdminLayout activeTab={tab} onTabChange={handleTabChange}>
       {tab === 'overview' && <Overview onNavigateTab={handleTabChange} />}
       {tab === 'verifications' && <Verifications />}
-      {tab === 'official' && <OfficialEffects />}
-      {tab === 'users' && <Users />}
-      {tab === 'requirements' && <Requirements />}
+      {tab === 'official' && hasPermission(userRole, 'effects.manage') && <OfficialEffects />}
+      {tab === 'users' && hasPermission(userRole, 'users.view') && <Users />}
+      {tab === 'requirements' && hasPermission(userRole, 'requirements.manage') && <Requirements />}
       {tab === 'banned' && <Users bannedOnly />}
       {tab === 'messages' && <Messages />}
     </AdminLayout>

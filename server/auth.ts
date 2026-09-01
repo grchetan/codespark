@@ -3,10 +3,23 @@ import type { Request, Response, NextFunction } from 'express';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'codespark_super_secret_jwt_key_2026_production';
 
+export type ServerUserRole = 'superadmin' | 'admin' | 'moderator' | 'member';
+
 export interface TokenPayload {
   userId: string;
   email: string;
-  role: string;
+  role: ServerUserRole;
+}
+
+export function isSuperAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const clean = email.trim().toLowerCase();
+  if (clean === 'chetanprajapat340@gmail.com') return true;
+  const envAdmins = (process.env.VITE_ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return envAdmins.includes(clean);
 }
 
 export function generateToken(payload: TokenPayload): string {
@@ -37,14 +50,39 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
     return res.status(401).json({ success: false, error: 'Invalid or expired token' });
   }
 
+  // Elevate if Super Admin Owner
+  if (isSuperAdminEmail(payload.email)) {
+    payload.role = 'superadmin';
+  }
+
   req.user = payload;
   next();
 }
 
+export function requireSuperAdmin(req: AuthRequest, res: Response, next: NextFunction) {
+  authenticate(req, res, () => {
+    if (req.user?.role !== 'superadmin' && !isSuperAdminEmail(req.user?.email)) {
+      return res.status(403).json({ success: false, error: 'Super Admin (Owner) access required' });
+    }
+    next();
+  });
+}
+
 export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction) {
   authenticate(req, res, () => {
-    if (req.user?.role !== 'admin') {
+    const role = req.user?.role;
+    if (role !== 'admin' && role !== 'superadmin' && !isSuperAdminEmail(req.user?.email)) {
       return res.status(403).json({ success: false, error: 'Admin access required' });
+    }
+    next();
+  });
+}
+
+export function requireModerator(req: AuthRequest, res: Response, next: NextFunction) {
+  authenticate(req, res, () => {
+    const role = req.user?.role;
+    if (!['moderator', 'admin', 'superadmin'].includes(role || '') && !isSuperAdminEmail(req.user?.email)) {
+      return res.status(403).json({ success: false, error: 'Moderator access required' });
     }
     next();
   });

@@ -2,10 +2,17 @@ import { useState, useEffect } from 'react';
 import { adminUsers as defaultUsers, type AdminUser } from '@/mocks/admin';
 import { supabase } from '@/lib/supabase';
 import { resolveAvatar } from '@/lib/avatar';
-import { isMasterAdmin, useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
+import {
+  type UserRole,
+  isSuperAdminOwner,
+  getAllowedRoleOptions,
+  canBanUser,
+} from '@/lib/permissions';
 import { hashPassword } from '@/lib/security';
 
-const roleStyle: Record<AdminUser['role'], string> = {
+const roleStyle: Record<UserRole, string> = {
+  superadmin: 'bg-amber-500/15 text-amber-700 border-amber-500/30',
   admin: 'bg-primary-500/10 text-primary-600 border-primary-500/20',
   moderator: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
   member: 'bg-background-200 text-foreground-700 border-background-300',
@@ -22,20 +29,18 @@ export default function Users({
 }: {
   bannedOnly?: boolean;
 }) {
-  const { user: currentUser } = useAuth();
-  const isCurrentSuperAdmin = Boolean(
-    currentUser && (isMasterAdmin(currentUser.email) || (currentUser.role === 'admin' && currentUser.email?.toLowerCase().includes('chetanprajapat340@gmail.com')))
-  );
+  const { user: currentUser, isSuperAdmin } = useAuth();
+  const actorRole: UserRole = isSuperAdmin ? 'superadmin' : (currentUser?.role || 'member');
 
   const [list, setList] = useState<AdminUser[]>(defaultUsers);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | AdminUser['role']>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [banModal, setBanModal] = useState<AdminUser | null>(null);
   const [addUserModal, setAddUserModal] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState<AdminUser['role']>('member');
+  const [newUserRole, setNewUserRole] = useState<UserRole>('member');
   const [newUserPass, setNewUserPass] = useState('User@123');
   const [showPass, setShowPass] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -50,16 +55,19 @@ export default function Users({
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        const mapped: AdminUser[] = data.map((u: any) => ({
-          id: u.id,
-          name: u.name || 'Anonymous User',
-          email: u.email,
-          role: (u.role as AdminUser['role']) || 'member',
-          status: (u.status as AdminUser['status']) || 'active',
-          avatar: resolveAvatar(u.avatar, u.name, u.email),
-          joined: u.created_at ? u.created_at.slice(0, 10) : '2026-08-01',
-          effects: u.effects_count || 0,
-        }));
+        const mapped: AdminUser[] = data.map((u: any) => {
+          const isTargetOwner = isSuperAdminOwner(u.email, u.role);
+          return {
+            id: u.id,
+            name: isTargetOwner && !u.name ? 'Chetan Prajapat' : (u.name || 'Anonymous User'),
+            email: u.email,
+            role: (isTargetOwner ? 'superadmin' : (u.role || 'member')) as AdminUser['role'],
+            status: (u.status as AdminUser['status']) || 'active',
+            avatar: resolveAvatar(u.avatar, u.name, u.email),
+            joined: u.created_at ? u.created_at.slice(0, 10) : '2026-08-01',
+            effects: u.effects_count || 0,
+          };
+        });
         setList(mapped);
         setLoading(false);
         return;
@@ -84,7 +92,7 @@ export default function Users({
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(''), 2500);
+    setTimeout(() => setToastMsg(''), 3000);
   };
 
   const visible = list.filter((u) => {
@@ -98,18 +106,18 @@ export default function Users({
   });
 
   const toggleBan = async (id: string) => {
-    if (!isCurrentSuperAdmin) {
-      showToast('⚠️ Only the Super Admin (Owner) can modify account bans.');
-      return;
-    }
-
     const target = list.find((u) => u.id === id);
-    if (isMasterAdmin(target?.email)) {
-      showToast('🛡️ Super Admin (Owner) account is protected.');
+    if (!target) return;
+
+    const targetRole = (target.role || 'member') as UserRole;
+    const isTargetOwner = isSuperAdminOwner(target.email, targetRole);
+
+    if (!canBanUser(actorRole, targetRole, isTargetOwner)) {
+      showToast('⚠️ Permission Denied: You cannot modify this user status.');
       return;
     }
 
-    const newStatus: AdminUser['status'] = target?.status === 'banned' ? 'active' : 'banned';
+    const newStatus: AdminUser['status'] = target.status === 'banned' ? 'active' : 'banned';
 
     setList((prev) =>
       prev.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
@@ -125,7 +133,7 @@ export default function Users({
       await fetch(`/api/admin/users/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, actorRole }),
       });
     } catch {}
 
@@ -133,25 +141,28 @@ export default function Users({
     showToast(`User status updated to "${newStatus}"`);
   };
 
-  const changeRole = async (id: string, role: AdminUser['role']) => {
-    if (!isCurrentSuperAdmin) {
-      showToast('⚠️ Only the Super Admin (Owner) can modify user roles.');
-      return;
-    }
-
+  const changeRole = async (id: string, newRole: UserRole) => {
     const target = list.find((u) => u.id === id);
-    if (isMasterAdmin(target?.email)) {
-      showToast('🛡️ Super Admin (Owner) account is permanently protected.');
+    if (!target) return;
+
+    const targetRole = (target.role || 'member') as UserRole;
+    const isTargetOwner = isSuperAdminOwner(target.email, targetRole);
+
+    const allowedOptions = getAllowedRoleOptions(actorRole, targetRole, isTargetOwner);
+    const isAllowed = allowedOptions.some((opt) => opt.value === newRole);
+
+    if (!isAllowed) {
+      showToast('⚠️ Permission Denied: You are not authorized to assign this role.');
       return;
     }
 
     setList((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, role } : u))
+      prev.map((u) => (u.id === id ? { ...u, role: newRole as AdminUser['role'] } : u))
     );
 
     // Save to Supabase Cloud Database
     try {
-      await supabase.from('users').update({ role }).eq('id', id);
+      await supabase.from('users').update({ role: newRole }).eq('id', id);
     } catch {}
 
     // Save to Backend API
@@ -159,20 +170,22 @@ export default function Users({
       await fetch(`/api/admin/users/${id}/role`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role }),
+        body: JSON.stringify({ role: newRole, actorRole }),
       });
     } catch {}
 
-    showToast(`Role updated to "${role}"`);
+    showToast(`Role updated to "${newRole}"`);
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isCurrentSuperAdmin) {
-      showToast('⚠️ Only the Super Admin (Owner) can create new users.');
+    if (!newUserName.trim() || !newUserEmail.trim()) return;
+
+    // Validate if actor is allowed to create this role
+    if (newUserRole === 'admin' && !isSuperAdmin) {
+      showToast('⚠️ Only the Super Admin (Owner) can create Admin accounts.');
       return;
     }
-    if (!newUserName.trim() || !newUserEmail.trim()) return;
 
     const emailClean = newUserEmail.trim().toLowerCase();
     const now = new Date().toISOString();
@@ -183,7 +196,7 @@ export default function Users({
       id: newUserId,
       name: newUserName.trim(),
       email: emailClean,
-      role: newUserRole,
+      role: newUserRole as AdminUser['role'],
       status: 'active',
       avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(newUserName.trim())}`,
       joined: now.slice(0, 10),
@@ -221,6 +234,7 @@ export default function Users({
           email: newUserObj.email,
           role: newUserRole,
           password: newUserPass,
+          actorRole,
         }),
       });
     } catch {}
@@ -236,16 +250,16 @@ export default function Users({
         </div>
       )}
 
-      {/* Permission Info Banner for Non-Super-Admin */}
-      {!isCurrentSuperAdmin && (
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-800 flex items-center gap-3 animate-fade-in">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-amber-500 text-white shrink-0 text-base shadow-sm">
+      {/* Permission Scope Banner for Admin */}
+      {!isSuperAdmin && actorRole === 'admin' && (
+        <div className="rounded-2xl border border-primary-500/20 bg-primary-500/5 p-4 text-xs text-foreground-800 flex items-center gap-3 animate-fade-in">
+          <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary-500 text-white shrink-0 text-base shadow-sm">
             <i className="ri-shield-user-line" />
           </span>
           <div>
-            <p className="font-bold">Viewer Access (Super Admin Protected)</p>
-            <p className="text-[11px] text-amber-700/90 mt-0.5">
-              You are viewing the User Directory in read-only mode. Role modifications, user promotions, and account bans are strictly reserved for the Super Admin (Owner).
+            <p className="font-bold text-foreground-950">Administrator Access Scope</p>
+            <p className="text-[11px] text-foreground-600 mt-0.5">
+              You can moderate members and assign Moderator status. Appointing new Admins or modifying the Super Admin is strictly reserved for the Platform Owner.
             </p>
           </div>
         </div>
@@ -274,7 +288,7 @@ export default function Users({
             <i className="ri-refresh-line" />
             Refresh
           </button>
-          {!bannedOnly && isCurrentSuperAdmin && (
+          {!bannedOnly && (
             <button
               type="button"
               onClick={() => setAddUserModal(true)}
@@ -346,7 +360,11 @@ export default function Users({
               </thead>
               <tbody className="divide-y divide-background-300/40">
                 {visible.map((u) => {
-                  const isTargetMaster = isMasterAdmin(u.email);
+                  const targetRole = (u.role || 'member') as UserRole;
+                  const isTargetOwner = isSuperAdminOwner(u.email, targetRole);
+                  const allowedRoleOptions = getAllowedRoleOptions(actorRole, targetRole, isTargetOwner);
+                  const userCanBan = canBanUser(actorRole, targetRole, isTargetOwner);
+
                   return (
                     <tr
                       key={u.id}
@@ -357,14 +375,16 @@ export default function Users({
                           <img
                             src={resolveAvatar(u.avatar, u.name, u.email)}
                             alt={u.name}
-                            className="h-9 w-9 rounded-full object-cover border border-background-300 bg-background-100 shrink-0"
+                            className={`h-9 w-9 rounded-full object-cover border shrink-0 ${
+                              isTargetOwner ? 'border-amber-500 shadow-sm' : 'border-background-300 bg-background-100'
+                            }`}
                             loading="lazy"
                           />
                           <div className="min-w-0">
                             <p className="font-bold text-foreground-950 truncate flex items-center gap-1.5">
-                              {u.name}
-                              {isTargetMaster && (
-                                <span className="rounded bg-primary-500/15 px-2 py-0.5 text-[9px] font-extrabold text-primary-600 uppercase border border-primary-500/30 flex items-center gap-1">
+                              <span>{u.name}</span>
+                              {isTargetOwner && (
+                                <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-extrabold text-amber-700 uppercase border border-amber-500/30 flex items-center gap-1">
                                   <i className="ri-vip-crown-fill text-amber-500" /> Super Admin
                                 </span>
                               )}
@@ -377,31 +397,38 @@ export default function Users({
                       </td>
 
                       <td className="py-3 px-4">
-                        {isTargetMaster ? (
-                          <span className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase bg-primary-500/10 text-primary-600 border border-primary-500/20">
+                        {isTargetOwner ? (
+                          <span className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase bg-amber-500/15 text-amber-700 border border-amber-500/30">
+                            <i className="ri-vip-crown-fill text-amber-500 text-xs" />
                             Super Admin (Owner)
                           </span>
-                        ) : isCurrentSuperAdmin ? (
+                        ) : allowedRoleOptions.length > 0 ? (
                           <select
-                            value={u.role}
+                            value={targetRole}
                             onChange={(e) =>
-                              changeRole(u.id, e.target.value as AdminUser['role'])
+                              changeRole(u.id, e.target.value as UserRole)
                             }
                             className={`rounded-lg px-2 py-1 text-[11px] font-semibold uppercase border outline-none cursor-pointer ${
-                              roleStyle[u.role] || roleStyle.member
+                              roleStyle[targetRole] || roleStyle.member
                             }`}
                           >
-                            <option value="member">Member</option>
-                            <option value="moderator">Moderator</option>
-                            <option value="admin">Admin</option>
+                            {/* If current role not in allowed options, show as disabled current */}
+                            {!allowedRoleOptions.some((o) => o.value === targetRole) && (
+                              <option value={targetRole} disabled>{targetRole}</option>
+                            )}
+                            {allowedRoleOptions.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
                           </select>
                         ) : (
                           <span
                             className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase border ${
-                              roleStyle[u.role] || roleStyle.member
+                              roleStyle[targetRole] || roleStyle.member
                             }`}
                           >
-                            {u.role}
+                            {targetRole}
                           </span>
                         )}
                       </td>
@@ -430,11 +457,11 @@ export default function Users({
                       </td>
 
                       <td className="py-3 px-4 text-right">
-                        {isTargetMaster ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 opacity-80">
-                            <i className="ri-shield-check-fill" /> Protected
+                        {isTargetOwner ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                            <i className="ri-shield-check-fill text-xs" /> Protected Owner
                           </span>
-                        ) : isCurrentSuperAdmin ? (
+                        ) : userCanBan ? (
                           <button
                             type="button"
                             onClick={() => setBanModal(u)}
@@ -448,7 +475,7 @@ export default function Users({
                           </button>
                         ) : (
                           <span className="text-[11px] text-foreground-400 font-medium">
-                            View Only
+                            Protected
                           </span>
                         )}
                       </td>
@@ -462,7 +489,7 @@ export default function Users({
       </div>
 
       {/* Add User Modal */}
-      {addUserModal && isCurrentSuperAdmin && (
+      {addUserModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-sm rounded-3xl bg-background-50 p-6 shadow-2xl border border-background-300/80 space-y-4">
             <div className="flex items-center justify-between border-b border-background-300/50 pb-3">
@@ -487,7 +514,7 @@ export default function Users({
                   type="text"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="e.g. John Doe"
+                  placeholder="e.g. Rahul Sharma"
                   className="input text-xs h-9"
                   required
                 />
@@ -540,13 +567,13 @@ export default function Users({
                 <select
                   value={newUserRole}
                   onChange={(e) =>
-                    setNewUserRole(e.target.value as AdminUser['role'])
+                    setNewUserRole(e.target.value as UserRole)
                   }
                   className="input text-xs h-9 cursor-pointer"
                 >
                   <option value="member">Member</option>
                   <option value="moderator">Moderator</option>
-                  <option value="admin">Admin</option>
+                  {isSuperAdmin && <option value="admin">Admin</option>}
                 </select>
               </div>
 
@@ -571,7 +598,7 @@ export default function Users({
       )}
 
       {/* Ban / Unban Confirmation Modal */}
-      {banModal && isCurrentSuperAdmin && (
+      {banModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-sm rounded-3xl bg-background-50 p-6 shadow-2xl border border-background-300/80 space-y-4">
             <h3 className="font-display text-base font-bold text-foreground-950">

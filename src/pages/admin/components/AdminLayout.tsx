@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/feature/Navbar';
-import { useAuth, isMasterAdmin } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { useMaintenance } from '@/context/MaintenanceContext';
-
+import { getAccessibleTabs, isSuperAdminOwner } from '@/lib/permissions';
 import { supabase } from '@/lib/supabase';
 
 interface AdminLayoutProps {
@@ -13,13 +13,16 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ activeTab, onTabChange, children }: AdminLayoutProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, isSuperAdmin } = useAuth();
   const { isMaintenance } = useMaintenance();
   const [counts, setCounts] = useState({
     pending: 0,
     banned: 0,
     messages: 0
   });
+
+  const userRole = user?.role || 'member';
+  const allowedKeys = getAccessibleTabs(userRole);
 
   useEffect(() => {
     Promise.all([
@@ -35,7 +38,7 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
     }).catch(() => {});
   }, [activeTab]);
 
-  const navItems = [
+  const allNavItems = [
     { key: 'overview', label: 'Overview', icon: 'ri-dashboard-3-line' },
     { key: 'verifications', label: 'Verifications', icon: 'ri-shield-check-line', badge: counts.pending },
     { key: 'official', label: 'Official Effects', icon: 'ri-code-box-line' },
@@ -44,6 +47,11 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
     { key: 'banned', label: 'Banned & Mod', icon: 'ri-user-forbid-line', badge: counts.banned },
     { key: 'messages', label: 'Inquiries', icon: 'ri-mail-line', badge: counts.messages },
   ];
+
+  // Strictly filter navigation according to user role permissions
+  const navItems = allNavItems.filter((n) => allowedKeys.includes(n.key));
+
+  const isOwner = isSuperAdmin || isSuperAdminOwner(user?.email, user?.role);
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background-50">
@@ -55,13 +63,19 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
             <div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-primary-500 animate-pulse" />
-                <p className="eyebrow">Admin Console</p>
+                <p className="eyebrow">
+                  {isOwner ? 'Master Control Center' : userRole === 'admin' ? 'Operations Console' : 'Moderation Hub'}
+                </p>
               </div>
               <h1 className="mt-2 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground-950">
                 Control Center
               </h1>
               <p className="mt-1 text-xs sm:text-sm text-foreground-500">
-                Manage submissions, official effects, users, and platform inquiries.
+                {isOwner
+                  ? 'Complete platform oversight, role hierarchy management, and infrastructure status.'
+                  : userRole === 'admin'
+                    ? 'Manage community submissions, effect catalog, user moderation, and inquiries.'
+                    : 'Review incoming community submissions, moderation reports, and platform inquiries.'}
               </p>
             </div>
             <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
@@ -140,28 +154,58 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
                 ))}
               </div>
 
-              {/* Admin Profile Box - Authenticated User */}
+              {/* Dynamic Authenticated Administrator Profile */}
               {user && (
-                <div className="rounded-2xl border border-background-300/60 bg-background-100/70 p-4 shadow-sm">
+                <div className={`rounded-2xl border p-4 shadow-sm transition-all ${
+                  isOwner
+                    ? 'border-amber-500/30 bg-gradient-to-b from-amber-500/10 via-background-100/70 to-background-100/70'
+                    : userRole === 'admin'
+                      ? 'border-primary-500/30 bg-background-100/70'
+                      : 'border-blue-500/30 bg-background-100/70'
+                }`}>
                   <div className="flex items-center gap-3">
                     <img
                       src={
-                        isMasterAdmin(user.email)
+                        isOwner
                           ? 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat'
                           : user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email)}`
                       }
                       alt={user.name}
-                      className="h-11 w-11 rounded-full object-cover border border-background-300 bg-background-50 shrink-0"
+                      className={`h-11 w-11 rounded-full object-cover border bg-background-50 shrink-0 ${
+                        isOwner ? 'border-amber-500 shadow-sm shadow-amber-500/20' : 'border-background-300'
+                      }`}
                     />
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-foreground-950 truncate">
-                        {isMasterAdmin(user.email) ? 'Chetan Prajapat' : user.name}
+                        {isOwner ? 'Chetan Prajapat' : user.name}
                       </p>
-                      <p className="text-[11px] font-semibold text-primary-600 uppercase tracking-wider">
-                        {isMasterAdmin(user.email) ? 'Super Admin (Owner)' : user.role === 'admin' ? 'Administrator' : 'Moderator'}
+                      <p className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${
+                        isOwner
+                          ? 'text-amber-700'
+                          : userRole === 'admin'
+                            ? 'text-primary-600'
+                            : 'text-blue-600'
+                      }`}>
+                        {isOwner ? (
+                          <>
+                            <i className="ri-vip-crown-fill text-amber-500" />
+                            <span>Super Admin (Owner)</span>
+                          </>
+                        ) : userRole === 'admin' ? (
+                          <>
+                            <i className="ri-shield-star-fill text-primary-500" />
+                            <span>Administrator</span>
+                          </>
+                        ) : (
+                          <>
+                            <i className="ri-shield-check-line text-blue-500" />
+                            <span>Moderator</span>
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>
+
                   <div className="mt-4 pt-3 border-t border-background-300/50 space-y-2">
                     <Link
                       to="/effects"

@@ -225,9 +225,24 @@ router.post('/users', (req, res) => {
 router.patch('/users/:id/status', (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, actorRole } = req.body;
     if (!['active', 'banned', 'pending'].includes(status)) {
       return res.status(400).json({ success: false, error: 'Invalid status' });
+    }
+
+    const target = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as any;
+    if (!target) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Protect Super Admin Owner
+    if (target.email === 'chetanprajapat340@gmail.com' || target.role === 'superadmin') {
+      return res.status(403).json({ success: false, error: 'Cannot modify Super Admin status' });
+    }
+
+    // Non-superadmin cannot ban other admins
+    if (target.role === 'admin' && actorRole !== 'superadmin') {
+      return res.status(403).json({ success: false, error: 'Only Super Admin can ban Administrators' });
     }
 
     db.prepare('UPDATE users SET status = ? WHERE id = ?').run(status, id);
@@ -240,9 +255,24 @@ router.patch('/users/:id/status', (req, res) => {
 router.patch('/users/:id/role', (req, res) => {
   try {
     const { id } = req.params;
-    const { role } = req.body;
-    if (!['admin', 'moderator', 'member'].includes(role)) {
+    const { role, actorRole } = req.body;
+    if (!['superadmin', 'admin', 'moderator', 'member'].includes(role)) {
       return res.status(400).json({ success: false, error: 'Invalid role' });
+    }
+
+    const target = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as any;
+    if (!target) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Protect Super Admin Owner
+    if (target.email === 'chetanprajapat340@gmail.com' || target.role === 'superadmin') {
+      return res.status(403).json({ success: false, error: 'Cannot modify Super Admin role' });
+    }
+
+    // Only Super Admin can promote to Admin or demote Admins
+    if ((role === 'admin' || role === 'superadmin' || target.role === 'admin') && actorRole !== 'superadmin') {
+      return res.status(403).json({ success: false, error: 'Only Super Admin (Owner) can manage Admin roles' });
     }
 
     db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id);
