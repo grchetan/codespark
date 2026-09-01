@@ -10,6 +10,7 @@ import { formatCount } from '@/components/feature/EffectCard';
 import { effects as defaultEffects, type Effect, type EffectStep } from '@/mocks/effects';
 import { effectCode } from '@/mocks/code';
 import { useSaved } from '@/context/SavedContext';
+import { supabase } from '@/lib/supabase';
 
 type Lang = 'html' | 'css' | 'js';
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
@@ -64,14 +65,55 @@ export default function EffectDetail() {
   const [loading, setLoading] = useState(true);
   const [stageKey, setStageKey] = useState(0);
 
-  // Load effect data from backend API or fallback
+  // Load effect data directly from Supabase Cloud Database
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/effects/${slug}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.effect) {
-          const eff = data.effect;
+
+    const fetchDetail = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('effects')
+          .select('*')
+          .or(`slug.eq.${slug},id.eq.${slug}`)
+          .single();
+
+        if (!error && data) {
+          const eff: Effect = {
+            id: data.id,
+            slug: data.slug || data.id,
+            name: data.name,
+            description: data.description || '',
+            image: data.image || '',
+            category: data.category,
+            categoryLabel: data.category_label || data.category,
+            tags: Array.isArray(data.tags) ? data.tags : (typeof data.tags === 'string' ? JSON.parse(data.tags) : []),
+            difficulty: data.difficulty || 'medium',
+            license: data.license || 'MIT',
+            likes: data.likes || 0,
+            saves: data.saves || 0,
+            views: data.views || 0,
+            author: {
+              id: data.author_id || 'u_codespark',
+              name: data.author_name || 'CodeSpark Official',
+              handle: data.author_handle || '@codespark',
+              avatar: data.author_avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${data.name}`,
+              role: 'Creator',
+              followers: 0,
+              effects: 1,
+              bio: '',
+              tags: ['verified'],
+              verified: true,
+            },
+            html_code: data.html_code || '',
+            css_code: data.css_code || '',
+            js_code: data.js_code || '',
+            instructions: data.instructions || '',
+            steps: data.steps ? (typeof data.steps === 'string' ? JSON.parse(data.steps) : data.steps) : [],
+            createdAt: (data.created_at || '2026-09-01').slice(0, 10),
+            interactions: ['hover', 'click'],
+            isOfficial: data.is_official ?? true,
+          };
+
           setEffect(eff);
           const initialCode = {
             html: eff.html_code || '',
@@ -85,14 +127,39 @@ export default function EffectDetail() {
           } else {
             generateDefaultSteps(initialCode, eff);
           }
-        } else {
-          fallbackToMock();
+          setLoading(false);
+          return;
         }
-      })
-      .catch(() => {
-        fallbackToMock();
-      })
-      .finally(() => setLoading(false));
+      } catch {}
+
+      // Fallback to API if Supabase offline
+      fetch(`/api/effects/${slug}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.effect) {
+            const eff = data.effect;
+            setEffect(eff);
+            const initialCode = {
+              html: eff.html_code || '',
+              css: eff.css_code || '',
+              js: eff.js_code || ''
+            };
+            setCode(initialCode);
+            setInitialCustomText(eff);
+            if (Array.isArray(eff.steps) && eff.steps.length > 0) {
+              setSteps(eff.steps);
+            } else {
+              generateDefaultSteps(initialCode, eff);
+            }
+          } else {
+            fallbackToMock();
+          }
+        })
+        .catch(() => fallbackToMock())
+        .finally(() => setLoading(false));
+    };
+
+    fetchDetail();
   }, [slug]);
 
   const setInitialCustomText = (eff: Effect) => {

@@ -5,6 +5,7 @@ import Footer from '@/components/feature/Footer';
 import EffectCard from '@/components/feature/EffectCard';
 import Reveal from '@/components/base/Reveal';
 import { categories, effects as defaultEffects, type Effect } from '@/mocks/effects';
+import { supabase } from '@/lib/supabase';
 
 const difficulties = ['all', 'easy', 'medium', 'advanced'];
 
@@ -22,16 +23,68 @@ export default function EffectsPage() {
   const [focused, setFocused] = useState(false);
 
   useEffect(() => {
-    fetch('/api/effects')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.effects) && data.effects.length > 0) {
-          setAllEffects(data.effects);
+    const fetchEffectsFromDatabase = async () => {
+      try {
+        // 1. Fetch live directly from Supabase Cloud Database
+        const { data, error } = await supabase
+          .from('effects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const mapped: Effect[] = data.map((e: any) => ({
+            id: e.id,
+            slug: e.slug || e.id,
+            name: e.name,
+            description: e.description || '',
+            image: e.image || '',
+            category: e.category,
+            categoryLabel: e.category_label || e.category,
+            tags: Array.isArray(e.tags) ? e.tags : (typeof e.tags === 'string' ? JSON.parse(e.tags) : []),
+            difficulty: e.difficulty || 'medium',
+            license: e.license || 'MIT',
+            likes: e.likes || 0,
+            saves: e.saves || 0,
+            views: e.views || 0,
+            author: {
+              id: e.author_id || 'u_codespark',
+              name: e.author_name || 'CodeSpark Official',
+              handle: e.author_handle || '@codespark',
+              avatar: e.author_avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${e.name}`,
+              role: 'Creator',
+              followers: 0,
+              effects: 1,
+              bio: '',
+              tags: ['verified'],
+              verified: true,
+            },
+            html_code: e.html_code || '',
+            css_code: e.css_code || '',
+            js_code: e.js_code || '',
+            instructions: e.instructions || '',
+            steps: e.steps ? (typeof e.steps === 'string' ? JSON.parse(e.steps) : e.steps) : [],
+            createdAt: (e.created_at || '2026-09-01').slice(0, 10),
+            interactions: ['hover', 'click'],
+            isOfficial: e.is_official ?? true,
+          }));
+
+          setAllEffects(mapped);
+          return;
         }
-      })
-      .catch(() => {
-        // Fallback already in place
-      });
+      } catch {}
+
+      // 2. Fallback to API if Supabase offline
+      fetch('/api/effects')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.effects) && data.effects.length > 0) {
+            setAllEffects(data.effects);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchEffectsFromDatabase();
   }, []);
 
   useEffect(() => {

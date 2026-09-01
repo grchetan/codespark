@@ -3,19 +3,72 @@ import { Link } from 'react-router-dom';
 import { trendingEffects, type Effect } from '@/mocks/effects';
 import EffectCard from '@/components/feature/EffectCard';
 import Reveal from '@/components/base/Reveal';
+import { supabase } from '@/lib/supabase';
 
 export default function Trending() {
   const [effects, setEffects] = useState<Effect[]>(trendingEffects.slice(0, 3));
 
   useEffect(() => {
-    fetch('/api/effects?sort=trending')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.effects) && data.effects.length > 0) {
-          setEffects(data.effects.slice(0, 3));
+    const fetchTrending = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('effects')
+          .select('*')
+          .order('likes', { ascending: false })
+          .limit(3);
+
+        if (!error && data && data.length > 0) {
+          const mapped: Effect[] = data.map((e: any) => ({
+            id: e.id,
+            slug: e.slug || e.id,
+            name: e.name,
+            description: e.description || '',
+            image: e.image || '',
+            category: e.category,
+            categoryLabel: e.category_label || e.category,
+            tags: Array.isArray(e.tags) ? e.tags : [],
+            difficulty: e.difficulty || 'medium',
+            license: e.license || 'MIT',
+            likes: e.likes || 0,
+            saves: e.saves || 0,
+            views: e.views || 0,
+            author: {
+              id: e.author_id || 'u_codespark',
+              name: e.author_name || 'CodeSpark Official',
+              handle: e.author_handle || '@codespark',
+              avatar: e.author_avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${e.name}`,
+              role: 'Creator',
+              followers: 0,
+              effects: 1,
+              bio: '',
+              tags: ['verified'],
+              verified: true,
+            },
+            html_code: e.html_code || '',
+            css_code: e.css_code || '',
+            js_code: e.js_code || '',
+            instructions: e.instructions || '',
+            steps: e.steps ? (typeof e.steps === 'string' ? JSON.parse(e.steps) : e.steps) : [],
+            createdAt: (e.created_at || '2026-09-01').slice(0, 10),
+            interactions: ['hover', 'click'],
+            isOfficial: e.is_official ?? true,
+          }));
+          setEffects(mapped);
+          return;
         }
-      })
-      .catch(() => {});
+      } catch {}
+
+      fetch('/api/effects?sort=trending')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.effects) && data.effects.length > 0) {
+            setEffects(data.effects.slice(0, 3));
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchTrending();
   }, []);
 
   return (
