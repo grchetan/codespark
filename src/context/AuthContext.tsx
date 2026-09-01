@@ -15,18 +15,13 @@ export function isMasterAdmin(email?: string | null): boolean {
   if (!email) return false;
   const clean = email.trim().toLowerCase();
   
-  // 1. Check environment variable
+  // Check private environment variable (gitignored, never exposed in public code)
   const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
     .split(',')
     .map((e: string) => e.trim().toLowerCase())
     .filter(Boolean);
 
-  if (envAdmins.includes(clean)) {
-    return true;
-  }
-
-  // 2. Sole master admin
-  return clean === 'chetanprajapat340@gmail.com';
+  return envAdmins.includes(clean);
 }
 
 interface AuthContextType {
