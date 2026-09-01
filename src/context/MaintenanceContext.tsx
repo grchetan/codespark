@@ -19,7 +19,7 @@ export function MaintenanceProvider({ children }: { children: ReactNode }) {
   const [isMaintenance, setIsMaintenance] = useState<boolean>(() => {
     return localStorage.getItem('codespark_maintenance_mode') === 'true';
   });
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [adminBypass, setAdminBypass] = useState<boolean>(() => {
     return localStorage.getItem('codespark_admin_bypass') === 'true' || user?.role === 'admin';
   });

@@ -24,8 +24,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Editor & OS files
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
+# Private credential notes
+*NOTE*.md
+ADMIN_NOTES.md
+PROJECT_CREDENTIALS_NOTE.md

@@ -15,7 +15,7 @@ export function isMasterAdmin(email?: string | null): boolean {
   if (!email) return false;
   const clean = email.trim().toLowerCase();
   
-  // 1. Check environment variable (private & gitignored)
+  // 1. Check environment variable
   const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
     .split(',')
     .map((e: string) => e.trim().toLowerCase())
@@ -25,9 +25,8 @@ export function isMasterAdmin(email?: string | null): boolean {
     return true;
   }
 
-  // 2. Default official domain admins
-  const defaultAdmins = ['admin@codespark.dev', 'chetan@codespark.dev'];
-  return defaultAdmins.includes(clean);
+  // 2. Sole master admin
+  return clean === 'chetanprajapat340@gmail.com';
 }
 
 interface AuthContextType {
@@ -64,112 +63,83 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem('codespark_token') || localStorage.getItem('effekt_token') || null;
   });
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  // 1. Supabase OAuth & Session Listener (1-Click Google Login)
+  // Supabase Auth listener (Safe, non-blocking)
   useEffect(() => {
-    // Check active Supabase session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const userEmail = (session.user.email || '').toLowerCase();
-        let isAdminUser = isMasterAdmin(userEmail);
+    let isMounted = true;
 
-        // Also check role in Supabase users table
-        if (!isAdminUser) {
-          const { data: dbUser } = await supabase
-            .from('users')
-            .select('role')
-            .eq('email', userEmail)
-            .maybeSingle();
-          if (dbUser?.role === 'admin') {
-            isAdminUser = true;
+    try {
+      // 1. Quick initial session check
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!isMounted) return;
+        if (session?.user) {
+          const userEmail = (session.user.email || '').toLowerCase();
+          const isAdminUser = isMasterAdmin(userEmail);
+
+          const authUser: User = {
+            id: session.user.id,
+            name: isAdminUser
+              ? 'Chetan Prajapat'
+              : session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0],
+            email: userEmail,
+            role: isAdminUser ? 'admin' : 'member',
+            avatar:
+              session.user.user_metadata?.avatar_url ||
+              `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(userEmail)}`,
+            effects_count: isAdminUser ? 18 : 0,
+          };
+
+          setUser(authUser);
+          setToken(session.access_token);
+          localStorage.setItem('codespark_user', JSON.stringify(authUser));
+          localStorage.setItem('codespark_token', session.access_token);
+          if (isAdminUser) {
+            localStorage.setItem('codespark_admin_bypass', 'true');
           }
         }
+      }).catch(() => {});
 
-        const authUser: User = {
-          id: session.user.id,
-          name: isAdminUser ? 'Chetan Prajapat' : (session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0]),
-          email: userEmail,
-          role: isAdminUser ? 'admin' : 'member',
-          avatar: session.user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(userEmail)}`,
-          effects_count: isAdminUser ? 18 : 0,
-        };
+      // 2. Live event listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (!isMounted) return;
+        if (session?.user) {
+          const userEmail = (session.user.email || '').toLowerCase();
+          const isAdminUser = isMasterAdmin(userEmail);
 
-        setUser(authUser);
-        setToken(session.access_token);
-        localStorage.setItem('codespark_user', JSON.stringify(authUser));
-        localStorage.setItem('codespark_token', session.access_token);
-        if (isAdminUser) {
-          localStorage.setItem('codespark_admin_bypass', 'true');
-        }
-      }
-      setLoading(false);
-    });
+          const authUser: User = {
+            id: session.user.id,
+            name: isAdminUser
+              ? 'Chetan Prajapat'
+              : session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0],
+            email: userEmail,
+            role: isAdminUser ? 'admin' : 'member',
+            avatar:
+              session.user.user_metadata?.avatar_url ||
+              `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(userEmail)}`,
+            effects_count: isAdminUser ? 18 : 0,
+          };
 
-    // Listen for live OAuth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const userEmail = (session.user.email || '').toLowerCase();
-        let isAdminUser = isMasterAdmin(userEmail);
-
-        if (!isAdminUser) {
-          const { data: dbUser } = await supabase
-            .from('users')
-            .select('role')
-            .eq('email', userEmail)
-            .maybeSingle();
-          if (dbUser?.role === 'admin') {
-            isAdminUser = true;
+          setUser(authUser);
+          setToken(session.access_token);
+          localStorage.setItem('codespark_user', JSON.stringify(authUser));
+          localStorage.setItem('codespark_token', session.access_token);
+          if (isAdminUser) {
+            localStorage.setItem('codespark_admin_bypass', 'true');
           }
+        } else if (event === 'SIGNED_OUT') {
+          logout();
         }
+      });
 
-        const authUser: User = {
-          id: session.user.id,
-          name: isAdminUser ? 'Chetan Prajapat' : (session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0]),
-          email: userEmail,
-          role: isAdminUser ? 'admin' : 'member',
-          avatar: session.user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(userEmail)}`,
-          effects_count: isAdminUser ? 18 : 0,
-        };
-
-        setUser(authUser);
-        setToken(session.access_token);
-        localStorage.setItem('codespark_user', JSON.stringify(authUser));
-        localStorage.setItem('codespark_token', session.access_token);
-        if (isAdminUser) {
-          localStorage.setItem('codespark_admin_bypass', 'true');
-        }
-      } else if (event === 'SIGNED_OUT') {
-        logout();
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // 2. Token Verification fallback for local session
-  useEffect(() => {
-    if (token && !user) {
-      fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.user) {
-            if (isMasterAdmin(data.user.email)) {
-              data.user.role = 'admin';
-              data.user.name = 'Chetan Prajapat';
-            }
-            setUser(data.user);
-            localStorage.setItem('codespark_user', JSON.stringify(data.user));
-          }
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false));
+      return () => {
+        isMounted = false;
+        subscription.unsubscribe();
+      };
+    } catch {
+      // Fallback gracefully
     }
-  }, [token]);
+  }, []);
 
   const login = (newToken: string, newUser: User) => {
     if (isMasterAdmin(newUser.email)) {
@@ -188,7 +158,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    supabase.auth.signOut().catch(() => {});
+    try {
+      supabase.auth.signOut().catch(() => {});
+    } catch {}
     setToken(null);
     setUser(null);
     localStorage.removeItem('codespark_token');

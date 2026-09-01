@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { adminUsers as defaultUsers, type AdminUser } from '@/mocks/admin';
 import { supabase } from '@/lib/supabase';
+import { resolveAvatar } from '@/lib/avatar';
+import { isMasterAdmin } from '@/context/AuthContext';
 
 const roleStyle: Record<AdminUser['role'], string> = {
   admin: 'bg-primary-500/10 text-primary-600 border-primary-500/20',
@@ -14,17 +16,24 @@ const statusStyle: Record<AdminUser['status'], string> = {
   pending: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
 };
 
-export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) {
+export default function Users({
+  bannedOnly = false,
+}: {
+  bannedOnly?: boolean;
+}) {
   const [list, setList] = useState<AdminUser[]>(defaultUsers);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | AdminUser['role']>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | AdminUser['role']>(
+    'all',
+  );
   const [banModal, setBanModal] = useState<AdminUser | null>(null);
   const [addUserModal, setAddUserModal] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserRole, setNewUserRole] = useState<AdminUser['role']>('member');
   const [newUserPass, setNewUserPass] = useState('User@123');
+  const [showPass, setShowPass] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
   const fetchUsers = async () => {
@@ -43,7 +52,7 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
           email: u.email,
           role: (u.role as AdminUser['role']) || 'member',
           status: (u.status as AdminUser['status']) || 'active',
-          avatar: u.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.name || u.email)}`,
+          avatar: resolveAvatar(u.avatar, u.name, u.email),
           joined: u.created_at ? u.created_at.slice(0, 10) : '2026-08-01',
           effects: u.effects_count || 0,
         }));
@@ -60,7 +69,8 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
       if (data.success && Array.isArray(data.users) && data.users.length > 0) {
         setList(data.users);
       }
-    } catch {} finally {
+    } catch {
+    } finally {
       setLoading(false);
     }
   };
@@ -79,13 +89,18 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
       u.name.toLowerCase().includes(query.toLowerCase()) ||
       u.email.toLowerCase().includes(query.toLowerCase());
     const matchesRole = roleFilter === 'all' ? true : u.role === roleFilter;
-    return bannedOnly ? matchesQuery && u.status === 'banned' : matchesQuery && matchesRole;
+    return bannedOnly
+      ? matchesQuery && u.status === 'banned'
+      : matchesQuery && matchesRole;
   });
 
   const toggleBan = async (id: string) => {
     const target = list.find((u) => u.id === id);
-    const newStatus: AdminUser['status'] = target?.status === 'banned' ? 'active' : 'banned';
-    setList((prev) => prev.map((u) => (u.id === id ? { ...u, status: newStatus } : u)));
+    const newStatus: AdminUser['status'] =
+      target?.status === 'banned' ? 'active' : 'banned';
+    setList((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, status: newStatus } : u)),
+    );
     setBanModal(null);
     showToast(`User status updated to ${newStatus}`);
 
@@ -125,7 +140,7 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUserName.trim() || !newUserEmail.trim()) return;
+    if (!newUserName.trim() || !newUserEmail.trim() || !newUserPass) return;
 
     const newId = `u_${Date.now()}`;
     const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(newUserName.trim() || 'User')}`;
@@ -146,14 +161,16 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
     setAddUserModal(false);
     setNewUserName('');
     setNewUserEmail('');
+    setNewUserPass('User@123');
     showToast('User created successfully in database');
 
-    // Save to Supabase Cloud Database
+    // Save to Supabase Cloud Database (including password for login)
     try {
       await supabase.from('users').insert({
         id: newId,
         name: newUserObj.name,
         email: newUserObj.email,
+        password_hash: newUserPass,
         role: newUserRole,
         status: 'active',
         avatar,
@@ -244,7 +261,9 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
                 type="button"
                 onClick={() => setRoleFilter(r)}
                 className={`chip text-xs capitalize ${
-                  roleFilter === r ? 'bg-foreground-950 text-background-50 font-bold' : ''
+                  roleFilter === r
+                    ? 'bg-foreground-950 text-background-50 font-bold'
+                    : ''
                 }`}
               >
                 {r}
@@ -279,94 +298,118 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
                 </tr>
               </thead>
               <tbody className="divide-y divide-background-300/40">
-                {visible.map((u) => (
-                  <tr key={u.id} className="hover:bg-background-100/30 transition-colors">
-                    <td className="py-3 px-4 min-w-[200px]">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={u.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.name || u.email)}`}
-                          alt={u.name}
-                          className="h-9 w-9 rounded-full object-cover border border-background-300 bg-background-100 shrink-0"
-                          loading="lazy"
-                        />
-                        <div className="min-w-0">
-                          <p className="font-bold text-foreground-950 truncate flex items-center gap-1.5">
-                            {u.name}
-                            {(u.name === 'Chetan Prajapat' || u.role === 'admin') && (
-                              <span className="rounded bg-primary-500/10 px-1.5 py-0.2 text-[9px] font-bold text-primary-600 uppercase border border-primary-500/20">
-                                Lead
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-[11px] text-foreground-500 truncate">{u.email}</p>
+                {visible.map((u) => {
+                  const isMaster = isMasterAdmin(u.email);
+                  return (
+                    <tr
+                      key={u.id}
+                      className="hover:bg-background-100/30 transition-colors"
+                    >
+                      <td className="py-3 px-4 min-w-[200px]">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={resolveAvatar(u.avatar, u.name, u.email)}
+                            alt={u.name}
+                            className="h-9 w-9 rounded-full object-cover border border-background-300 bg-background-100 shrink-0"
+                            loading="lazy"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-bold text-foreground-950 truncate flex items-center gap-1.5">
+                              {u.name}
+                              {isMaster && (
+                                <span className="rounded bg-primary-500/15 px-2 py-0.5 text-[9px] font-extrabold text-primary-600 uppercase border border-primary-500/30 flex items-center gap-1">
+                                  <i className="ri-vip-crown-fill text-amber-500" /> Super Admin
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-[11px] text-foreground-500 truncate">
+                              {u.email}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="py-3 px-4">
-                      <select
-                        value={u.role}
-                        onChange={(e) => changeRole(u.id, e.target.value as AdminUser['role'])}
-                        className={`rounded-lg px-2 py-1 text-[11px] font-semibold uppercase border outline-none cursor-pointer ${
-                          roleStyle[u.role] || roleStyle.member
-                        }`}
-                      >
-                        <option value="member">Member</option>
-                        <option value="moderator">Moderator</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </td>
+                      <td className="py-3 px-4">
+                        {isMaster ? (
+                          <span className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase bg-primary-500/10 text-primary-600 border border-primary-500/20">
+                            Super Admin (Owner)
+                          </span>
+                        ) : (
+                          <select
+                            value={u.role}
+                            onChange={(e) =>
+                              changeRole(u.id, e.target.value as AdminUser['role'])
+                            }
+                            className={`rounded-lg px-2 py-1 text-[11px] font-semibold uppercase border outline-none cursor-pointer ${
+                              roleStyle[u.role] || roleStyle.member
+                            }`}
+                          >
+                            <option value="member">Member</option>
+                            <option value="moderator">Moderator</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        )}
+                      </td>
 
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase border ${
-                          statusStyle[u.status] || statusStyle.active
-                        }`}
-                      >
+                      <td className="py-3 px-4">
                         <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            u.status === 'active'
-                              ? 'bg-emerald-500'
-                              : u.status === 'banned'
-                              ? 'bg-rose-500'
-                              : 'bg-amber-500'
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase border ${
+                            statusStyle[u.status] || statusStyle.active
                           }`}
-                        />
-                        {u.status}
-                      </span>
-                    </td>
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              u.status === 'active'
+                                ? 'bg-emerald-500'
+                                : u.status === 'banned'
+                                  ? 'bg-rose-500'
+                                  : 'bg-amber-500'
+                            }`}
+                          />
+                          {u.status}
+                        </span>
+                      </td>
 
-                    <td className="py-3 px-4 text-foreground-500 font-mono text-[11px]">
-                      {u.joined}
-                    </td>
+                      <td className="py-3 px-4 text-foreground-500 font-mono text-[11px]">
+                        {u.joined}
+                      </td>
 
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setBanModal(u)}
-                        className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all ${
-                          u.status === 'banned'
-                            ? 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/30'
-                            : 'bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 border border-rose-500/30'
-                        }`}
-                      >
-                        {u.status === 'banned' ? 'Unban' : 'Ban'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      <td className="py-3 px-4 text-right">
+                        {isMaster ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 opacity-80">
+                            <i className="ri-shield-check-fill" /> Protected
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setBanModal(u)}
+                            className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all ${
+                              u.status === 'banned'
+                                ? 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/30'
+                                : 'bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 border border-rose-500/30'
+                            }`}
+                          >
+                            {u.status === 'banned' ? 'Unban' : 'Ban'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {/* Add User Modal */}
+      {/* Add User Modal with Password Input */}
       {addUserModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-sm rounded-3xl bg-background-50 p-6 shadow-2xl border border-background-300/80 space-y-4">
             <div className="flex items-center justify-between border-b border-background-300/50 pb-3">
-              <h3 className="font-display text-base font-bold text-foreground-950">Add User to Database</h3>
+              <h3 className="font-display text-base font-bold text-foreground-950">
+                Add User to Database
+              </h3>
               <button
                 type="button"
                 onClick={() => setAddUserModal(false)}
@@ -378,7 +421,9 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
 
             <form onSubmit={handleCreateUser} className="space-y-3">
               <div>
-                <label className="text-[11px] font-semibold text-foreground-700 block mb-1">Full Name</label>
+                <label className="text-[11px] font-semibold text-foreground-700 block mb-1">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   value={newUserName}
@@ -390,7 +435,9 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-foreground-700 block mb-1">Email Address</label>
+                <label className="text-[11px] font-semibold text-foreground-700 block mb-1">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   value={newUserEmail}
@@ -402,10 +449,40 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-foreground-700 block mb-1">Role</label>
+                <label className="text-[11px] font-semibold text-foreground-700 block mb-1">
+                  Set Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    value={newUserPass}
+                    onChange={(e) => setNewUserPass(e.target.value)}
+                    placeholder="Enter password..."
+                    className="input text-xs h-9 pr-8"
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-foreground-400 hover:text-foreground-700 text-sm"
+                  >
+                    <i
+                      className={showPass ? 'ri-eye-off-line' : 'ri-eye-line'}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-semibold text-foreground-700 block mb-1">
+                  Role
+                </label>
                 <select
                   value={newUserRole}
-                  onChange={(e) => setNewUserRole(e.target.value as AdminUser['role'])}
+                  onChange={(e) =>
+                    setNewUserRole(e.target.value as AdminUser['role'])
+                  }
                   className="input text-xs h-9 cursor-pointer"
                 >
                   <option value="member">Member</option>
@@ -422,7 +499,10 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary h-9 text-xs font-bold flex-1">
+                <button
+                  type="submit"
+                  className="btn btn-primary h-9 text-xs font-bold flex-1"
+                >
                   Save User
                 </button>
               </div>
@@ -439,8 +519,10 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
               {banModal.status === 'banned' ? 'Unban User' : 'Ban User'}
             </h3>
             <p className="text-xs text-foreground-600">
-              Are you sure you want to {banModal.status === 'banned' ? 'unban' : 'ban'}{' '}
-              <strong className="text-foreground-950">{banModal.name}</strong> ({banModal.email})?
+              Are you sure you want to{' '}
+              {banModal.status === 'banned' ? 'unban' : 'ban'}{' '}
+              <strong className="text-foreground-950">{banModal.name}</strong> (
+              {banModal.email})?
             </p>
             <div className="flex gap-2 pt-2">
               <button
@@ -454,7 +536,9 @@ export default function Users({ bannedOnly = false }: { bannedOnly?: boolean }) 
                 type="button"
                 onClick={() => toggleBan(banModal.id)}
                 className={`btn h-9 text-xs font-bold flex-1 text-white ${
-                  banModal.status === 'banned' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                  banModal.status === 'banned'
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-rose-600 hover:bg-rose-700'
                 }`}
               >
                 Confirm
