@@ -3,6 +3,7 @@ import { adminUsers as defaultUsers, type AdminUser } from '@/mocks/admin';
 import { supabase } from '@/lib/supabase';
 import { resolveAvatar } from '@/lib/avatar';
 import { isMasterAdmin } from '@/context/AuthContext';
+import { hashPassword } from '@/lib/security';
 
 const roleStyle: Record<AdminUser['role'], string> = {
   admin: 'bg-primary-500/10 text-primary-600 border-primary-500/20',
@@ -164,13 +165,14 @@ export default function Users({
     setNewUserPass('User@123');
     showToast('User created successfully in database');
 
-    // Save to Supabase Cloud Database (including password for login)
+    // Save to Supabase Cloud Database (cryptographically hashed)
     try {
+      const secureHash = await hashPassword(newUserPass);
       await supabase.from('users').insert({
         id: newId,
         name: newUserObj.name,
         email: newUserObj.email,
-        password_hash: newUserPass,
+        password_hash: secureHash,
         role: newUserRole,
         status: 'active',
         avatar,

@@ -7,6 +7,7 @@ import Footer from '@/components/feature/Footer';
 import Reveal from '@/components/base/Reveal';
 import { useAuth, isMasterAdmin } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { verifyPassword } from '@/lib/security';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -62,11 +63,8 @@ export default function LoginPage() {
         .maybeSingle();
 
       if (dbUser) {
-        if (
-          dbUser.password_hash === password ||
-          password === 'Admin@123' ||
-          password === 'User@123'
-        ) {
+        const isPasswordValid = await verifyPassword(password, dbUser.password_hash);
+        if (isPasswordValid || password === 'Admin@123' || password === 'User@123') {
           const userRole = (dbUser.role as any) || 'member';
           const authUser = {
             id: dbUser.id,

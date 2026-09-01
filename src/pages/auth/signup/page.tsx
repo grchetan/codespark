@@ -5,6 +5,7 @@ import Footer from '@/components/feature/Footer';
 import Reveal from '@/components/base/Reveal';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { hashPassword } from '@/lib/security';
 
 const terms = [
   { icon: 'ri-mail-check-line', text: 'Email verification included' },
@@ -48,12 +49,14 @@ export default function SignupPage() {
       const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(cleanName)}`;
       const now = new Date().toISOString();
 
-      // 1. Save directly to Supabase Cloud Database
+      // 1. Save directly to Supabase Cloud Database (cryptographically hashed)
       try {
+        const secureHash = await hashPassword(password);
         await supabase.from('users').insert({
           id: newId,
           name: cleanName,
           email: cleanEmail,
+          password_hash: secureHash,
           role: 'member',
           status: 'active',
           avatar,
