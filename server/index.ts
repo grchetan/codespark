@@ -7,6 +7,7 @@ import effectsRoutes from './routes/effects';
 import adminRoutes from './routes/admin';
 import newsletterRoutes from './routes/newsletter';
 import contactRoutes from './routes/contact';
+import systemRoutes from './routes/system';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api/effects', effectsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/system', systemRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

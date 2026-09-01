@@ -129,6 +129,20 @@ export function initDb() {
     );
   `);
 
+  // 8. Create Site Settings Table (Maintenance Mode, Global Flags)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS site_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+  `);
+
+  const hasMaintenance = db.prepare('SELECT value FROM site_settings WHERE key = ?').get('maintenance_mode');
+  if (!hasMaintenance) {
+    db.prepare('INSERT INTO site_settings (key, value, updated_at) VALUES (?, ?, ?)').run('maintenance_mode', 'false', new Date().toISOString());
+  }
+
   // Run schema migrations for existing DB
   try { db.exec(`ALTER TABLE effects ADD COLUMN instructions TEXT;`); } catch {}
   try { db.exec(`ALTER TABLE effects ADD COLUMN steps TEXT;`); } catch {}

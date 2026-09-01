@@ -331,4 +331,36 @@ router.delete('/messages/:id', (req, res) => {
   }
 });
 
+// System Maintenance / Testing Mode Management
+router.get('/maintenance', (req, res) => {
+  try {
+    const row = db.prepare('SELECT value FROM site_settings WHERE key = ?').get('maintenance_mode') as any;
+    const isMaintenance = row ? row.value === 'true' : false;
+    res.json({ success: true, maintenance: isMaintenance });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/maintenance', (req, res) => {
+  try {
+    const { maintenance } = req.body;
+    const value = maintenance ? 'true' : 'false';
+    const now = new Date().toISOString();
+
+    db.prepare(`
+      INSERT INTO site_settings (key, value, updated_at) VALUES ('maintenance_mode', ?, ?)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+    `).run(value, now);
+
+    res.json({
+      success: true,
+      maintenance: maintenance === true,
+      message: maintenance ? 'Maintenance / Testing mode is now ACTIVE' : 'Site is now LIVE to public visitors'
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;

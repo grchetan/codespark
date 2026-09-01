@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { adminStats, recentActivity as defaultActivity } from '@/mocks/admin';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 const actionColor: Record<string, string> = {
   approved: 'text-emerald-700 bg-emerald-100 border-emerald-300',
@@ -12,6 +12,9 @@ const actionColor: Record<string, string> = {
 };
 
 export default function Overview({ onNavigateTab }: { onNavigateTab?: (tab: string) => void }) {
+  const { isMaintenance, toggleMaintenance } = useMaintenance();
+  const [toggling, setToggling] = useState(false);
+
   const [statsData, setStatsData] = useState({
     totalEffects: adminStats.totalEffects,
     totalUsers: adminStats.totalUsers,
@@ -20,7 +23,7 @@ export default function Overview({ onNavigateTab }: { onNavigateTab?: (tab: stri
     monthlyViews: '520K'
   });
   const [activity, setActivity] = useState(defaultActivity);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/admin/overview')
@@ -37,6 +40,12 @@ export default function Overview({ onNavigateTab }: { onNavigateTab?: (tab: stri
       .finally(() => setLoading(false));
   }, []);
 
+  const handleToggleMaintenance = async () => {
+    setToggling(true);
+    await toggleMaintenance(!isMaintenance);
+    setToggling(false);
+  };
+
   const stats = [
     { label: 'Total Effects', value: statsData.totalEffects, icon: 'ri-code-box-line', tint: 'text-primary-600 bg-primary-500/10 border-primary-500/20' },
     { label: 'Total Users', value: statsData.totalUsers, icon: 'ri-user-3-line', tint: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20' },
@@ -46,6 +55,65 @@ export default function Overview({ onNavigateTab }: { onNavigateTab?: (tab: stri
 
   return (
     <div className="space-y-6 w-full min-w-0">
+      {/* 🚀 Testing & Maintenance Mode Switch Card */}
+      <div className={`rounded-2xl border p-5 sm:p-6 shadow-sm transition-all ${
+        isMaintenance 
+          ? 'bg-amber-500/10 border-amber-500/40' 
+          : 'bg-background-50 border-background-300/60'
+      }`}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <span className={`grid h-12 w-12 place-items-center rounded-2xl text-2xl font-bold shadow-md shrink-0 ${
+              isMaintenance ? 'bg-amber-500 text-white animate-pulse' : 'bg-emerald-500 text-white'
+            }`}>
+              <i className={isMaintenance ? 'ri-tools-fill' : 'ri-global-line'} />
+            </span>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950">
+                  Platform Status: {isMaintenance ? 'Testing / Maintenance Mode' : 'Live to Public'}
+                </h3>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                  isMaintenance 
+                    ? 'bg-amber-500 text-white' 
+                    : 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30'
+                }`}>
+                  {isMaintenance ? 'ACTIVE (Private Testing)' : 'LIVE (Public)'}
+                </span>
+              </div>
+              <p className="text-xs text-foreground-600 mt-0.5">
+                {isMaintenance 
+                  ? 'Public visitors see the Maintenance & Countdown screen. Only you (Admin) can browse and test effects.'
+                  : 'All visitors can freely browse, copy effects, and interact with the library.'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleToggleMaintenance}
+            disabled={toggling}
+            className={`btn h-11 px-5 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md shrink-0 transition-all ${
+              isMaintenance
+                ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20'
+                : 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/20'
+            }`}
+          >
+            {toggling ? (
+              <i className="ri-loader-4-line animate-spin text-base" />
+            ) : isMaintenance ? (
+              <span className="flex items-center gap-1.5">
+                <i className="ri-rocket-2-line text-base" /> Turn Site LIVE 🚀
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <i className="ri-tools-line text-base" /> Enable Maintenance Mode 🚧
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {stats.map((s) => (
@@ -100,38 +168,34 @@ export default function Overview({ onNavigateTab }: { onNavigateTab?: (tab: stri
             onClick={() => onNavigateTab ? onNavigateTab('users') : null}
             className="flex items-center gap-3 rounded-xl border border-background-300/60 p-4 text-left transition-all hover:border-primary-400 hover:bg-background-100/60 shadow-sm"
           >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-500/10 text-lg text-blue-600">
-              <i className="ri-user-settings-line" />
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-purple-500/10 text-lg text-purple-600">
+              <i className="ri-group-line" />
             </span>
             <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-foreground-950 truncate">User Roles & Access</p>
-              <p className="text-[11px] text-foreground-500 truncate">{statsData.totalUsers} registered users</p>
+              <p className="text-xs sm:text-sm font-bold text-foreground-950 truncate">Manage Users</p>
+              <p className="text-[11px] text-foreground-500 truncate">{statsData.totalUsers} registered</p>
             </div>
           </button>
         </div>
       </div>
 
-      {/* Recent Activity Timeline */}
+      {/* Activity Log */}
       <div className="rounded-2xl border border-background-300/60 bg-background-50 p-5 sm:p-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-background-200 pb-3">
-          <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950 flex items-center gap-2">
-            <i className="ri-history-line text-primary-500" /> Recent System Activity
-          </h3>
-          <span className="text-xs text-foreground-500">Live logs</span>
-        </div>
-
-        <div className="mt-3 divide-y divide-background-200/60">
+        <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950 flex items-center gap-2">
+          <i className="ri-history-line text-primary-500" /> Recent Administrative Activity
+        </h3>
+        <div className="mt-4 divide-y divide-background-300/40">
           {activity.map((a) => (
-            <div key={a.id} className="flex items-center gap-3 py-3 transition-colors hover:bg-background-100/50 rounded-lg px-2">
-              <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold border ${actionColor[a.action] || 'bg-background-200 text-foreground-600'}`}>
-                <i className={a.action === 'banned' ? 'ri-forbid-line' : a.action === 'approved' ? 'ri-check-line' : a.action === 'rejected' ? 'ri-close-line' : 'ri-sparkling-line'} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs sm:text-sm text-foreground-950">
-                  <span className="font-bold capitalize">{a.action}</span> <span className="text-foreground-700 font-semibold">{a.target}</span>
-                </p>
-                <p className="text-[11px] text-foreground-500">by {a.by} · {a.time}</p>
+            <div key={a.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-2 text-xs sm:text-sm">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border shrink-0 ${actionColor[a.action] || 'text-foreground-700 bg-background-200'}`}>
+                  {a.action}
+                </span>
+                <span className="text-foreground-900 truncate">
+                  <strong>{(a as any).actor || (a as any).by || 'Admin'}</strong> {a.action} <span className="font-semibold text-primary-600">{a.target}</span>
+                </span>
               </div>
+              <span className="text-[11px] text-foreground-400 shrink-0">{(a as any).timestamp || (a as any).time || 'Recently'}</span>
             </div>
           ))}
         </div>

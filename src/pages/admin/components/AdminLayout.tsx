@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/feature/Navbar';
 import { useAuth } from '@/context/AuthContext';
+import { useMaintenance } from '@/context/MaintenanceContext';
 
 interface AdminLayoutProps {
   activeTab: string;
@@ -11,6 +12,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ activeTab, onTabChange, children }: AdminLayoutProps) {
   const { user, logout } = useAuth();
+  const { isMaintenance } = useMaintenance();
   const [counts, setCounts] = useState({
     pending: 2,
     banned: 1,
@@ -61,7 +63,15 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
                 Manage submissions, official effects, users, and platform inquiries.
               </p>
             </div>
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+                isMaintenance 
+                  ? 'bg-amber-500/15 text-amber-700 border border-amber-500/30' 
+                  : 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30'
+              }`}>
+                <span className={`h-2 w-2 rounded-full ${isMaintenance ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+                {isMaintenance ? 'Testing Mode (Private)' : 'Live to Public'}
+              </span>
               <Link to="/effects" className="btn btn-secondary h-10 px-4 text-xs font-semibold whitespace-nowrap">
                 <i className="ri-arrow-left-line" /> Back to site
               </Link>
