@@ -10,11 +10,13 @@ import Contact from "../pages/contact/page";
 import Login from "../pages/auth/login/page";
 import Signup from "../pages/auth/signup/page";
 import Admin from "../pages/admin/page";
+import Saved from "../pages/saved/page";
 
 const routes: RouteObject[] = [
   { path: "/", element: <Home /> },
   { path: "/effects", element: <Effects /> },
   { path: "/effects/:slug", element: <EffectDetail /> },
+  { path: "/saved", element: <Saved /> },
   { path: "/community", element: <Community /> },
   { path: "/submit", element: <Submit /> },
   { path: "/about", element: <About /> },

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { adminStats, recentActivity as defaultActivity } from '@/mocks/admin';
 import { useMaintenance } from '@/context/MaintenanceContext';
+import { supabase } from '@/lib/supabase';
 
 const actionColor: Record<string, string> = {
   approved: 'text-emerald-700 bg-emerald-100 border-emerald-300',
@@ -16,28 +16,57 @@ export default function Overview({ onNavigateTab }: { onNavigateTab?: (tab: stri
   const [toggling, setToggling] = useState(false);
 
   const [statsData, setStatsData] = useState({
-    totalEffects: adminStats.totalEffects,
-    totalUsers: adminStats.totalUsers,
-    pendingReviews: adminStats.pendingReviews,
+    totalEffects: 0,
+    totalUsers: 0,
+    pendingReviews: 0,
     unreadMessages: 0,
-    monthlyViews: '520K'
   });
-  const [activity, setActivity] = useState(defaultActivity);
-  const [, setLoading] = useState(true);
+  const [activity, setActivity] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLiveOverview = async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch live counts directly from Supabase Cloud
+      const [effectsRes, usersRes, submissionsRes, inquiriesRes] = await Promise.all([
+        supabase.from('effects').select('id', { count: 'exact', head: true }),
+        supabase.from('users').select('id', { count: 'exact', head: true }),
+        supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'unread'),
+      ]);
+
+      const totalEffects = effectsRes.count ?? 16;
+      const totalUsers = usersRes.count ?? 3;
+      const pendingReviews = submissionsRes.count ?? 0;
+      const unreadMessages = inquiriesRes.count ?? 0;
+
+      setStatsData({
+        totalEffects,
+        totalUsers,
+        pendingReviews,
+        unreadMessages,
+      });
+      setLoading(false);
+      return;
+    } catch {}
+
+    // 2. Fallback to local API
+    try {
+      const res = await fetch('/api/admin/overview');
+      const data = await res.json();
+      if (data.success && data.stats) {
+        setStatsData(data.stats);
+        if (Array.isArray(data.recentActivity)) {
+          setActivity(data.recentActivity);
+        }
+      }
+    } catch {} finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetch('/api/admin/overview')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.stats) {
-          setStatsData(data.stats);
-          if (Array.isArray(data.recentActivity) && data.recentActivity.length > 0) {
-            setActivity(data.recentActivity);
-          }
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    fetchLiveOverview();
   }, []);
 
   const handleToggleMaintenance = async () => {
@@ -58,146 +87,131 @@ export default function Overview({ onNavigateTab }: { onNavigateTab?: (tab: stri
       {/* 🚀 Testing & Maintenance Mode Switch Card */}
       <div className={`rounded-2xl border p-5 sm:p-6 shadow-sm transition-all ${
         isMaintenance 
-          ? 'bg-amber-500/10 border-amber-500/40' 
-          : 'bg-background-50 border-background-300/60'
+          ? 'bg-amber-500/10 border-amber-500/30' 
+          : 'bg-emerald-500/10 border-emerald-500/30'
       }`}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <span className={`grid h-12 w-12 place-items-center rounded-2xl text-2xl font-bold shadow-md shrink-0 ${
-              isMaintenance ? 'bg-amber-500 text-white animate-pulse' : 'bg-emerald-500 text-white'
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className={`grid h-10 w-10 place-items-center rounded-xl text-lg font-bold shadow-sm ${
+              isMaintenance ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
             }`}>
-              <i className={isMaintenance ? 'ri-tools-fill' : 'ri-global-line'} />
+              {isMaintenance ? '🛠️' : '🚀'}
             </span>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950">
-                  Platform Status: {isMaintenance ? 'Testing / Maintenance Mode' : 'Live to Public'}
-                </h3>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                  isMaintenance 
-                    ? 'bg-amber-500 text-white' 
-                    : 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30'
+              <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950 flex items-center gap-2">
+                <span>{isMaintenance ? 'Testing / Maintenance Mode Active' : 'Site is LIVE & Public'}</span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase ${
+                  isMaintenance ? 'bg-amber-500/20 text-amber-700' : 'bg-emerald-500/20 text-emerald-700'
                 }`}>
-                  {isMaintenance ? 'ACTIVE (Private Testing)' : 'LIVE (Public)'}
+                  {isMaintenance ? 'Testing Mode' : 'LIVE'}
                 </span>
-              </div>
+              </h3>
               <p className="text-xs text-foreground-600 mt-0.5">
                 {isMaintenance 
-                  ? 'Public visitors see the Maintenance & Countdown screen. Only you (Admin) can browse and test effects.'
-                  : 'All visitors can freely browse, copy effects, and interact with the library.'}
+                  ? 'Visitors see the clean maintenance pipeline HUD. You and your authorized admins can access all pages freely.' 
+                  : 'All visitors can freely browse, preview, and copy code from the catalog.'}
               </p>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={handleToggleMaintenance}
             disabled={toggling}
-            className={`btn h-11 px-5 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md shrink-0 transition-all ${
-              isMaintenance
-                ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20'
-                : 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/20'
+            onClick={handleToggleMaintenance}
+            className={`btn h-10 px-5 text-xs font-bold shadow-sm transition-all text-white ${
+              isMaintenance 
+                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20' 
+                : 'bg-amber-600 hover:bg-amber-700 shadow-amber-500/20'
             }`}
           >
             {toggling ? (
-              <i className="ri-loader-4-line animate-spin text-base" />
+              <span className="flex items-center gap-2">
+                <i className="ri-loader-4-line animate-spin text-sm" />
+                <span>Updating status...</span>
+              </span>
             ) : isMaintenance ? (
-              <span className="flex items-center gap-1.5">
-                <i className="ri-rocket-2-line text-base" /> Turn Site LIVE 🚀
+              <span className="flex items-center gap-2">
+                <i className="ri-rocket-line text-sm" />
+                <span>Turn Site LIVE</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5">
-                <i className="ri-tools-line text-base" /> Enable Maintenance Mode 🚧
+              <span className="flex items-center gap-2">
+                <i className="ri-tools-line text-sm" />
+                <span>Enable Testing Mode</span>
               </span>
             )}
           </button>
         </div>
       </div>
 
-      {/* 4 Stat Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      {/* Live Stats Row */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-background-300/60 bg-background-50 p-4 sm:p-5 shadow-sm">
+          <div
+            key={s.label}
+            className="rounded-2xl border border-background-300/60 bg-background-50 p-5 shadow-sm hover:border-primary-500/40 transition-colors"
+          >
             <div className="flex items-center justify-between">
-              <span className={`grid h-10 w-10 place-items-center rounded-xl text-lg border ${s.tint}`}>
+              <span className={`grid h-10 w-10 place-items-center rounded-xl text-lg font-bold border ${s.tint}`}>
                 <i className={s.icon} />
               </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-foreground-400">Live DB</span>
             </div>
-            <p className="mt-3 font-display text-2xl sm:text-3xl font-bold text-foreground-950">{s.value}</p>
-            <p className="text-[11px] sm:text-xs text-foreground-500 font-medium">{s.label}</p>
+            <p className="mt-4 font-display text-2xl sm:text-3xl font-bold text-foreground-950">
+              {loading ? '-' : s.value}
+            </p>
+            <p className="text-xs text-foreground-500 mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Quick Action Shortcuts */}
-      <div className="rounded-2xl border border-background-300/60 bg-background-50 p-5 sm:p-6 shadow-sm">
-        <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950 flex items-center gap-2">
-          <i className="ri-flashlight-line text-primary-500" /> Platform Management Shortcuts
+      {/* Quick Access Actions */}
+      <div className="rounded-2xl border border-background-300/60 bg-background-50 p-6 shadow-sm space-y-4">
+        <h3 className="font-display text-base font-bold text-foreground-950">
+          Admin Shortcuts & Navigation
         </h3>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           <button
             type="button"
-            onClick={() => onNavigateTab ? onNavigateTab('verifications') : null}
-            className="flex items-center gap-3 rounded-xl border border-background-300/60 p-4 text-left transition-all hover:border-primary-400 hover:bg-background-100/60 shadow-sm"
+            onClick={() => onNavigateTab?.('users')}
+            className="flex items-center gap-3 rounded-xl border border-background-300/60 p-4 hover:border-primary-500/50 hover:bg-background-100/40 transition-all text-left"
           >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-500/10 text-lg text-primary-600">
-              <i className="ri-shield-check-line" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-foreground-950 truncate">Review Submissions</p>
-              <p className="text-[11px] text-foreground-500 truncate">{statsData.pendingReviews} awaiting action</p>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onNavigateTab ? onNavigateTab('official') : null}
-            className="flex items-center gap-3 rounded-xl border border-background-300/60 p-4 text-left transition-all hover:border-primary-400 hover:bg-background-100/60 shadow-sm"
-          >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-lg text-emerald-600">
-              <i className="ri-add-box-line" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-foreground-950 truncate">Add Official Effect</p>
-              <p className="text-[11px] text-foreground-500 truncate">Publish curated code</p>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onNavigateTab ? onNavigateTab('users') : null}
-            className="flex items-center gap-3 rounded-xl border border-background-300/60 p-4 text-left transition-all hover:border-primary-400 hover:bg-background-100/60 shadow-sm"
-          >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-purple-500/10 text-lg text-purple-600">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600 text-lg">
               <i className="ri-group-line" />
             </span>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-foreground-950 truncate">Manage Users</p>
-              <p className="text-[11px] text-foreground-500 truncate">{statsData.totalUsers} registered</p>
+            <div>
+              <p className="text-xs font-bold text-foreground-950">Users & Roles</p>
+              <p className="text-[11px] text-foreground-500">Manage {statsData.totalUsers} registered users</p>
             </div>
           </button>
-        </div>
-      </div>
 
-      {/* Activity Log */}
-      <div className="rounded-2xl border border-background-300/60 bg-background-50 p-5 sm:p-6 shadow-sm">
-        <h3 className="font-display text-base sm:text-lg font-bold text-foreground-950 flex items-center gap-2">
-          <i className="ri-history-line text-primary-500" /> Recent Administrative Activity
-        </h3>
-        <div className="mt-4 divide-y divide-background-300/40">
-          {activity.map((a) => (
-            <div key={a.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-2 text-xs sm:text-sm">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider border shrink-0 ${actionColor[a.action] || 'text-foreground-700 bg-background-200'}`}>
-                  {a.action}
-                </span>
-                <span className="text-foreground-900 truncate">
-                  <strong>{(a as any).actor || (a as any).by || 'Admin'}</strong> {a.action} <span className="font-semibold text-primary-600">{a.target}</span>
-                </span>
-              </div>
-              <span className="text-[11px] text-foreground-400 shrink-0">{(a as any).timestamp || (a as any).time || 'Recently'}</span>
+          <button
+            type="button"
+            onClick={() => onNavigateTab?.('official')}
+            className="flex items-center gap-3 rounded-xl border border-background-300/60 p-4 hover:border-primary-500/50 hover:bg-background-100/40 transition-all text-left"
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary-500/10 text-primary-600 text-lg">
+              <i className="ri-code-box-line" />
+            </span>
+            <div>
+              <p className="text-xs font-bold text-foreground-950">Official Effects</p>
+              <p className="text-[11px] text-foreground-500">Manage {statsData.totalEffects} components</p>
             </div>
-          ))}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigateTab?.('verifications')}
+            className="flex items-center gap-3 rounded-xl border border-background-300/60 p-4 hover:border-primary-500/50 hover:bg-background-100/40 transition-all text-left"
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-amber-500/10 text-amber-600 text-lg">
+              <i className="ri-shield-check-line" />
+            </span>
+            <div>
+              <p className="text-xs font-bold text-foreground-950">Verifications</p>
+              <p className="text-[11px] text-foreground-500">{statsData.pendingReviews} pending submissions</p>
+            </div>
+          </button>
         </div>
       </div>
     </div>

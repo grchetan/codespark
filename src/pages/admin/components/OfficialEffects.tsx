@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { officialEffects as defaultOfficial, type OfficialEffect } from '@/mocks/admin';
+import type { OfficialEffect } from '@/mocks/admin';
 import LivePreview from '@/components/feature/LivePreview';
+import { supabase } from '@/lib/supabase';
 
 const statusStyle: Record<string, string> = {
   published: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
@@ -9,7 +10,7 @@ const statusStyle: Record<string, string> = {
 };
 
 export default function OfficialEffects() {
-  const [list, setList] = useState<OfficialEffect[]>(defaultOfficial);
+  const [list, setList] = useState<OfficialEffect[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
@@ -19,17 +20,51 @@ export default function OfficialEffects() {
   const [jsCode, setJsCode] = useState('');
   const [difficulty, setDifficulty] = useState('medium');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const fetchEffects = async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch live from Supabase Cloud Database
+      const { data, error } = await supabase
+        .from('effects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const mapped: OfficialEffect[] = data.map((e: any) => ({
+          id: e.id,
+          name: e.name,
+          slug: e.slug || e.id,
+          category: e.category_label || e.category,
+          status: e.status || 'published',
+          updatedAt: (e.created_at || '2026-08-01').slice(0, 10),
+          code: e.css_code || '',
+          html_code: e.html_code || '',
+          css_code: e.css_code || '',
+          js_code: e.js_code || '',
+          difficulty: e.difficulty || 'medium',
+        }));
+        setList(mapped);
+        setLoading(false);
+        return;
+      }
+    } catch {}
+
+    // 2. Fallback to local backend API
+    try {
+      const res = await fetch('/api/admin/effects');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.effects)) {
+        setList(data.effects);
+      }
+    } catch {} finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetch('/api/admin/effects')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.effects) && data.effects.length > 0) {
-          setList(data.effects);
-        }
-      })
-      .catch(() => {});
+    fetchEffects();
   }, []);
 
   const toggleExpand = (id: string) => setExpanded((prev) => (prev === id ? null : id));
@@ -38,15 +73,17 @@ export default function OfficialEffects() {
     e.preventDefault();
     if (!name.trim()) return;
 
-    setLoading(true);
+    const newId = `e_${Date.now()}`;
     const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const now = new Date().toISOString();
+
     const newEff: OfficialEffect = {
-      id: `e_${Date.now()}`,
+      id: newId,
       name: name.trim(),
       slug,
       category,
       status: 'published',
-      updatedAt: new Date().toISOString().slice(0, 10),
+      updatedAt: now.slice(0, 10),
       code: cssCode.trim(),
       html_code: htmlCode,
       css_code: cssCode,
@@ -56,6 +93,30 @@ export default function OfficialEffects() {
 
     setList((prev) => [newEff, ...prev]);
 
+    // Save to Supabase Cloud Database
+    try {
+      await supabase.from('effects').insert({
+        id: newId,
+        slug,
+        name: name.trim(),
+        description: `Official ${name.trim()} component`,
+        category: category.toLowerCase(),
+        category_label: category,
+        tags: [category.toLowerCase(), 'official', 'ui-motion'],
+        difficulty,
+        license: 'MIT',
+        likes: 0,
+        saves: 0,
+        views: 0,
+        html_code: htmlCode,
+        css_code: cssCode,
+        js_code: jsCode,
+        is_official: true,
+        created_at: now,
+      });
+    } catch {}
+
+    // Save to Backend API
     try {
       await fetch('/api/admin/effects', {
         method: 'POST',
@@ -74,70 +135,101 @@ export default function OfficialEffects() {
     setName('');
     setCategory('Hover');
     setShowForm(false);
-    setLoading(false);
   };
 
   const deleteEffect = async (id: string) => {
-    setList((prev) => prev.filter((item) => item.id !== id));
+    setList((prev) => prev.filter((e) => e.id !== id));
+    try {
+      await supabase.from('effects').delete().eq('id', id);
+    } catch {}
     try {
       await fetch(`/api/admin/effects/${id}`, { method: 'DELETE' });
     } catch {}
   };
 
-  const visible = list.filter((e) =>
-    e.name.toLowerCase().includes(search.toLowerCase()) ||
-    e.category.toLowerCase().includes(search.toLowerCase())
+  const filtered = list.filter(
+    (e) =>
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
+      e.category.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="space-y-6 w-full min-w-0">
-      {/* Header */}
+      {/* Header Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground-950">Official Library Effects</h3>
+          <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground-950">
+            Official Component Library
+          </h3>
           <p className="text-xs sm:text-sm text-foreground-500 mt-0.5">
-            Curated and core effects published directly into the CodeSpark catalog.
+            Synchronized directly with Supabase database.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="btn btn-primary h-10 px-4 text-xs font-semibold uppercase tracking-wider self-start sm:self-auto"
-        >
-          <i className={showForm ? 'ri-close-line' : 'ri-add-line'} />
-          {showForm ? 'Cancel' : 'Add Official Effect'}
-        </button>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={fetchEffects}
+            className="btn btn-secondary h-9 px-3 text-xs"
+          >
+            <i className="ri-refresh-line" /> Refresh
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="btn btn-primary h-9 px-4 text-xs font-bold"
+          >
+            <i className={showForm ? 'ri-close-line' : 'ri-add-line'} />
+            <span>{showForm ? 'Cancel' : 'Add Official Effect'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Add Effect Form */}
       {showForm && (
-        <form onSubmit={addEffect} className="space-y-4 rounded-3xl border border-primary-500/30 bg-background-50 p-5 sm:p-6 shadow-md">
-          <h4 className="font-display text-base font-bold text-foreground-950 flex items-center gap-2">
-            <i className="ri-magic-line text-primary-500" /> New Official Effect Definition
+        <form onSubmit={addEffect} className="rounded-2xl border border-background-300/80 bg-background-50 p-5 shadow-sm space-y-4 animate-fade-in">
+          <h4 className="font-display text-sm font-bold text-foreground-950 border-b border-background-300/50 pb-2">
+            Publish New Official Component
           </h4>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="label">Effect Name *</label>
+              <label className="text-[11px] font-semibold text-foreground-700 block mb-1">Component Name</label>
               <input
-                className="input"
+                type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Neon Cyber Glow"
+                placeholder="e.g. Magnetic Pulse Button"
+                className="input text-xs h-9"
                 required
               />
             </div>
+
             <div>
-              <label className="label">Category</label>
-              <select className="input cursor-pointer" value={category} onChange={(e) => setCategory(e.target.value)}>
-                {['Hover', 'Text', 'Cursor', '3D / Tilt', 'Loaders', 'Cards', 'Transitions', 'Creative'].map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+              <label className="text-[11px] font-semibold text-foreground-700 block mb-1">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="input text-xs h-9 cursor-pointer"
+              >
+                <option value="Hover">Hover</option>
+                <option value="Text">Text</option>
+                <option value="Cursor">Cursor</option>
+                <option value="3D / Tilt">3D / Tilt</option>
+                <option value="Loaders">Loaders</option>
+                <option value="Cards">Cards</option>
+                <option value="Transitions">Transitions</option>
+                <option value="Creative">Creative</option>
               </select>
             </div>
+
             <div>
-              <label className="label">Difficulty</label>
-              <select className="input cursor-pointer" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+              <label className="text-[11px] font-semibold text-foreground-700 block mb-1">Difficulty</label>
+              <select
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value)}
+                className="input text-xs h-9 cursor-pointer"
+              >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="advanced">Advanced</option>
@@ -145,110 +237,128 @@ export default function OfficialEffects() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="label">HTML Code *</label>
+              <label className="text-[11px] font-semibold text-foreground-700 block mb-1">HTML Code</label>
               <textarea
-                className="input min-h-[110px] font-mono text-xs bg-foreground-950 text-background-200"
                 value={htmlCode}
                 onChange={(e) => setHtmlCode(e.target.value)}
-                required
-                spellCheck={false}
+                rows={4}
+                className="input font-mono text-xs p-2.5 w-full resize-y"
               />
             </div>
             <div>
-              <label className="label">CSS Code *</label>
+              <label className="text-[11px] font-semibold text-foreground-700 block mb-1">CSS Code</label>
               <textarea
-                className="input min-h-[110px] font-mono text-xs bg-foreground-950 text-background-200"
                 value={cssCode}
                 onChange={(e) => setCssCode(e.target.value)}
-                required
-                spellCheck={false}
+                rows={4}
+                className="input font-mono text-xs p-2.5 w-full resize-y"
               />
             </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => setShowForm(false)} className="btn btn-ghost h-10 text-xs">
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="btn btn-secondary h-9 px-4 text-xs"
+            >
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn btn-primary h-10 px-5 text-xs font-semibold uppercase tracking-wider">
-              {loading ? 'Publishing...' : 'Publish Effect'}
+            <button type="submit" className="btn btn-primary h-9 px-5 text-xs font-bold">
+              Publish to Database
             </button>
           </div>
         </form>
       )}
 
-      {/* Search Input */}
+      {/* Search Bar */}
       <div className="relative w-full sm:max-w-md">
         <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground-400" />
         <input
           type="text"
-          className="input pl-9 text-xs sm:text-sm"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search official effects..."
+          className="input pl-9 h-10 text-xs w-full"
         />
       </div>
 
-      {/* List of Effects */}
+      {/* Effects Table / List */}
       <div className="space-y-3">
-        {visible.map((e) => (
-          <div key={e.id} className="overflow-hidden rounded-2xl border border-background-300/60 bg-background-50 shadow-sm">
-            <button
-              type="button"
-              onClick={() => toggleExpand(e.id)}
-              className="flex w-full items-center gap-3 p-4 sm:px-5 sm:py-4 text-left transition-colors hover:bg-background-100/50"
-            >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary-500/10 text-base text-primary-600">
-                <i className="ri-code-s-slash-line" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs sm:text-sm font-bold text-foreground-950">{e.name}</p>
-                <p className="text-[11px] text-foreground-500">{e.category} · updated {e.updatedAt}</p>
-              </div>
-              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize border ${statusStyle[e.status] || 'bg-background-200 text-foreground-600'}`}>
-                {e.status}
-              </span>
-              <i className={`text-base text-foreground-400 transition-transform ${expanded === e.id ? 'rotate-180 text-foreground-950' : ''} ri-arrow-down-s-line`} />
-            </button>
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-xs text-foreground-400 gap-2 font-medium">
+            <i className="ri-loader-4-line animate-spin text-base text-primary-500" />
+            <span>Loading database components...</span>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-2xl border border-background-300/60 bg-background-50 p-12 text-center text-xs text-foreground-400">
+            <i className="ri-code-box-line text-3xl mb-2 block opacity-40" />
+            No official effects found in database.
+          </div>
+        ) : (
+          filtered.map((item) => {
+            const isExp = expanded === item.id;
+            return (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-background-300/60 bg-background-50 overflow-hidden shadow-sm transition-all"
+              >
+                <div
+                  onClick={() => toggleExpand(item.id)}
+                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-background-100/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary-500/10 text-primary-600 text-sm shrink-0">
+                      <i className="ri-code-s-slash-line" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-bold text-xs sm:text-sm text-foreground-950 truncate">
+                        {item.name}
+                      </p>
+                      <p className="text-[11px] text-foreground-500">
+                        {item.category} • updated {item.updatedAt}
+                      </p>
+                    </div>
+                  </div>
 
-            {expanded === e.id && (
-              <div className="border-t border-background-300/40 p-4 sm:p-5 bg-background-100/30 space-y-4">
-                {/* Live Preview Box */}
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-foreground-500 mb-1.5 block">
-                    Live Canvas Preview
-                  </label>
-                  <div className="h-44 w-full rounded-xl overflow-hidden border border-background-300">
-                    <LivePreview
-                      id={e.id}
-                      html={e.html_code}
-                      css={e.css_code || e.code}
-                      js={e.js_code}
-                      className="h-full w-full"
-                    />
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase border ${statusStyle[item.status] || statusStyle.published}`}>
+                      {item.status}
+                    </span>
+                    <i className={`ri-arrow-down-s-line text-foreground-400 transition-transform ${isExp ? 'rotate-180' : ''}`} />
                   </div>
                 </div>
 
-                {/* Code Snippet & Remove */}
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-foreground-500">CSS Snippet</span>
-                  <button
-                    type="button"
-                    onClick={() => deleteEffect(e.id)}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary-500 px-3 text-xs font-semibold text-white hover:bg-primary-600 transition-colors"
-                  >
-                    <i className="ri-delete-bin-line" /> Delete Effect
-                  </button>
-                </div>
-                <pre className="code-scroll max-h-36 overflow-auto rounded-xl bg-foreground-950 p-4 text-xs font-mono text-background-200 leading-relaxed">
-                  {e.css_code || e.code}
-                </pre>
+                {isExp && (
+                  <div className="border-t border-background-300/40 p-4 bg-background-100/20 space-y-4">
+                    {/* Live Preview Box */}
+                    <div className="h-44 rounded-xl border border-background-300/60 overflow-hidden bg-background-50">
+                      <LivePreview
+                        id={item.id}
+                        html={item.html_code || ''}
+                        css={item.css_code || item.code}
+                        js={item.js_code || ''}
+                        className="h-full w-full"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => deleteEffect(item.id)}
+                        className="rounded-lg px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-500/10 border border-rose-500/20 transition-colors"
+                      >
+                        <i className="ri-delete-bin-line mr-1" /> Delete Component
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
+            );
+          })
+        )}
       </div>
     </div>
   );

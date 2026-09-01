@@ -62,7 +62,7 @@ export const officialCreator: Creator = {
   handle: '@codespark',
   avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
   role: 'Core Effect System',
-  followers: 48200,
+  followers: 0,
   effects: 18,
   bio: 'Official interactive UI micro-interactions created by Chetan Prajapat & CodeSpark Core.',
   tags: ['official', 'verified', 'ui-motion', 'micro-interactions'],
@@ -75,7 +75,7 @@ export const founderCreator: Creator = {
   handle: '@chetan',
   avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat',
   role: 'Founder & Lead Architect',
-  followers: 52000,
+  followers: 0,
   effects: 18,
   bio: 'Building the next generation of copy-paste interactive UI motion components for developers.',
   tags: ['founder', 'verified', 'architect', 'design-engineer'],
@@ -93,7 +93,7 @@ export const effects: Effect[] = [
     description: 'A CTA that is subtly pulled toward your cursor — the button leans in just before you commit.',
     image: '',
     tags: ['magnetic', 'button', 'cursor', 'micro-interaction'],
-    difficulty: 'medium', license: 'MIT', likes: 4820, saves: 1730, views: 96000, author: officialCreator, createdAt: '2026-08-01',
+    difficulty: 'medium', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-01',
     interactions: ['hover', 'magnetic', 'spring'], isOfficial: true
   },
   {
@@ -101,7 +101,7 @@ export const effects: Effect[] = [
     description: 'A perspective card that rotates on the X and Y axes as you move, with a glare highlight that follows.',
     image: '',
     tags: ['3d', 'perspective', 'card', 'tilt'],
-    difficulty: 'medium', license: 'MIT', likes: 9310, saves: 4020, views: 210000, author: officialCreator, createdAt: '2026-07-28',
+    difficulty: 'medium', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-07-28',
     interactions: ['hover', 'tilt', 'depth', 'glare'], isOfficial: true
   },
   {
@@ -109,7 +109,7 @@ export const effects: Effect[] = [
     description: 'Characters violently scramble and settle into the final word. Perfect for hero headlines and reveals.',
     image: '',
     tags: ['text', 'scramble', 'animation', 'decoder'],
-    difficulty: 'advanced', license: 'MIT', likes: 7640, saves: 2980, views: 150000, author: officialCreator, createdAt: '2026-08-10',
+    difficulty: 'advanced', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-10',
     interactions: ['scroll', 'text', 'js'], isOfficial: true
   },
   {
@@ -117,7 +117,7 @@ export const effects: Effect[] = [
     description: 'A radial spotlight that reveals the text beneath as your cursor glides across the section.',
     image: '',
     tags: ['cursor', 'spotlight', 'text', 'reveal'],
-    difficulty: 'easy', license: 'MIT', likes: 5280, saves: 1890, views: 88000, author: officialCreator, createdAt: '2026-08-05',
+    difficulty: 'easy', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-05',
     interactions: ['cursor', 'hover', 'spotlight'], isOfficial: true
   },
   {
@@ -125,7 +125,7 @@ export const effects: Effect[] = [
     description: 'Soft blurred color blobs that rotate in opposing directions — an organic, ambient loading state.',
     image: '',
     tags: ['loader', 'aurora', 'blur', 'ambient', 'css-only'],
-    difficulty: 'easy', license: 'MIT', likes: 6190, saves: 2430, views: 112000, author: officialCreator, createdAt: '2026-08-12',
+    difficulty: 'easy', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-12',
     interactions: ['loader', 'ambient', 'gradient'], isOfficial: true
   },
   {
@@ -133,7 +133,7 @@ export const effects: Effect[] = [
     description: 'Dual-track marquee that scrolls infinitely in opposing directions with masked edge falloffs.',
     image: '',
     tags: ['marquee', 'text', 'ticker', 'infinite', 'css-only'],
-    difficulty: 'easy', license: 'MIT', likes: 4120, saves: 1490, views: 74000, author: officialCreator, createdAt: '2026-07-22',
+    difficulty: 'easy', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-07-22',
     interactions: ['scroll', 'infinite', 'text'], isOfficial: true
   },
   {
@@ -141,7 +141,7 @@ export const effects: Effect[] = [
     description: 'Material-inspired ripple wave expanding outward from the exact coordinate where you clicked.',
     image: '',
     tags: ['button', 'ripple', 'click', 'physics'],
-    difficulty: 'easy', license: 'MIT', likes: 3880, saves: 1220, views: 61000, author: officialCreator, createdAt: '2026-07-15',
+    difficulty: 'easy', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-07-15',
     interactions: ['click', 'ripple', 'hover'], isOfficial: true
   },
   {
@@ -149,7 +149,7 @@ export const effects: Effect[] = [
     description: 'The border and inner glow illuminate dynamically toward the cursor position on hover.',
     image: '',
     tags: ['card', 'spotlight', 'border-glow', 'cursor'],
-    difficulty: 'medium', license: 'MIT', likes: 8750, saves: 3640, views: 184000, author: officialCreator, createdAt: '2026-08-08',
+    difficulty: 'medium', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-08',
     interactions: ['hover', 'spotlight', 'glow'], isOfficial: true
   },
   {
@@ -157,7 +157,7 @@ export const effects: Effect[] = [
     description: 'Organic SVG blob morphing smoothly between random border-radius keyframes in an infinite loop.',
     image: '',
     tags: ['blob', 'morph', 'organic', 'shape', 'css-only'],
-    difficulty: 'medium', license: 'MIT', likes: 4530, saves: 1680, views: 79000, author: officialCreator, createdAt: '2026-08-03',
+    difficulty: 'medium', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-03',
     interactions: ['infinite', 'morph', 'ambient'], isOfficial: true
   },
   {
@@ -165,7 +165,7 @@ export const effects: Effect[] = [
     description: 'Curved clip-path wipe animation that smoothly expands across the viewport between route changes.',
     image: '',
     tags: ['transition', 'page', 'clip-path', 'reveal'],
-    difficulty: 'advanced', license: 'MIT', likes: 6920, saves: 2810, views: 134000, author: officialCreator, createdAt: '2026-07-30',
+    difficulty: 'advanced', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-07-30',
     interactions: ['click', 'page', 'wipe'], isOfficial: true
   },
   {
@@ -173,7 +173,7 @@ export const effects: Effect[] = [
     description: 'Layered frosted glass cards that fan out on hover with subtle backdrop-filter blur and refraction.',
     image: '',
     tags: ['glass', 'stack', 'frosted', 'fan-out', 'cards'],
-    difficulty: 'medium', license: 'MIT', likes: 5840, saves: 2190, views: 104000, author: officialCreator, createdAt: '2026-08-07',
+    difficulty: 'medium', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-07',
     interactions: ['hover', 'fan-out', 'glass'], isOfficial: true
   },
   {
@@ -181,7 +181,7 @@ export const effects: Effect[] = [
     description: 'A metallic beam of light continuously glides across the letterforms with high contrast.',
     image: '',
     tags: ['text', 'shimmer', 'metallic', 'gradient', 'css-only'],
-    difficulty: 'easy', license: 'MIT', likes: 3670, saves: 1140, views: 57000, author: officialCreator, createdAt: '2026-07-18',
+    difficulty: 'easy', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-07-18',
     interactions: ['infinite', 'gradient', 'text'], isOfficial: true
   },
   {
@@ -189,7 +189,7 @@ export const effects: Effect[] = [
     description: 'A smooth trailing dot with spring physics that expands when hovering over interactive elements.',
     image: '',
     tags: ['cursor', 'follower', 'spring', 'smooth', 'trailing'],
-    difficulty: 'medium', license: 'MIT', likes: 7210, saves: 3050, views: 147000, author: officialCreator, createdAt: '2026-08-02',
+    difficulty: 'medium', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-02',
     interactions: ['cursor', 'trailing', 'spring'], isOfficial: true
   },
   {
@@ -197,7 +197,7 @@ export const effects: Effect[] = [
     description: 'Content placeholder with a diagonal shimmer sweep to indicate loading data seamlessly.',
     image: '',
     tags: ['skeleton', 'loader', 'placeholder', 'pulse', 'css-only'],
-    difficulty: 'easy', license: 'MIT', likes: 3290, saves: 980, views: 49000, author: officialCreator, createdAt: '2026-07-12',
+    difficulty: 'easy', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-07-12',
     interactions: ['loader', 'shimmer', 'pulse'], isOfficial: true
   },
   {
@@ -205,7 +205,7 @@ export const effects: Effect[] = [
     description: 'Multi-layer foreground and background floating elements moving at different depths on mousemove.',
     image: '',
     tags: ['parallax', '3d', 'scene', 'multi-layer', 'tilt'],
-    difficulty: 'advanced', license: 'MIT', likes: 8430, saves: 3510, views: 176000, author: officialCreator, createdAt: '2026-08-09',
+    difficulty: 'advanced', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-09',
     interactions: ['hover', 'tilt', 'parallax', 'depth'], isOfficial: true
   },
   {
@@ -213,7 +213,7 @@ export const effects: Effect[] = [
     description: 'Navbar links that pull toward your cursor with a gliding pill indicator following beneath.',
     image: '',
     tags: ['nav', 'magnetic', 'pill', 'hover', 'menu'],
-    difficulty: 'medium', license: 'MIT', likes: 5120, saves: 1980, views: 92000, author: officialCreator, createdAt: '2026-08-04',
+    difficulty: 'medium', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-08-04',
     interactions: ['hover', 'magnetic', 'nav'], isOfficial: true
   },
 ];

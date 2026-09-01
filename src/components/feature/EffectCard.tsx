@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import type { Effect } from '@/mocks/effects';
 import LivePreview from './LivePreview';
 import { effectCode } from '@/mocks/code';
+import { useSaved } from '@/context/SavedContext';
 
 export function formatCount(n: number) {
-  if (!n) return '0';
+  if (!n && n !== 0) return '0';
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
   return String(n);
 }
@@ -24,10 +25,8 @@ export default function EffectCard({
   compact?: boolean;
 }) {
   const navigate = useNavigate();
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const { isSaved, toggleSave, isLiked, toggleLike, getLikeCount } = useSaved();
   const [copied, setCopied] = useState(false);
-  const [likes, setLikes] = useState(effect.likes || 0);
   const [showCopyMenu, setShowCopyMenu] = useState(false);
   const [darkStage, setDarkStage] = useState(false);
 
@@ -40,26 +39,14 @@ export default function EffectCard({
 
   const goDetail = () => navigate(`/effects/${effect.slug || effect.id}`);
 
-  const onLike = async (e: React.MouseEvent) => {
+  const onLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const nextState = !liked;
-    setLiked(nextState);
-    setLikes((v) => (nextState ? v + 1 : Math.max(0, v - 1)));
-    try {
-      await fetch(`/api/effects/${effect.id}/like`, { method: 'POST' });
-    } catch {
-      // offline fallback
-    }
+    toggleLike(effect.id, effect.likes || 0);
   };
 
-  const onSave = async (e: React.MouseEvent) => {
+  const onSave = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSaved((v) => !v);
-    try {
-      await fetch(`/api/effects/${effect.id}/save`, { method: 'POST' });
-    } catch {
-      // offline fallback
-    }
+    toggleSave(effect);
   };
 
   const copyCode = async (e: React.MouseEvent, type: 'all' | 'html' | 'css' | 'js') => {
@@ -195,13 +182,17 @@ export default function EffectCard({
         {/* Bottom Actions Row */}
         <div className="mt-4 flex items-center justify-between border-t border-background-300/50 pt-3">
           {/* Official Verified Author Badge */}
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0 max-w-[125px] sm:max-w-[145px]">
             <span className="grid h-5 w-5 place-items-center rounded-full bg-primary-500 text-[10px] font-bold text-white shadow-sm shrink-0">
               ⚡
             </span>
-            <span className="truncate text-xs font-semibold text-foreground-800 flex items-center gap-1">
+            <span className="truncate text-xs font-semibold text-foreground-800">
               {effect.author?.name || 'CodeSpark Official'}
-              <i className="ri-verified-badge-fill text-primary-500 text-xs shrink-0" title="Verified Official Component" />
+            </span>
+            <span className="inline-flex items-center justify-center text-primary-500 shrink-0" title="Verified Official Component">
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+              </svg>
             </span>
           </div>
 
@@ -217,29 +208,31 @@ export default function EffectCard({
               <i className="ri-palette-line text-base" />
             </button>
 
-            {/* Like */}
+            {/* Real Interactive Like */}
             <button
               type="button"
               onClick={onLike}
               aria-label="Like"
-              className={`flex items-center gap-1 rounded-lg px-2 h-8 text-xs font-medium transition-colors hover:bg-background-200/50 ${
-                liked ? 'text-primary-500 bg-primary-500/10' : 'text-foreground-500'
+              title={isLiked(effect.id) ? 'Unlike' : 'Like'}
+              className={`flex items-center gap-1 rounded-lg px-2 h-8 text-xs font-semibold transition-all hover:bg-background-200/50 active:scale-95 ${
+                isLiked(effect.id) ? 'text-rose-500 bg-rose-500/10 font-bold' : 'text-foreground-500'
               }`}
             >
-              <i className={liked ? 'ri-heart-fill text-base' : 'ri-heart-line text-base'} />
-              <span>{formatCount(likes)}</span>
+              <i className={isLiked(effect.id) ? 'ri-heart-fill text-base text-rose-500 animate-pulse' : 'ri-heart-line text-base'} />
+              <span>{formatCount(getLikeCount(effect.id, effect.likes || 0))}</span>
             </button>
 
-            {/* Save / Bookmark */}
+            {/* Real Save / Bookmark */}
             <button
               type="button"
               onClick={onSave}
               aria-label="Save"
-              className={`grid h-8 w-8 place-items-center rounded-lg transition-colors hover:bg-background-200/50 ${
-                saved ? 'text-accent-600 bg-accent-500/10' : 'text-foreground-500'
+              title={isSaved(effect.id) ? 'Saved in your collection' : 'Save to bookmarks'}
+              className={`grid h-8 w-8 place-items-center rounded-lg transition-all hover:bg-background-200/50 active:scale-95 ${
+                isSaved(effect.id) ? 'text-primary-600 bg-primary-500/15' : 'text-foreground-500'
               }`}
             >
-              <i className={saved ? 'ri-bookmark-fill text-base' : 'ri-bookmark-line text-base'} />
+              <i className={isSaved(effect.id) ? 'ri-bookmark-fill text-base text-primary-600' : 'ri-bookmark-line text-base'} />
             </button>
 
             {/* Copy Code Dropdown / Button */}

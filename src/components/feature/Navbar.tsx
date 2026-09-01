@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useSaved } from '@/context/SavedContext';
 
 const navLinks = [
   { label: 'Home', to: '/' },
   { label: 'Effects', to: '/effects' },
+  { label: 'Saved', to: '/saved' },
   { label: 'Community', to: '/community' },
   { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
@@ -12,6 +14,7 @@ const navLinks = [
 
 export default function Navbar() {
   const { user, logout, isAdmin, isAuthenticated } = useAuth();
+  const { savedCount } = useSaved();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -124,7 +127,21 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Right Actions */}
-        <div className="hidden md:flex items-center gap-2.5 shrink-0">
+        <div className="hidden md:flex items-center gap-2 shrink-0">
+          {/* Saved Collection Quick Button */}
+          <Link
+            to="/saved"
+            title="Saved Components"
+            className={`relative grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-background-200/40 ${actionIconClass}`}
+          >
+            <i className="ri-bookmark-line text-lg" />
+            {savedCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-primary-500 px-1 text-[10px] font-bold text-white shadow-sm animate-fade-in">
+                {savedCount}
+              </span>
+            )}
+          </Link>
+
           {isAdmin && (
             <Link
               to="/admin"
@@ -172,6 +189,19 @@ export default function Navbar() {
                         <i className="ri-shield-keyhole-line text-sm" /> Admin Console
                       </Link>
                     )}
+                    <Link
+                      to="/saved"
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-foreground-700 hover:bg-background-100 hover:text-foreground-950"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <i className="ri-bookmark-line text-sm text-primary-500" /> Saved Collection
+                      </span>
+                      {savedCount > 0 && (
+                        <span className="rounded-full bg-primary-500/15 px-1.5 py-0.2 text-[10px] font-bold text-primary-600">
+                          {savedCount}
+                        </span>
+                      )}
+                    </Link>
                     <Link
                       to="/submit"
                       className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-foreground-700 hover:bg-background-100 hover:text-foreground-950"

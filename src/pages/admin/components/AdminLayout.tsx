@@ -4,6 +4,8 @@ import Navbar from '@/components/feature/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { useMaintenance } from '@/context/MaintenanceContext';
 
+import { supabase } from '@/lib/supabase';
+
 interface AdminLayoutProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -14,24 +16,23 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
   const { user, logout } = useAuth();
   const { isMaintenance } = useMaintenance();
   const [counts, setCounts] = useState({
-    pending: 2,
-    banned: 1,
+    pending: 0,
+    banned: 0,
     messages: 0
   });
 
   useEffect(() => {
-    fetch('/api/admin/overview')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.stats) {
-          setCounts({
-            pending: data.stats.pendingReviews || 0,
-            banned: data.stats.bannedUsers || 0,
-            messages: data.stats.unreadMessages || 0
-          });
-        }
-      })
-      .catch(() => {});
+    Promise.all([
+      supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('status', 'banned'),
+      supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'unread'),
+    ]).then(([subRes, userRes, inqRes]) => {
+      setCounts({
+        pending: subRes.count || 0,
+        banned: userRes.count || 0,
+        messages: inqRes.count || 0,
+      });
+    }).catch(() => {});
   }, [activeTab]);
 
   const navItems = [

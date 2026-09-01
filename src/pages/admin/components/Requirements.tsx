@@ -21,7 +21,7 @@ const statusStyle: Record<Requirement['status'], string> = {
 };
 
 export default function Requirements() {
-  const [list, setList] = useState<Requirement[]>(defaultRequirements);
+  const [list, setList] = useState<Requirement[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
