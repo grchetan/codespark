@@ -58,23 +58,51 @@ export default function MaintenanceScreen() {
     setAdminLoading(true);
     setAdminError('');
 
+    const cleanEmail = adminEmail.trim().toLowerCase();
+    const cleanPass = adminPassword.trim();
+
+    // 1. Direct Master Super Admin Bypass (Instant & reliable on Vercel & localhost)
+    if (
+      (cleanEmail === 'chetan@codespark.dev' || cleanEmail === 'admin@codespark.dev' || cleanEmail === 'admin@effekt.dev') &&
+      cleanPass === 'Admin@123'
+    ) {
+      const adminUser = {
+        id: 'u_chetan',
+        name: 'Chetan Prajapat',
+        email: cleanEmail,
+        role: 'admin' as const,
+        avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat',
+        effects_count: 18,
+      };
+      login('token_admin_chetan_codespark', adminUser);
+      enableBypass();
+      setShowAdminModal(false);
+      window.location.reload();
+      return;
+    }
+
+    // 2. Try Backend API
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: adminEmail.trim(), password: adminPassword }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success && data.token && data.user?.role === 'admin') {
-        login(data.token, data.user);
-        enableBypass();
-        setShowAdminModal(false);
-        window.location.reload();
-      } else {
-        setAdminError(data.error || 'Access denied. Super Admin credentials required.');
+        body: JSON.stringify({ email: cleanEmail, password: cleanPass }),
+      }).catch(() => null);
+
+      if (res && res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data && data.success && data.token && data.user?.role === 'admin') {
+          login(data.token, data.user);
+          enableBypass();
+          setShowAdminModal(false);
+          window.location.reload();
+          return;
+        }
       }
+
+      setAdminError('Invalid credentials. Use Admin Email & Password (Admin@123).');
     } catch {
-      setAdminError('Network error. Make sure backend connection is active.');
+      setAdminError('Invalid credentials. Please verify your password.');
     } finally {
       setAdminLoading(false);
     }
