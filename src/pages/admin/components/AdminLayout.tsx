@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/feature/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { useMaintenance } from '@/context/MaintenanceContext';
@@ -13,13 +13,28 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ activeTab, onTabChange, children }: AdminLayoutProps) {
-  const { user, logout, isSuperAdmin } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout, isLoggingOut, isSuperAdmin } = useAuth();
   const { isMaintenance } = useMaintenance();
+  const [loggingOut, setLoggingOut] = useState(false);
   const [counts, setCounts] = useState({
     pending: 0,
     banned: 0,
     messages: 0
   });
+
+  const handleLogout = async () => {
+    if (loggingOut || isLoggingOut) return;
+    setLoggingOut(true);
+    try {
+      await logout();
+      navigate('/', { replace: true });
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   const userRole = user?.role || 'member';
   const allowedKeys = getAccessibleTabs(userRole);
@@ -215,13 +230,21 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
                     </Link>
                     <button
                       type="button"
-                      onClick={() => {
-                        logout();
-                        window.location.href = '/login';
-                      }}
-                      className="flex w-full items-center gap-2 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors text-left"
+                      disabled={loggingOut || isLoggingOut}
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors text-left disabled:opacity-50"
                     >
-                      <i className="ri-logout-box-r-line text-sm" /> Sign Out
+                      {loggingOut || isLoggingOut ? (
+                        <>
+                          <i className="ri-loader-4-line animate-spin text-sm" />
+                          <span>Signing out...</span>
+                        </>
+                      ) : (
+                        <>
+                          <i className="ri-logout-box-r-line text-sm" />
+                          <span>Sign Out</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>

@@ -32,9 +32,10 @@ interface AuthContextType {
   isStaff: boolean;
   hasPermission: (permission: PermissionKey) => boolean;
   loading: boolean;
-  login: (token: string, user: User) => void;
-  signup: (token: string, user: User) => void;
-  logout: () => void;
+  isLoggingOut: boolean;
+  login: (token: string, user: User) => Promise<void>;
+  signup: (token: string, user: User) => Promise<void>;
+  logout: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }
 
@@ -64,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem('codespark_token') || localStorage.getItem('effekt_token') || null;
   });
   const [loading, setLoading] = useState<boolean>(true);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
 
   // Synchronize authenticated user profile with Supabase Cloud DB
   const syncProfileFromDB = async (email: string, fallbackUser: User): Promise<User> => {
@@ -72,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from('users')
         .select('*')
         .eq('email', email.toLowerCase())
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
         const isOwner = isSuperAdminOwner(data.email, data.role);
@@ -104,6 +106,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('codespark_user', JSON.stringify(updated));
   };
 
+  // Helper to purge all auth keys from storage
+  const purgeStorage = () => {
+    localStorage.removeItem('codespark_token');
+    localStorage.removeItem('codespark_user');
+    localStorage.removeItem('codespark_admin_bypass');
+    localStorage.removeItem('effekt_token');
+    localStorage.removeItem('effekt_user');
+  };
+
   // Supabase Auth listener
   useEffect(() => {
     let isMounted = true;
@@ -130,7 +141,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             effects_count: isOwner ? 18 : 0,
           };
 
-          // Fetch full DB record (role, name, etc.)
           const fullUser = await syncProfileFromDB(userEmail, baseUser);
 
           if (isMounted) {
@@ -154,7 +164,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
 
-      if (session?.user) {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setToken(null);
+        purgeStorage();
+      } else if (session?.user) {
         const userEmail = (session.user.email || '').toLowerCase();
         const isOwner = isSuperAdminOwner(userEmail);
 
@@ -173,15 +187,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const fullUser = await syncProfileFromDB(userEmail, baseUser);
 
-        setUser(fullUser);
-        setToken(session.access_token);
-        localStorage.setItem('codespark_user', JSON.stringify(fullUser));
-        localStorage.setItem('codespark_token', session.access_token);
-        if (isOwner || fullUser.role === 'admin' || fullUser.role === 'moderator') {
-          localStorage.setItem('codespark_admin_bypass', 'true');
+        if (isMounted) {
+          setUser(fullUser);
+          setToken(session.access_token);
+          localStorage.setItem('codespark_user', JSON.stringify(fullUser));
+          localStorage.setItem('codespark_token', session.access_token);
+          if (isOwner || fullUser.role === 'admin' || fullUser.role === 'moderator') {
+            localStorage.setItem('codespark_admin_bypass', 'true');
+          }
         }
-      } else if (event === 'SIGNED_OUT') {
-        logout();
       }
     });
 
@@ -200,7 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       localStorage.setItem('codespark_admin_bypass', 'true');
     } else {
-      // Sync from DB for non-superadmin
+      // Sync from DB for accurate role verification
       finalUser = await syncProfileFromDB(newUser.email, finalUser);
       if (['superadmin', 'admin', 'moderator'].includes(finalUser.role)) {
         localStorage.setItem('codespark_admin_bypass', 'true');
@@ -213,21 +227,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('codespark_user', JSON.stringify(finalUser));
   };
 
-  const signup = (newToken: string, newUser: User) => {
-    login(newToken, newUser);
+  const signup = async (newToken: string, newUser: User) => {
+    await login(newToken, newUser);
   };
 
-  const logout = () => {
+  const logout = async (): Promise<void> => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+
     try {
-      supabase.auth.signOut().catch(() => {});
-    } catch {}
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('codespark_token');
-    localStorage.removeItem('codespark_user');
-    localStorage.removeItem('codespark_admin_bypass');
-    localStorage.removeItem('effekt_token');
-    localStorage.removeItem('effekt_user');
+      // 1. Terminate Supabase Auth session
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Supabase signOut notice:', err);
+    } finally {
+      // 2. Clear state and storage unconditionally
+      setToken(null);
+      setUser(null);
+      purgeStorage();
+      setIsLoggingOut(false);
+    }
   };
 
   const isSuperAdmin = Boolean(
@@ -264,6 +283,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isStaff,
         hasPermission: hasPerm,
         loading,
+        isLoggingOut,
         login,
         signup,
         logout,

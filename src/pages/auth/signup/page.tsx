@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
@@ -15,7 +15,13 @@ const terms = [
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { signup, isAuthenticated, user, isStaff, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      navigate(isStaff ? '/admin' : '/effects', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, user, isStaff, navigate]);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -84,11 +90,11 @@ export default function SignupPage() {
         effects_count: 0,
       };
 
-      signup(`token_${newId}`, newUser);
+      await signup(`token_${newId}`, newUser);
       setSuccess('Account created successfully! Welcome to CodeSpark.');
       setTimeout(() => {
-        navigate('/effects');
-      }, 700);
+        navigate('/effects', { replace: true });
+      }, 500);
     } catch {
       setError('An error occurred during registration. Please try again.');
     } finally {

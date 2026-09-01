@@ -13,14 +13,15 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { user, logout, isAdmin, isStaff, isSuperAdmin, isAuthenticated } = useAuth();
+  const { user, logout, isLoggingOut, isStaff, isSuperAdmin, isAuthenticated } = useAuth();
   const { savedCount } = useSaved();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [userDropdown, setUserDropdown] = useState(false);
-  
+  const [loggingOut, setLoggingOut] = useState(false);
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileSearchRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -37,12 +38,14 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Close menus on route change
   useEffect(() => {
     setOpen(false);
     setSearchOpen(false);
     setUserDropdown(false);
   }, [location.pathname]);
 
+  // Focus mobile search on open
   useEffect(() => {
     if (searchOpen && mobileSearchRef.current) {
       mobileSearchRef.current.focus();
@@ -60,6 +63,19 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Escape key to close all popups & menus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setUserDropdown(false);
+        setOpen(false);
+        setSearchOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -70,6 +86,21 @@ export default function Navbar() {
     setSearchOpen(false);
     setOpen(false);
     setSearchTerm('');
+  };
+
+  const handleLogout = async () => {
+    if (loggingOut || isLoggingOut) return;
+    setLoggingOut(true);
+    try {
+      await logout();
+      setUserDropdown(false);
+      setOpen(false);
+      navigate('/', { replace: true });
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   const logoTextClass = darkNav ? 'text-background-50' : 'text-foreground-950';
@@ -161,7 +192,9 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setUserDropdown((v) => !v)}
-                className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-background-200/40"
+                className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-background-200/40 focus:outline-none"
+                aria-expanded={userDropdown}
+                aria-haspopup="true"
               >
                 <img
                   src={
@@ -178,9 +211,9 @@ export default function Navbar() {
               </button>
 
               {userDropdown && (
-                <div className="absolute right-0 top-11 w-56 rounded-2xl border border-background-300/60 bg-background-50 p-2 shadow-xl backdrop-blur-xl z-50 animate-fade-in">
+                <div className="absolute right-0 top-12 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-background-300/80 bg-background-50 p-2 shadow-2xl backdrop-blur-xl z-50 animate-fade-in">
                   <div className="border-b border-background-300/40 px-3 py-2.5">
-                    <p className="font-semibold text-foreground-950 text-sm truncate">{user.name}</p>
+                    <p className="font-bold text-foreground-950 text-sm truncate">{user.name}</p>
                     <p className="text-xs text-foreground-400 truncate">{user.email}</p>
                     <span className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider border ${
                       isSuperAdmin
@@ -192,7 +225,7 @@ export default function Navbar() {
                             : 'bg-background-200 text-foreground-700 border-background-300'
                     }`}>
                       {isSuperAdmin && <i className="ri-vip-crown-fill text-amber-500 text-[9px]" />}
-                      {isSuperAdmin ? 'Super Admin' : user.role}
+                      {isSuperAdmin ? 'Super Admin (Owner)' : user.role}
                     </span>
                   </div>
 
@@ -201,14 +234,15 @@ export default function Navbar() {
                       <Link
                         to="/admin"
                         onClick={() => setUserDropdown(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-foreground-800 hover:bg-background-100 transition-colors"
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-foreground-900 hover:bg-background-100 transition-colors"
                       >
-                        <i className="ri-shield-keyhole-line text-primary-500" /> Control Center
+                        <i className="ri-shield-keyhole-line text-primary-500 text-sm" /> Control Center
                       </Link>
                     )}
                     <Link
                       to="/saved"
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-foreground-700 hover:bg-background-100 hover:text-foreground-950"
+                      onClick={() => setUserDropdown(false)}
+                      className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-foreground-700 hover:bg-background-100 hover:text-foreground-950 transition-colors"
                     >
                       <span className="flex items-center gap-2.5">
                         <i className="ri-bookmark-line text-sm text-primary-500" /> Saved Collection
@@ -221,13 +255,15 @@ export default function Navbar() {
                     </Link>
                     <Link
                       to="/submit"
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-foreground-700 hover:bg-background-100 hover:text-foreground-950"
+                      onClick={() => setUserDropdown(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-foreground-700 hover:bg-background-100 hover:text-foreground-950 transition-colors"
                     >
                       <i className="ri-add-circle-line text-sm text-primary-500" /> Create Effect
                     </Link>
                     <Link
                       to="/community"
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-foreground-700 hover:bg-background-100 hover:text-foreground-950"
+                      onClick={() => setUserDropdown(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-foreground-700 hover:bg-background-100 hover:text-foreground-950 transition-colors"
                     >
                       <i className="ri-team-line text-sm text-accent-600" /> Community
                     </Link>
@@ -236,10 +272,21 @@ export default function Navbar() {
                   <div className="border-t border-background-300/40 pt-1">
                     <button
                       type="button"
-                      onClick={logout}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-primary-600 hover:bg-primary-500/10 text-left"
+                      disabled={loggingOut || isLoggingOut}
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-primary-600 hover:bg-primary-500/10 text-left disabled:opacity-50 transition-colors"
                     >
-                      <i className="ri-logout-box-r-line text-sm" /> Sign out
+                      {loggingOut || isLoggingOut ? (
+                        <>
+                          <i className="ri-loader-4-line animate-spin text-sm" />
+                          <span>Signing out...</span>
+                        </>
+                      ) : (
+                        <>
+                          <i className="ri-logout-box-r-line text-sm" />
+                          <span>Sign out</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -248,7 +295,7 @@ export default function Navbar() {
           ) : (
             <Link
               to="/login"
-              className={`inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 text-xs font-medium transition-all ${
+              className={`inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 text-xs font-semibold transition-all ${
                 darkNav
                   ? 'border border-background-50/40 text-background-50 hover:bg-background-50/10'
                   : 'border border-foreground-950/20 text-foreground-950 hover:bg-foreground-950 hover:text-background-50'
@@ -260,82 +307,85 @@ export default function Navbar() {
 
           <Link
             to="/submit"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary-500 px-4 text-xs font-semibold uppercase tracking-wider text-background-50 shadow-sm transition-all hover:bg-primary-600"
+            className="btn btn-primary h-9 px-4 text-xs font-semibold shadow-sm whitespace-nowrap hidden sm:inline-flex"
           >
             <i className="ri-add-line text-sm" /> Submit
           </Link>
         </div>
 
-        {/* Mobile Right Action Bar (Search Toggle + Hamburger) */}
-        <div className="flex md:hidden items-center gap-1.5 shrink-0">
+        {/* Mobile Action Buttons */}
+        <div className="flex items-center gap-1 md:hidden">
           <button
             type="button"
-            className={`grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-background-200/20 ${actionIconClass}`}
             onClick={() => setSearchOpen((v) => !v)}
-            aria-label="Search"
+            aria-label="Toggle search"
+            className={`grid h-9 w-9 place-items-center rounded-lg ${actionIconClass}`}
           >
-            <i className={searchOpen ? 'ri-close-line text-lg' : 'ri-search-line text-lg'} />
+            <i className="ri-search-line text-lg" />
           </button>
 
-          {isAuthenticated && user && (
-            <Link to="/submit" className="grid h-8 w-8 place-items-center rounded-full overflow-hidden border border-background-300 shrink-0">
-              <img src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=80'} alt="Avatar" className="h-full w-full object-cover" />
-            </Link>
-          )}
+          <Link
+            to="/saved"
+            aria-label="Saved effects"
+            className={`relative grid h-9 w-9 place-items-center rounded-lg ${actionIconClass}`}
+          >
+            <i className="ri-bookmark-line text-lg" />
+            {savedCount > 0 && (
+              <span className="absolute 1 top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary-500 px-1 text-[9px] font-bold text-white">
+                {savedCount}
+              </span>
+            )}
+          </Link>
 
           <button
             type="button"
-            className={`grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-background-200/20 ${mobileToggleClass}`}
             onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
+            aria-label="Toggle navigation menu"
+            className={`grid h-9 w-9 place-items-center rounded-lg ${mobileToggleClass}`}
           >
-            <i className={open ? 'ri-close-line text-2xl text-primary-500' : 'ri-menu-3-line text-2xl'} />
+            <i className={open ? 'ri-close-line text-xl' : 'ri-menu-line text-xl'} />
           </button>
         </div>
       </nav>
 
-      {/* Mobile Search Bar Dropdown */}
+      {/* Mobile Search Dropdown Bar */}
       {searchOpen && (
-        <div className="w-full border-t border-background-300/40 bg-background-50 px-4 py-3 md:hidden shadow-md">
-          <form onSubmit={handleSearch} className="flex w-full items-center gap-2 rounded-full border border-background-400 bg-background-100 px-3.5 py-2">
-            <i className="ri-search-line text-sm text-foreground-500 shrink-0" />
+        <div className="border-b border-background-300/40 bg-background-50 px-4 py-3 md:hidden animate-fade-in shadow-md">
+          <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-xl border border-background-300 bg-background-100 px-3 py-2">
+            <i className="ri-search-line text-sm text-foreground-400 shrink-0" />
             <input
               ref={mobileSearchRef}
               type="text"
-              placeholder="Search effects..."
-              className="min-w-0 flex-1 bg-transparent text-xs text-foreground-950 placeholder:text-foreground-400 outline-none"
+              placeholder="Search components..."
+              className="w-full bg-transparent text-xs outline-none text-foreground-950 placeholder:text-foreground-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              autoFocus
             />
             {searchTerm && (
-              <button type="button" onClick={() => setSearchTerm('')} className="text-foreground-500 shrink-0">
-                <i className="ri-close-line text-base" />
+              <button type="button" onClick={() => setSearchTerm('')} className="text-foreground-400">
+                <i className="ri-close-line text-sm" />
               </button>
             )}
-            <button type="submit" className="btn btn-primary h-7 px-3 text-xs rounded-full shrink-0">
-              Go
-            </button>
           </form>
         </div>
       )}
 
-      {/* Desktop Navigation Links Row */}
-      <div className={`hidden border-t md:block ${darkNav ? 'border-background-800/30' : 'border-background-300/30'}`}>
-        <div className="container-x flex h-11 w-full items-center justify-center gap-1">
+      {/* Desktop Secondary Sub-Nav for Links */}
+      <div className={`hidden md:block border-t ${darkNav ? 'border-background-800/40' : 'border-background-300/40'} transition-colors`}>
+        <div className="container-x flex h-10 items-center justify-center gap-6 text-xs uppercase tracking-wider font-semibold">
           {navLinks.map((l) => {
             const active = l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to);
             return (
               <Link
                 key={l.to}
                 to={l.to}
-                className={`relative px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                className={`relative py-2.5 transition-colors hover:text-primary-500 ${
                   active ? navLinkActive : navLinkInactive
                 }`}
               >
                 {l.label}
                 {active && (
-                  <span className="absolute inset-x-5 bottom-0 h-0.5 bg-primary-500 rounded-full" />
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-500 rounded-full" />
                 )}
               </Link>
             );
@@ -348,7 +398,7 @@ export default function Navbar() {
         <div className="w-full border-t border-background-300/40 bg-background-50 px-5 py-5 shadow-2xl md:hidden max-h-[85vh] overflow-y-auto">
           {/* User status card if logged in */}
           {isAuthenticated && user && (
-            <div className="flex items-center gap-3 rounded-xl bg-background-100 p-3.5 mb-4 border border-background-300/60">
+            <div className="flex items-center gap-3 rounded-2xl bg-background-100 p-3.5 mb-4 border border-background-300/60">
               <img
                 src={
                   user.avatar && !user.avatar.includes('unsplash')
@@ -361,7 +411,7 @@ export default function Navbar() {
                 }`}
               />
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-sm text-foreground-950 truncate">{user.name}</p>
+                <p className="font-bold text-sm text-foreground-950 truncate">{user.name}</p>
                 <p className="text-xs text-foreground-500 truncate">{user.email}</p>
               </div>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider border ${
@@ -420,7 +470,8 @@ export default function Navbar() {
           <div className="mt-5 pt-4 border-t border-background-300/40 space-y-2.5">
             <Link
               to="/submit"
-              className="btn btn-primary h-12 w-full text-sm font-semibold shadow-md"
+              onClick={() => setOpen(false)}
+              className="btn btn-primary h-12 w-full text-sm font-semibold shadow-md flex items-center justify-center gap-2"
             >
               <i className="ri-add-circle-line text-lg" /> Submit an Effect
             </Link>
@@ -428,15 +479,27 @@ export default function Navbar() {
             {isAuthenticated ? (
               <button
                 type="button"
-                onClick={logout}
-                className="btn btn-secondary h-11 w-full text-sm text-primary-600 border-primary-500/30 hover:bg-primary-500/10"
+                disabled={loggingOut || isLoggingOut}
+                onClick={handleLogout}
+                className="btn btn-secondary h-11 w-full text-sm font-semibold text-primary-600 border-primary-500/30 hover:bg-primary-500/10 disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                <i className="ri-logout-box-r-line text-lg" /> Sign out
+                {loggingOut || isLoggingOut ? (
+                  <>
+                    <i className="ri-loader-4-line animate-spin text-lg" />
+                    <span>Signing out...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="ri-logout-box-r-line text-lg" />
+                    <span>Sign out</span>
+                  </>
+                )}
               </button>
             ) : (
               <Link
                 to="/login"
-                className="btn btn-secondary h-11 w-full text-sm"
+                onClick={() => setOpen(false)}
+                className="btn btn-secondary h-11 w-full text-sm flex items-center justify-center gap-2"
               >
                 <i className="ri-user-line text-lg" /> Sign in to CodeSpark
               </Link>
