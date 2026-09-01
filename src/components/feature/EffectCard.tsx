@@ -6,8 +6,8 @@ import { effectCode } from '@/mocks/code';
 import { useSaved } from '@/context/SavedContext';
 
 export function formatCount(n: number) {
-  if (!n && n !== 0) return '0';
-  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
+  if (!n || n === 0) return '0';
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
   return String(n);
 }
 
@@ -41,7 +41,7 @@ export default function EffectCard({
 
   const onLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleLike(effect.id, effect.likes || 0);
+    toggleLike(effect.id);
   };
 
   const onSave = (e: React.MouseEvent) => {
@@ -219,7 +219,7 @@ export default function EffectCard({
               }`}
             >
               <i className={isLiked(effect.id) ? 'ri-heart-fill text-base text-rose-500 animate-pulse' : 'ri-heart-line text-base'} />
-              <span>{formatCount(getLikeCount(effect.id, effect.likes || 0))}</span>
+              <span>{formatCount(getLikeCount(effect.id))}</span>
             </button>
 
             {/* Real Save / Bookmark */}

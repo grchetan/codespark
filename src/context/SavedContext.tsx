@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { Effect } from '@/mocks/effects';
+import { useAuth } from './AuthContext';
+import { supabase } from '@/lib/supabase';
 
 interface SavedContextType {
   savedEffects: Effect[];
@@ -9,21 +11,27 @@ interface SavedContextType {
   removeSaved: (effectId: string) => void;
   clearAllSaved: () => void;
   isLiked: (effectId: string) => boolean;
-  toggleLike: (effectId: string, baseCount?: number) => { liked: boolean; count: number };
-  getLikeCount: (effectId: string, baseCount?: number) => number;
+  toggleLike: (effectId: string) => { liked: boolean; count: number };
+  getLikeCount: (effectId: string) => number;
   toast: string | null;
+  authPromptModal: boolean;
+  closeAuthPrompt: () => void;
 }
 
 const SavedContext = createContext<SavedContextType | undefined>(undefined);
 
 export function SavedProvider({ children }: { children: ReactNode }) {
-  // 1. Saved Effects Collection
+  const { user, isAuthenticated } = useAuth();
+  const [authPromptModal, setAuthPromptModal] = useState(false);
+
+  // User-specific storage keys
+  const userKey = user ? `u_${user.id}` : 'guest';
+
+  // 1. Saved Effects Collection (tied to authenticated user)
   const [savedEffects, setSavedEffects] = useState<Effect[]>(() => {
     try {
-      const stored = localStorage.getItem('codespark_saved_effects');
-      if (stored) {
-        return JSON.parse(stored);
-      }
+      const stored = localStorage.getItem(`codespark_saved_${userKey}`);
+      if (stored) return JSON.parse(stored);
     } catch {}
     return [];
   });
@@ -31,21 +39,17 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   // 2. Liked Effect IDs
   const [likedIds, setLikedIds] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem('codespark_liked_ids');
-      if (stored) {
-        return JSON.parse(stored);
-      }
+      const stored = localStorage.getItem(`codespark_liked_${userKey}`);
+      if (stored) return JSON.parse(stored);
     } catch {}
     return [];
   });
 
-  // 3. Real Like Counts Map
+  // 3. Real Global Like Counts Map (strictly real starting from 0)
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>(() => {
     try {
-      const stored = localStorage.getItem('codespark_like_counts');
-      if (stored) {
-        return JSON.parse(stored);
-      }
+      const stored = localStorage.getItem('codespark_real_like_counts');
+      if (stored) return JSON.parse(stored);
     } catch {}
     return {};
   });
@@ -57,24 +61,35 @@ export function SavedProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setToast(null), 2500);
   };
 
-  // Sync savedEffects to localStorage
+  // Reload user-specific saved/liked when user changes
   useEffect(() => {
     try {
-      localStorage.setItem('codespark_saved_effects', JSON.stringify(savedEffects));
-    } catch {}
-  }, [savedEffects]);
+      const storedSaved = localStorage.getItem(`codespark_saved_${userKey}`);
+      setSavedEffects(storedSaved ? JSON.parse(storedSaved) : []);
 
-  // Sync likedIds to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('codespark_liked_ids', JSON.stringify(likedIds));
+      const storedLiked = localStorage.getItem(`codespark_liked_${userKey}`);
+      setLikedIds(storedLiked ? JSON.parse(storedLiked) : []);
     } catch {}
-  }, [likedIds]);
+  }, [userKey]);
 
-  // Sync likeCounts to localStorage
+  // Sync savedEffects
   useEffect(() => {
     try {
-      localStorage.setItem('codespark_like_counts', JSON.stringify(likeCounts));
+      localStorage.setItem(`codespark_saved_${userKey}`, JSON.stringify(savedEffects));
+    } catch {}
+  }, [savedEffects, userKey]);
+
+  // Sync likedIds
+  useEffect(() => {
+    try {
+      localStorage.setItem(`codespark_liked_${userKey}`, JSON.stringify(likedIds));
+    } catch {}
+  }, [likedIds, userKey]);
+
+  // Sync real like counts
+  useEffect(() => {
+    try {
+      localStorage.setItem('codespark_real_like_counts', JSON.stringify(likeCounts));
     } catch {}
   }, [likeCounts]);
 
@@ -83,10 +98,16 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleSave = (effect: Effect): boolean => {
+    if (!isAuthenticated) {
+      setAuthPromptModal(true);
+      showToast('🔒 Please sign in to save components to your collection!');
+      return false;
+    }
+
     const exists = isSaved(effect.id);
     if (exists) {
       setSavedEffects((prev) => prev.filter((e) => e.id !== effect.id && e.slug !== effect.id));
-      showToast(`Removed "${effect.name}" from your saved collection`);
+      showToast(`Removed "${effect.name}" from your collection`);
       return false;
     } else {
       setSavedEffects((prev) => [effect, ...prev]);
@@ -97,41 +118,41 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
   const removeSaved = (effectId: string) => {
     setSavedEffects((prev) => prev.filter((e) => e.id !== effectId && e.slug !== effectId));
-    showToast('Removed effect from saved collection');
+    showToast('Removed from saved collection');
   };
 
   const clearAllSaved = () => {
     setSavedEffects([]);
-    showToast('Cleared all saved effects');
+    showToast('Cleared saved collection');
   };
 
   const isLiked = (effectId: string): boolean => {
     return likedIds.includes(effectId);
   };
 
-  const getLikeCount = (effectId: string, baseCount?: number): number => {
-    if (typeof likeCounts[effectId] === 'number') {
-      return likeCounts[effectId];
-    }
-    // Calculate initial baseline count from mock or 0
-    const fallback = typeof baseCount === 'number' ? Math.max(0, baseCount) : 0;
-    return fallback;
+  // Real like count (Starts strictly from 0 real baseline!)
+  const getLikeCount = (effectId: string): number => {
+    return likeCounts[effectId] || 0;
   };
 
-  const toggleLike = (effectId: string, baseCount?: number): { liked: boolean; count: number } => {
+  const toggleLike = (effectId: string): { liked: boolean; count: number } => {
+    if (!isAuthenticated) {
+      setAuthPromptModal(true);
+      showToast('🔒 Please sign in to like components!');
+      return { liked: false, count: getLikeCount(effectId) };
+    }
+
     const currentLiked = isLiked(effectId);
-    const currentCount = getLikeCount(effectId, baseCount);
-    
+    const currentCount = getLikeCount(effectId);
+
     let newLiked: boolean;
     let newCount: number;
 
     if (currentLiked) {
-      // Unlike
       newLiked = false;
       newCount = Math.max(0, currentCount - 1);
       setLikedIds((prev) => prev.filter((id) => id !== effectId));
     } else {
-      // Like
       newLiked = true;
       newCount = currentCount + 1;
       setLikedIds((prev) => [...prev, effectId]);
@@ -143,8 +164,15 @@ export function SavedProvider({ children }: { children: ReactNode }) {
       [effectId]: newCount,
     }));
 
+    // Sync to backend / Supabase
+    try {
+      fetch(`/api/effects/${effectId}/like`, { method: 'POST' }).catch(() => {});
+    } catch {}
+
     return { liked: newLiked, count: newCount };
   };
+
+  const closeAuthPrompt = () => setAuthPromptModal(false);
 
   return (
     <SavedContext.Provider
@@ -159,14 +187,58 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         toggleLike,
         getLikeCount,
         toast,
+        authPromptModal,
+        closeAuthPrompt,
       }}
     >
       {children}
-      {/* Universal Floating Toast */}
+
+      {/* Floating Toast Notification */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-foreground-950 px-4 py-2.5 text-xs font-semibold text-background-50 shadow-2xl border border-foreground-800 animate-fade-in">
-          <i className="ri-checkbox-circle-fill text-primary-400 text-sm" />
+          <i className="ri-information-fill text-primary-400 text-sm" />
           <span>{toast}</span>
+        </div>
+      )}
+
+      {/* Modern Auth Prompt Modal when unauthenticated user tries to like/save */}
+      {authPromptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-background-50 p-6 shadow-2xl border border-background-300/80 space-y-4 text-center">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-500/10 text-2xl text-primary-500 font-bold">
+              ⚡
+            </div>
+            <div>
+              <h3 className="font-display text-lg font-bold text-foreground-950">
+                Sign in to CodeSpark
+              </h3>
+              <p className="mt-1 text-xs text-foreground-500 leading-relaxed">
+                Create a free account or log in to like, bookmark components to your personal collection, and submit UI effects.
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <a
+                href="/login"
+                className="btn btn-primary h-10 w-full text-xs font-bold flex items-center justify-center gap-2 shadow-md"
+              >
+                <i className="ri-user-line" /> Sign In
+              </a>
+              <a
+                href="/signup"
+                className="btn btn-secondary h-10 w-full text-xs font-semibold flex items-center justify-center gap-2"
+              >
+                Create Free Account
+              </a>
+              <button
+                type="button"
+                onClick={closeAuthPrompt}
+                className="text-xs text-foreground-400 hover:text-foreground-700 pt-1 block w-full"
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </SavedContext.Provider>

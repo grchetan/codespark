@@ -182,7 +182,7 @@ function seedData() {
       description: 'A CTA that is subtly pulled toward your cursor — the button leans in just before you commit.',
       image: '',
       tags: ['magnetic', 'button', 'cursor', 'micro-interaction'], difficulty: 'medium', license: 'MIT',
-      likes: 4820, saves: 1730, views: 96000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat',
       html_code: `<button class="magnetic-btn">Magnetic CTA</button>`,
       css_code: `.magnetic-btn {
@@ -225,7 +225,7 @@ if (btn) {
       description: 'A perspective card that rotates on the X and Y axes as you move, with a glare highlight that follows.',
       image: '',
       tags: ['3d', 'perspective', 'card', 'tilt'], difficulty: 'medium', license: 'MIT',
-      likes: 9310, saves: 4020, views: 210000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="tilt-card-box">
   <div class="tilt-inner">
@@ -283,7 +283,7 @@ if (card) {
       description: 'Characters violently scramble and settle into the final word. Perfect for hero headlines and reveals.',
       image: '',
       tags: ['text', 'scramble', 'animation', 'decoder'], difficulty: 'advanced', license: 'BSD-2',
-      likes: 7640, saves: 2980, views: 150000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="scramble-wrapper">
   <span class="scramble-tag">HOVER ME</span>
@@ -328,7 +328,7 @@ if (el) {
       description: 'A radial spotlight that reveals the text beneath as your cursor glides across the section.',
       image: '',
       tags: ['cursor', 'spotlight', 'text', 'reveal'], difficulty: 'easy', license: 'MIT',
-      likes: 5280, saves: 1890, views: 88000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="spotlight-box">
   <p class="spotlight-text">Move cursor to illuminate hidden interface layers.</p>
@@ -378,7 +378,7 @@ if (box) {
       description: 'Three flowing blobs orbit a core, blending into a calm aurora while your content loads.',
       image: '',
       tags: ['loader', 'aurora', 'blur', 'css'], difficulty: 'easy', license: 'MIT',
-      likes: 3140, saves: 1210, views: 52000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="aurora-stage">
   <div class="blob b1"></div>
@@ -414,7 +414,7 @@ if (box) {
       description: 'An infinite horizontal marquee with a shifting gradient fill — loud, confident, on-brand.',
       image: '',
       tags: ['text', 'marquee', 'gradient', 'css'], difficulty: 'easy', license: 'MIT',
-      likes: 4060, saves: 1540, views: 71000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="marquee-track">
   <span>CODESPARK DROP ✦ INTERACTION DESIGN ✦ </span>
@@ -451,7 +451,7 @@ if (box) {
       description: 'A click ripple that radiates from the point of impact across a glassy button.',
       image: '',
       tags: ['button', 'ripple', 'click', 'css'], difficulty: 'easy', license: 'MIT',
-      likes: 2750, saves: 980, views: 44000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<button class="ripple-button">Click For Ripple</button>`,
       css_code: `.ripple-button {
@@ -503,7 +503,7 @@ if (btn) {
       description: 'A card whose inner glow follows the mouse, illuminating a radial highlight across the surface.',
       image: '',
       tags: ['card', 'spotlight', 'glow', 'cursor'], difficulty: 'medium', license: 'MIT',
-      likes: 6230, saves: 2410, views: 104000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="spotlight-card-demo">
   <div class="card-chip">PRO FEATURE</div>
@@ -558,7 +558,7 @@ if (card) {
       description: 'A liquid blob that continuously morphs between organic shapes — perfect as a soft animated backdrop.',
       image: '',
       tags: ['blob', 'morph', 'organic', 'css'], difficulty: 'medium', license: 'MIT',
-      likes: 3520, saves: 1330, views: 61000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="blob-stage">
   <div class="blob-item"></div>
@@ -593,7 +593,7 @@ if (card) {
       description: 'A curtain reveal that wipes between pages using clip-path — buttery and native-feeling.',
       image: '',
       tags: ['transition', 'clip-path', 'page', 'reveal'], difficulty: 'advanced', license: 'MIT',
-      likes: 4510, saves: 1780, views: 83000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="reveal-curtain-box">
   <div class="reveal-layer">HOVER TO REVEAL</div>
@@ -637,7 +637,7 @@ if (card) {
       description: 'Stacked frosted-glass panels that fan out and lift on hover, giving depth without clutter.',
       image: '',
       tags: ['card', 'glass', 'stack', 'depth'], difficulty: 'medium', license: 'MIT',
-      likes: 2980, saves: 1140, views: 49000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="glass-stack-demo">
   <div class="glass-card">Layer 01</div>
@@ -681,7 +681,7 @@ if (card) {
       description: 'A metallic sheen sweeps across gradient text, catching the eye on logos and headers.',
       image: '',
       tags: ['text', 'shimmer', 'gradient', 'logo'], difficulty: 'easy', license: 'MIT',
-      likes: 3890, saves: 1420, views: 67000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<span class="fx-shimmer-title">CODESPARK</span>`,
       css_code: `.fx-shimmer-title {
@@ -712,7 +712,7 @@ if (card) {
       description: 'A smooth trailing dot that chases your cursor with spring physics, leaving a soft glow in its wake.',
       image: '',
       tags: ['cursor', 'follower', 'spring', 'glow'], difficulty: 'medium', license: 'MIT',
-      likes: 5870, saves: 2260, views: 112000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat',
       html_code: `<div class="follower-stage">
   <div class="spring-dot"></div>
@@ -762,7 +762,7 @@ if (stage && dot) {
       description: 'A shimmering skeleton that fills a card layout, giving structure while real content loads.',
       image: '',
       tags: ['loader', 'skeleton', 'shimmer', 'state'], difficulty: 'easy', license: 'MIT',
-      likes: 2210, saves: 860, views: 38000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="skel-card">
   <div class="skel-bar skel-title"></div>
@@ -803,7 +803,7 @@ if (stage && dot) {
       description: 'Multiple layers translate at different speeds as you tilt — a real sense of depth in a single element.',
       image: '',
       tags: ['3d', 'parallax', 'depth', 'layers'], difficulty: 'advanced', license: 'BSD-2',
-      likes: 6920, saves: 2750, views: 139000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
       html_code: `<div class="parallax-scene-box">
   <div class="layer-bg">BACKGROUND</div>
@@ -859,7 +859,7 @@ if (scene && bg && fg) {
       description: 'Navigation links that breathe toward the cursor — a premium feel for header menus.',
       image: '',
       tags: ['magnetic', 'nav', 'menu', 'hover'], difficulty: 'easy', license: 'MIT',
-      likes: 1980, saves: 720, views: 33000, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
+      likes: 0, saves: 0, views: 0, author_id: 'u_chetan', author_name: 'CodeSpark Official', author_handle: '@codespark',
       author_avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat',
       html_code: `<nav class="mag-nav">
   <a href="#demo" class="mag-link">Components</a>

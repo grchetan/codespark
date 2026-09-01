@@ -9,6 +9,7 @@ import Reveal from '@/components/base/Reveal';
 import { formatCount } from '@/components/feature/EffectCard';
 import { effects as defaultEffects, type Effect, type EffectStep } from '@/mocks/effects';
 import { effectCode } from '@/mocks/code';
+import { useSaved } from '@/context/SavedContext';
 
 type Lang = 'html' | 'css' | 'js';
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
@@ -54,10 +55,8 @@ export default function EffectDetail() {
   const [deviceView, setDeviceView] = useState<DeviceView>('desktop');
   const [darkStage, setDarkStage] = useState(false);
 
+  const { isSaved, toggleSave, isLiked, toggleLike, getLikeCount } = useSaved();
   const [steps, setSteps] = useState<EffectStep[]>([]);
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [likes, setLikes] = useState(0);
   const [tab, setTab] = useState<Lang>('html');
   const [copied, setCopied] = useState(false);
   const [copiedStep, setCopiedStep] = useState<number | null>(null);
@@ -74,7 +73,6 @@ export default function EffectDetail() {
         if (data.success && data.effect) {
           const eff = data.effect;
           setEffect(eff);
-          setLikes(eff.likes || 0);
           const initialCode = {
             html: eff.html_code || '',
             css: eff.css_code || '',
@@ -115,7 +113,6 @@ export default function EffectDetail() {
     const found = defaultEffects.find((e) => e.slug === slug || e.id === slug);
     if (found) {
       setEffect(found);
-      setLikes(found.likes);
       const mockCode = effectCode[found.id] || { html: '', css: '', js: '' };
       const c = { html: mockCode.html || '', css: mockCode.css || '', js: mockCode.js || '' };
       setCode(c);
@@ -164,24 +161,12 @@ export default function EffectDetail() {
   const prev = index > 0 ? defaultEffects[index - 1] : null;
   const next = index >= 0 && index < defaultEffects.length - 1 ? defaultEffects[index + 1] : null;
 
-  const onLike = async () => {
-    const nextLiked = !liked;
-    setLiked(nextLiked);
-    setLikes((v) => (nextLiked ? v + 1 : Math.max(0, v - 1)));
-    if (effect?.id) {
-      try {
-        await fetch(`/api/effects/${effect.id}/like`, { method: 'POST' });
-      } catch { /* noop */ }
-    }
+  const onLike = () => {
+    if (effect) toggleLike(effect.id);
   };
 
-  const onSave = async () => {
-    setSaved((v) => !v);
-    if (effect?.id) {
-      try {
-        await fetch(`/api/effects/${effect.id}/save`, { method: 'POST' });
-      } catch { /* noop */ }
-    }
+  const onSave = () => {
+    if (effect) toggleSave(effect);
   };
 
   const onShare = async () => {
@@ -619,15 +604,15 @@ export default function EffectDetail() {
                       <div className="flex flex-wrap items-center gap-2">
                         <button
                           onClick={onLike}
-                          className={`chip ${liked ? 'chip-active !border-primary-500 text-primary-500' : ''}`}
+                          className={`chip ${isLiked(effect.id) ? 'chip-active !border-rose-500 text-rose-500 font-bold' : ''}`}
                         >
-                          <i className={liked ? 'ri-heart-fill text-primary-500' : 'ri-heart-line'} /> {formatCount(likes)}
+                          <i className={isLiked(effect.id) ? 'ri-heart-fill text-rose-500' : 'ri-heart-line'} /> {formatCount(getLikeCount(effect.id))}
                         </button>
                         <button
                           onClick={onSave}
-                          className={`chip ${saved ? 'chip-active !border-accent-500 text-accent-500' : ''}`}
+                          className={`chip ${isSaved(effect.id) ? 'chip-active !border-primary-500 text-primary-600 font-bold' : ''}`}
                         >
-                          <i className={saved ? 'ri-bookmark-fill text-accent-600' : 'ri-bookmark-line'} /> {saved ? 'Saved' : 'Save'}
+                          <i className={isSaved(effect.id) ? 'ri-bookmark-fill text-primary-600' : 'ri-bookmark-line'} /> {isSaved(effect.id) ? 'Saved' : 'Save'}
                         </button>
                         <button onClick={onShare} className="chip">
                           <i className={shared ? 'ri-check-line text-emerald-600' : 'ri-share-line'} /> {shared ? 'Link copied' : 'Share'}
