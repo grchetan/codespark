@@ -181,18 +181,18 @@ export default function AdminLayout({ activeTab, onTabChange, children }: AdminL
                   <div className="flex items-center gap-3">
                     <img
                       src={
-                        isOwner
-                          ? 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat'
-                          : user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email)}`
+                        user.avatar && !user.avatar.includes('unsplash')
+                          ? user.avatar
+                          : `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email || 'User')}`
                       }
-                      alt={user.name}
+                      alt={user.name || 'User'}
                       className={`h-11 w-11 rounded-full object-cover border bg-background-50 shrink-0 ${
                         isOwner ? 'border-amber-500 shadow-sm shadow-amber-500/20' : 'border-background-300'
                       }`}
                     />
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-foreground-950 truncate">
-                        {isOwner ? 'Chetan Prajapat' : user.name}
+                        {user.name || user.email?.split('@')[0] || 'User'}
                       </p>
                       <p className={`text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1 ${
                         isOwner

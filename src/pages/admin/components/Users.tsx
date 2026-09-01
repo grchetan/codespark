@@ -56,10 +56,10 @@ export default function Users({
 
       if (!error && data && data.length > 0) {
         const mapped: AdminUser[] = data.map((u: any) => {
-          const isTargetOwner = isSuperAdminOwner(u.email, u.role);
+          const isTargetOwner = u.email === 'chetanprajapat340@gmail.com';
           return {
             id: u.id,
-            name: isTargetOwner && !u.name ? 'Chetan Prajapat' : (u.name || 'Anonymous User'),
+            name: isTargetOwner && !u.name ? 'Chetan Prajapat' : (u.name || u.email?.split('@')[0] || 'User'),
             email: u.email,
             role: (isTargetOwner ? 'superadmin' : (u.role || 'member')) as AdminUser['role'],
             status: (u.status as AdminUser['status']) || 'active',

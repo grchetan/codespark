@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (isSuperAdminOwner(parsed.email, parsed.role)) {
+        if (parsed.email === 'chetanprajapat340@gmail.com') {
           parsed.role = 'superadmin';
           if (!parsed.name || parsed.name === 'Anonymous User') {
             parsed.name = 'Chetan Prajapat';
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const resolvedUser: User = {
           id: data.id || fallbackUser.id,
-          name: isOwner && !data.name ? 'Chetan Prajapat' : (data.name || fallbackUser.name),
+          name: data.name || fallbackUser.name || (data.email === 'chetanprajapat340@gmail.com' ? 'Chetan Prajapat' : data.email.split('@')[0]),
           email: data.email,
           role: resolvedRole,
           avatar: data.avatar || fallbackUser.avatar,
@@ -130,9 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           const baseUser: User = {
             id: session.user.id,
-            name: isOwner
-              ? 'Chetan Prajapat'
-              : session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0],
+            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || (userEmail === 'chetanprajapat340@gmail.com' ? 'Chetan Prajapat' : userEmail.split('@')[0]),
             email: userEmail,
             role: isOwner ? 'superadmin' : 'member',
             avatar:
@@ -174,9 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const baseUser: User = {
           id: session.user.id,
-          name: isOwner
-            ? 'Chetan Prajapat'
-            : session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0],
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || (userEmail === 'chetanprajapat340@gmail.com' ? 'Chetan Prajapat' : userEmail.split('@')[0]),
           email: userEmail,
           role: isOwner ? 'superadmin' : 'member',
           avatar:
@@ -207,7 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (newToken: string, newUser: User) => {
     let finalUser = { ...newUser };
-    if (isSuperAdminOwner(newUser.email, newUser.role)) {
+    if (newUser.email === 'chetanprajapat340@gmail.com') {
       finalUser.role = 'superadmin';
       if (!finalUser.name || finalUser.name === 'Anonymous User') {
         finalUser.name = 'Chetan Prajapat';
@@ -250,7 +246,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isSuperAdmin = Boolean(
-    user && (user.role === 'superadmin' || isSuperAdminOwner(user.email, user.role))
+    user && (user.role === 'superadmin' || user.email === 'chetanprajapat340@gmail.com')
   );
 
   const isAdmin = Boolean(
