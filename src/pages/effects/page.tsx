@@ -765,8 +765,7 @@ export default function EffectsWorkspace() {
         {/* ========================================================================= */}
         {/* RIGHT PANE: MAIN DOCUMENTATION CONTENT (Normal Document Flow)             */}
         {/* ========================================================================= */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between">
-          <main className="p-4 sm:p-8 lg:p-10 pb-16 max-w-4xl mx-auto w-full space-y-8 flex-1">
+        <main className="flex-1 min-w-0 p-4 sm:p-8 lg:p-10 pb-16 max-w-4xl mx-auto w-full space-y-8">
             {/* Mobile Drawer Bar (< md) */}
             <div className="md:hidden border-b border-background-300/60 pb-3">
               <button
@@ -1466,13 +1465,10 @@ export default function EffectsWorkspace() {
               </div>
             )}
           </main>
-
-          {/* CodeSpark Footer (Appears smoothly at the bottom of the right scrollable content area) */}
-          <div className="w-full shrink-0 border-t border-background-300/60 bg-background-100/50 pb-8">
-            <Footer />
-          </div>
         </div>
+
+        {/* Full-Width CodeSpark Footer */}
+        <Footer />
       </div>
-    </div>
-  );
+    );
 }
