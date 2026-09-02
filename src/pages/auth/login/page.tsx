@@ -150,31 +150,41 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password }),
-      }).catch(() => null);
+      });
+      const data = await res.json();
 
-      if (res && res.ok) {
-        const data = await res.json().catch(() => ({}));
-        if (data.success && data.token) {
-          await login(data.token, data.user);
-          setSuccess('Welcome back! Redirecting...');
-          setTimeout(() => {
-            const role = data.user?.role || 'member';
-            navigate(redirectParam || (['superadmin', 'admin', 'moderator'].includes(role) ? '/admin' : '/effects'), { replace: true });
-          }, 500);
-          return;
-        }
+      if (data.success && data.user) {
+        const isOwner = isSuperAdminOwner(data.user.email, data.user.role);
+        const resolvedRole: UserRole = isOwner ? 'superadmin' : (data.user.role || 'member');
+        const authUser = {
+          ...data.user,
+          name: isOwner && !data.user.name ? 'Chetan Prajapat' : (data.user.name || cleanEmail.split('@')[0]),
+          role: resolvedRole,
+        };
+
+        await login(data.token, authUser);
+        setSuccess(`Welcome back, ${authUser.name}! Redirecting...`);
+        setTimeout(() => {
+          if (redirectParam) {
+            navigate(redirectParam, { replace: true });
+          } else if (resolvedRole === 'superadmin' || resolvedRole === 'admin' || resolvedRole === 'moderator') {
+            navigate('/admin', { replace: true });
+          } else {
+            navigate('/effects', { replace: true });
+          }
+        }, 500);
+        return;
+      } else {
+        setError(data.message || 'Incorrect email or password. Please check your credentials.');
       }
-
-      setError('Incorrect email or password. Please check your credentials.');
     } catch {
-      setError('Unable to sign in. Please verify your connection and try again.');
+      setError('Incorrect email or password. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
-    if (oauthLoading) return;
     setOauthLoading(provider);
     setError('');
     try {
@@ -187,7 +197,7 @@ export default function LoginPage() {
       if (authError) {
         setError(authError.message || 'OAuth provider is not configured yet.');
       }
-    } catch (err: any) {
+    } catch {
       setError('Failed to initialize OAuth connection.');
     } finally {
       setOauthLoading(null);
@@ -198,43 +208,47 @@ export default function LoginPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background-50 flex flex-col justify-between">
       <Navbar />
 
-      <main className="pt-24 sm:pt-28 pb-20 w-full max-w-full overflow-x-hidden flex-1 flex items-center justify-center">
-        <div className="container-x flex justify-center w-full">
+      <main className="pt-28 sm:pt-32 pb-20 w-full max-w-full overflow-x-hidden flex-1 flex items-center justify-center">
+        <div className="container-x flex justify-center w-full px-4">
           <Reveal>
-            <div className="w-full max-w-md">
-              <div className="mb-8 text-center">
+            {/* Stable, Unified Authentication Card with Fixed Max-Width */}
+            <div className="w-full max-w-[420px] rounded-3xl border border-background-300/80 bg-background-50 p-6 sm:p-8 shadow-md">
+              {/* Header Icon & Title */}
+              <div className="mb-6 text-center">
                 <span className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-foreground-950 text-2xl text-foreground-950 shadow-sm">
                   <i className="ri-sparkling-2-fill text-primary-500" />
                 </span>
-                <h1 className="mt-4 font-display text-3xl sm:text-4xl font-bold tracking-tight text-foreground-950">
+                <h1 className="mt-4 font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground-950">
                   Welcome back
                 </h1>
-                <p className="mt-2 text-xs sm:text-sm text-foreground-500">
+                <p className="mt-1 text-xs text-foreground-500">
                   Sign in to your CodeSpark account to continue.
                 </p>
               </div>
 
+              {/* Inline Error Banner (contained inside the card) */}
               {error && (
-                <div className="mb-5 flex items-center gap-2 rounded-xl bg-primary-500/10 p-3.5 text-xs sm:text-sm text-primary-600 border border-primary-500/30 animate-fade-in">
-                  <i className="ri-error-warning-line text-base shrink-0" />
-                  <span>{error}</span>
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-primary-500/10 p-3 text-xs text-primary-600 border border-primary-500/25 animate-fade-in">
+                  <i className="ri-error-warning-fill text-base shrink-0 text-primary-500 mt-0.5" />
+                  <span className="leading-snug">{error}</span>
                 </div>
               )}
 
+              {/* Inline Success Banner */}
               {success && (
-                <div className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-500/10 p-3.5 text-xs sm:text-sm text-emerald-600 border border-emerald-500/30 animate-fade-in">
-                  <i className="ri-checkbox-circle-line text-base shrink-0" />
-                  <span>{success}</span>
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-emerald-500/10 p-3 text-xs text-emerald-600 border border-emerald-500/25 animate-fade-in">
+                  <i className="ri-checkbox-circle-fill text-base shrink-0 text-emerald-500 mt-0.5" />
+                  <span className="leading-snug">{success}</span>
                 </div>
               )}
 
               {/* OAuth Buttons (Google & GitHub) */}
-              <div className="mb-5 grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 mb-4">
                 <button
                   type="button"
                   onClick={() => handleOAuthLogin('google')}
                   disabled={Boolean(oauthLoading) || loading}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-background-300/80 bg-background-50 py-2.5 px-3 text-xs font-semibold text-foreground-800 shadow-sm transition-all hover:bg-background-200 disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-background-300 bg-background-100/70 py-2.5 px-3 text-xs font-semibold text-foreground-800 shadow-xs transition-all hover:bg-background-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   <i className="ri-google-fill text-base text-rose-500" />
                   <span>{oauthLoading === 'google' ? 'Connecting...' : 'Google'}</span>
@@ -243,23 +257,29 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => handleOAuthLogin('github')}
                   disabled={Boolean(oauthLoading) || loading}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-background-300/80 bg-background-50 py-2.5 px-3 text-xs font-semibold text-foreground-800 shadow-sm transition-all hover:bg-background-200 disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-background-300 bg-background-100/70 py-2.5 px-3 text-xs font-semibold text-foreground-800 shadow-xs transition-all hover:bg-background-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   <i className="ri-github-fill text-base text-foreground-950" />
                   <span>{oauthLoading === 'github' ? 'Connecting...' : 'GitHub'}</span>
                 </button>
               </div>
 
-              <div className="relative mb-5 text-center text-xs text-foreground-400">
+              {/* Divider */}
+              <div className="relative mb-4 text-center text-xs text-foreground-400">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-background-300/60" />
                 </div>
-                <span className="relative bg-background-50 px-2 uppercase font-medium">Or with email</span>
+                <span className="relative bg-background-50 px-2 uppercase text-[10px] font-bold tracking-wider">
+                  Or with email
+                </span>
               </div>
 
-              <form onSubmit={handleLoginSubmit} className="space-y-4 rounded-2xl border border-background-300/50 bg-background-50 p-6 sm:p-8 shadow-sm">
+              {/* Email & Password Form */}
+              <form onSubmit={handleLoginSubmit} className="space-y-3.5">
                 <div>
-                  <label className="text-xs font-semibold text-foreground-800 block mb-1">Email address</label>
+                  <label className="text-xs font-semibold text-foreground-800 block mb-1">
+                    Email address
+                  </label>
                   <input
                     type="email"
                     value={email}
@@ -267,13 +287,15 @@ export default function LoginPage() {
                     placeholder="name@company.com"
                     required
                     disabled={loading}
-                    className="input text-xs sm:text-sm h-10 w-full disabled:opacity-60"
+                    className="input text-xs sm:text-sm h-10 w-full disabled:opacity-60 rounded-xl"
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-foreground-800">Password</label>
+                    <label className="text-xs font-semibold text-foreground-800">
+                      Password
+                    </label>
                   </div>
                   <div className="relative">
                     <input
@@ -283,20 +305,20 @@ export default function LoginPage() {
                       placeholder="••••••••"
                       required
                       disabled={loading}
-                      className="input text-xs sm:text-sm h-10 pr-10 w-full disabled:opacity-60"
+                      className="input text-xs sm:text-sm h-10 pr-10 w-full disabled:opacity-60 rounded-xl"
                     />
                     <button
                       type="button"
                       onClick={() => setShow(!show)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-400 hover:text-foreground-700 text-sm"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-400 hover:text-foreground-700 text-sm cursor-pointer"
                     >
                       <i className={show ? 'ri-eye-off-line' : 'ri-eye-line'} />
                     </button>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer text-foreground-600">
+                <div className="flex items-center justify-between text-xs pt-0.5">
+                  <label className="flex items-center gap-2 cursor-pointer text-foreground-600 select-none">
                     <input
                       type="checkbox"
                       checked={remember}
@@ -310,7 +332,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn btn-primary h-11 w-full text-xs sm:text-sm font-bold shadow-md disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
+                  className="btn btn-primary h-11 w-full text-xs sm:text-sm font-bold shadow-md disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
                 >
                   {loading ? (
                     <>
@@ -326,7 +348,8 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <p className="mt-6 text-center text-xs text-foreground-500">
+              {/* Bottom Footer Link */}
+              <p className="mt-5 text-center text-xs text-foreground-500">
                 Don't have an account?{' '}
                 <Link to="/signup" className="font-semibold text-primary-600 hover:underline">
                   Create free account

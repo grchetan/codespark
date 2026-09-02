@@ -1,44 +1,71 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 
 function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function highlightCode(code: string, lang: 'html' | 'css' | 'js' | 'bash'): string {
-  const escaped = escapeHtml(code);
+  if (!code) return '';
 
   if (lang === 'html') {
+    // Escape HTML first
+    const escaped = escapeHtml(code);
+    // Tokenize HTML safely
     return escaped
-      .replace(/(&lt;\/?)([\w-]+)/g, '<span class="html-tag">$1$2</span>')
-      .replace(/([\w-]+)(=)/g, '<span class="html-attr">$1</span><span class="html-punct">$2</span>')
-      .replace(/(&quot;.*?&quot;)/g, '<span class="html-string">$1</span>')
-      .replace(/(&lt;!--.*?--&gt;)/g, '<span class="html-comment">$1</span>');
+      // Comments
+      .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '___COMMENT___$1___ENDCOMMENT___')
+      // Strings in attributes
+      .replace(/(&quot;[\s\S]*?&quot;|'[\s\S]*?')/g, '<span class="html-string">$1</span>')
+      // Tag opening and closing with tag name
+      .replace(/(&lt;\/?)([a-zA-Z0-9-]+)/g, '<span class="html-punct">$1</span><span class="html-tag">$2</span>')
+      // Tag closing bracket
+      .replace(/(\/?&gt;)/g, '<span class="html-punct">$1</span>')
+      // Attributes
+      .replace(/\s([a-zA-Z0-9-:]+)(?==)/g, ' <span class="html-attr">$1</span>')
+      // Restore comments
+      .replace(/___COMMENT___([\s\S]*?)___ENDCOMMENT___/g, '<span class="html-comment">$1</span>');
   }
 
   if (lang === 'css') {
+    const escaped = escapeHtml(code);
     return escaped
-      .replace(/(\.[\w-]+|#[\w-]+)/g, '<span class="css-selector">$1</span>')
-      .replace(/([\w-]+)(\s*:)/g, '<span class="css-prop">$1</span><span class="css-punct">$2</span>')
-      .replace(/(:\s*)([^;]+)/g, '<span class="css-punct">$1</span><span class="css-val">$2</span>')
-      .replace(/(\/\*.*?\*\/)/g, '<span class="css-comment">$1</span>');
+      // Comments
+      .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="css-comment">$1</span>')
+      // Selectors (before {)
+      .replace(/(^|[\n\r\}])\s*([^{]+)\s*\{/g, (match, prefix, sel) => {
+        return `${prefix} <span class="css-selector">${sel.trim()}</span> {`;
+      })
+      // Properties
+      .replace(/([a-zA-Z-]+)\s*:/g, '<span class="css-prop">$1</span>:')
+      // Values (between : and ;)
+      .replace(/:\s*([^;]+);/g, ': <span class="css-val">$1</span>;');
   }
 
   if (lang === 'js') {
+    const escaped = escapeHtml(code);
     return escaped
+      // Comments
+      .replace(/(\/\/[^\n]*)/g, '<span class="js-comment">$1</span>')
+      .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="js-comment">$1</span>')
+      // Strings
+      .replace(/(&quot;[\s\S]*?&quot;|'[\s\S]*?'|`[\s\S]*?`)/g, '<span class="js-string">$1</span>')
+      // Keywords
       .replace(/\b(const|let|var|function|return|if|else|for|while|switch|case|break|default|try|catch|new|this|class|extends|import|export|from|async|await|typeof|instanceof)\b/g, '<span class="js-keyword">$1</span>')
-      .replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g, '<span class="js-string">$1</span>')
-      .replace(/(\/\/.*)/g, '<span class="js-comment">$1</span>')
+      // Numbers
       .replace(/\b(\d+(\.\d+)?)\b/g, '<span class="js-number">$1</span>')
+      // Builtins & globals
       .replace(/\b(document|window|console|Math|Date|Array|Object|String|Number|Boolean|Promise|setTimeout|setInterval|addEventListener|querySelector|getElementById|createElement|appendChild|removeChild|classList|style|innerHTML|textContent)\b/g, '<span class="js-builtin">$1</span>');
   }
 
   if (lang === 'bash') {
+    const escaped = escapeHtml(code);
     return escaped
-      .replace(/\b(npm|yarn|pnpm|npx|git|install|run|build|dev|add)\b/g, '<span class="js-keyword">$1</span>')
+      .replace(/(\#[^\n]*)/g, '<span class="html-comment">$1</span>')
+      .replace(/\b(npm|yarn|pnpm|npx|git|install|run|build|dev|add|clone|cd)\b/g, '<span class="js-keyword">$1</span>')
       .replace(/(-{1,2}[\w-]+)/g, '<span class="html-attr">$1</span>');
   }
 
-  return escaped;
+  return escapeHtml(code);
 }
 
 const fileNames: Record<string, string> = {
@@ -58,7 +85,7 @@ const langColors: Record<string, string> = {
 export default function CodeBlock({ code, lang }: { code: string; lang: 'html' | 'css' | 'js' | 'bash' }) {
   const [copied, setCopied] = useState(false);
 
-  const lines = useMemo(() => code.split('\n'), [code]);
+  const lines = useMemo(() => (code || '').split('\n'), [code]);
   const highlighted = useMemo(() => highlightCode(code, lang), [code, lang]);
 
   const copy = async () => {
@@ -72,7 +99,7 @@ export default function CodeBlock({ code, lang }: { code: string; lang: 'html' |
   return (
     <div className="overflow-hidden rounded-xl border border-background-300/50 bg-[#0f1115] shadow-lg">
       {/* macOS-style window header */}
-      <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 bg-[#13151b]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
@@ -92,7 +119,7 @@ export default function CodeBlock({ code, lang }: { code: string; lang: 'html' |
           <button
             type="button"
             onClick={copy}
-            className="ml-3 flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/50 transition-all hover:bg-white/10 hover:text-white/80"
+            className="ml-3 flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/50 transition-all hover:bg-white/10 hover:text-white/80 cursor-pointer"
           >
             <i className={copied ? 'ri-check-line text-green-400' : 'ri-file-copy-line'} />
             {copied ? 'Copied' : 'Copy'}
@@ -101,7 +128,7 @@ export default function CodeBlock({ code, lang }: { code: string; lang: 'html' |
       </div>
 
       {/* Code area with line numbers */}
-      <div className="flex overflow-auto">
+      <div className="flex overflow-auto max-h-[500px]">
         {/* Line numbers */}
         <div className="shrink-0 select-none border-r border-white/5 py-4 pr-3 pl-4 text-right font-mono text-[12px] leading-[1.7] text-white/20">
           {lines.map((_, i) => (
@@ -118,19 +145,18 @@ export default function CodeBlock({ code, lang }: { code: string; lang: 'html' |
       </div>
 
       <style>{`
-        .html-tag { color: #ff6b35; }
+        .html-tag { color: #ff6b35; font-weight: 600; }
         .html-attr { color: #e2a8f0; }
         .html-string { color: #a5d6a7; }
-        .html-comment { color: #6a7a8a; }
+        .html-comment { color: #6a7a8a; font-style: italic; }
         .html-punct { color: #89a0b5; }
-        .css-selector { color: #ff8a65; }
+        .css-selector { color: #ff8a65; font-weight: 600; }
         .css-prop { color: #81d4fa; }
         .css-val { color: #a5d6a7; }
-        .css-punct { color: #89a0b5; }
-        .css-comment { color: #6a7a8a; }
-        .js-keyword { color: #c792ea; }
+        .css-comment { color: #6a7a8a; font-style: italic; }
+        .js-keyword { color: #c792ea; font-weight: 600; }
         .js-string { color: #c3e88d; }
-        .js-comment { color: #6a7a8a; }
+        .js-comment { color: #6a7a8a; font-style: italic; }
         .js-number { color: #f78c6c; }
         .js-builtin { color: #82aaff; }
       `}</style>

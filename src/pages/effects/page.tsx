@@ -564,7 +564,7 @@ export default function EffectsWorkspace() {
       <Navbar />
 
       {/* Main Documentation & Effects Workspace (Cleanly starts below Navbar) */}
-      <div className="flex-1 min-h-0 flex overflow-hidden w-full max-w-full pt-16 sm:pt-20">
+      <div className="flex-1 min-h-0 flex overflow-hidden w-full max-w-full pt-16 md:pt-[104px]">
         {/* ========================================================================= */}
         {/* LEFT PANE: DOCUMENTATION & COMPONENTS SIDEBAR (Independent Scroll Area)   */}
         {/* ========================================================================= */}

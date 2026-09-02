@@ -113,8 +113,8 @@ export default function Navbar() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 w-full max-w-full transition-all duration-300 ${
-        scrolled || open
-          ? 'border-b border-background-300/40 bg-background-50/95 backdrop-blur-xl shadow-sm'
+        scrolled || open || !isHome
+          ? 'border-b border-background-300/60 bg-background-50/98 backdrop-blur-xl shadow-xs'
           : 'border-b border-transparent bg-transparent'
       }`}
     >
