@@ -4,22 +4,18 @@ import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
+import loginVisual from '@/assets/login-visual.png';
 
 // ==============================================================================
 // AUTH VISUAL COMPONENT (Full-height, Edge-to-Edge Image / GIF Slot)
 // ==============================================================================
 export function AuthVisual() {
   return (
-    <div className="w-full h-full min-h-[300px] sm:min-h-[400px] lg:min-h-full relative overflow-hidden flex items-center justify-center bg-[#0d0e12]">
-      {/* 
-        REPLACE IMAGE / GIF HERE:
-        Simply replace this img src with your animated GIF, WebP, or PNG:
-        e.g., <img src="/effects-login.gif" alt="CodeSpark Visual" className="w-full h-full object-cover" />
-      */}
+    <div className="w-full h-full min-h-[320px] sm:min-h-[420px] lg:min-h-full relative overflow-hidden flex items-center justify-center p-4 sm:p-8 lg:p-12 select-none">
       <img
-        src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop"
-        alt="CodeSpark Effects Visual"
-        className="w-full h-full object-cover select-none"
+        src={loginVisual}
+        alt="CodeSpark - Build Stunning UI Effects"
+        className="w-full max-w-[620px] h-auto max-h-[85vh] object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-[1.02]"
         loading="eager"
       />
     </div>
@@ -128,7 +124,7 @@ export default function LoginPage() {
         {/* ================================================================= */}
         {/* LEFT COLUMN: 55-60% FULL-HEIGHT, EDGE-TO-EDGE IMAGE / GIF VISUAL  */}
         {/* ================================================================= */}
-        <div className="w-full lg:w-[58%] min-h-[280px] sm:min-h-[380px] lg:min-h-[calc(100vh-104px)] relative overflow-hidden bg-[#0d0e12]">
+        <div className="w-full lg:w-[58%] min-h-[280px] sm:min-h-[380px] lg:min-h-[calc(100vh-104px)] relative overflow-hidden flex items-center justify-center bg-background-100/40 border-b lg:border-b-0 lg:border-r border-background-300/40">
           <AuthVisual />
         </div>
 
