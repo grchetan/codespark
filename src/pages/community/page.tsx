@@ -38,7 +38,7 @@ export default function Community() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background-50">
       <Navbar />
-      <main className="pt-24 sm:pt-28 w-full max-w-full overflow-x-hidden">
+      <main className="pt-32 sm:pt-36 lg:pt-44 w-full max-w-full overflow-x-hidden">
         {/* Hero Section */}
         <section className="bg-grid relative overflow-hidden pb-20">
           <div className="pointer-events-none absolute -right-16 top-0 h-72 w-72 rounded-full bg-primary-500/15 blur-[100px]" />

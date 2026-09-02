@@ -210,12 +210,11 @@ export default function Users({
     setNewUserPass('User@123');
     showToast('User created successfully in database!');
 
-    // Save to Supabase Cloud Database
+    // Save to Supabase Cloud Database (Profile record)
     try {
       await supabase.from('users').insert({
         id: newUserId,
         email: emailClean,
-        password_hash: hashedPassword,
         name: newUserObj.name,
         role: newUserRole,
         status: 'active',

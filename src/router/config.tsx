@@ -9,6 +9,8 @@ import About from "../pages/about/page";
 import Contact from "../pages/contact/page";
 import Login from "../pages/auth/login/page";
 import Signup from "../pages/auth/signup/page";
+import ForgotPassword from "../pages/auth/forgot-password/page";
+import ResetPassword from "../pages/auth/reset-password/page";
 import Admin from "../pages/admin/page";
 import Saved from "../pages/saved/page";
 
@@ -24,6 +26,8 @@ const routes: RouteObject[] = [
   { path: "/contact", element: <Contact /> },
   { path: "/login", element: <Login /> },
   { path: "/signup", element: <Signup /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/reset-password", element: <ResetPassword /> },
   { path: "/admin", element: <Admin /> },
   { path: "*", element: <NotFound /> },
 ];

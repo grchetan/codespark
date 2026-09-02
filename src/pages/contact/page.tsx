@@ -61,7 +61,7 @@ export default function Contact() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background-50">
       <Navbar />
-      <main className="pt-24 sm:pt-28 pb-24 w-full max-w-full overflow-x-hidden">
+      <main className="pt-32 sm:pt-36 lg:pt-44 pb-24 w-full max-w-full overflow-x-hidden">
         <div className="container-x">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">

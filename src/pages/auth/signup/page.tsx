@@ -5,7 +5,6 @@ import Footer from '@/components/feature/Footer';
 import Reveal from '@/components/base/Reveal';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { hashPassword } from '@/lib/security';
 
 const terms = [
   { icon: 'ri-mail-check-line', text: 'Email verification included' },
@@ -15,7 +14,7 @@ const terms = [
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { signup, isAuthenticated, user, isStaff, loading: authLoading } = useAuth();
+  const { isAuthenticated, user, isStaff, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
@@ -26,6 +25,7 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [show, setShow] = useState(false);
   const [agree, setAgree] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -36,11 +36,19 @@ export default function SignupPage() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !password) {
-      setError('Please fill in all fields.');
+      setError('Please fill in all required fields.');
       return;
     }
     if (password.length < 6) {
       setError('Password must be at least 6 characters.');
+      return;
+    }
+    if (confirmPassword && password !== confirmPassword) {
+      setError('Passwords do not match. Please re-enter.');
+      return;
+    }
+    if (!agree) {
+      setError('Please accept the Terms of Service to continue.');
       return;
     }
 
@@ -48,53 +56,71 @@ export default function SignupPage() {
     setError('');
     setSuccess('');
 
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
-      const cleanName = name.trim();
-      const cleanEmail = email.trim().toLowerCase();
-      const newId = `u_${Date.now()}`;
-      const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(cleanName)}`;
-      const now = new Date().toISOString();
-
-      // 1. Save directly to Supabase Cloud Database (cryptographically hashed)
-      try {
-        const secureHash = await hashPassword(password);
-        await supabase.from('users').insert({
-          id: newId,
-          name: cleanName,
-          email: cleanEmail,
-          password_hash: secureHash,
-          role: 'member',
-          status: 'active',
-          avatar,
-          effects_count: 0,
-          created_at: now,
-        });
-      } catch {}
-
-      // 2. Also attempt backend registration if available
-      try {
-        await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: cleanName, email: cleanEmail, password }),
-        });
-      } catch {}
-
-      // 3. Complete client sign-in session
-      const newUser = {
-        id: newId,
-        name: cleanName,
+      // 1. Supabase Auth Server Sign Up (Single Source of Truth)
+      const { data, error: authError } = await supabase.auth.signUp({
         email: cleanEmail,
-        role: 'member' as const,
-        avatar,
-        effects_count: 0,
-      };
+        password,
+        options: {
+          data: {
+            full_name: cleanName,
+            name: cleanName,
+            avatar_url: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(cleanName)}`,
+          },
+        },
+      });
 
-      await signup(`token_${newId}`, newUser);
-      setSuccess('Account created successfully! Welcome to CodeSpark.');
-      setTimeout(() => {
-        navigate('/effects', { replace: true });
-      }, 500);
+      if (authError) {
+        if (
+          authError.message.toLowerCase().includes('already registered') ||
+          authError.message.toLowerCase().includes('already exists') ||
+          authError.message.toLowerCase().includes('user already exists')
+        ) {
+          setError('An account with this email already exists. Please sign in or reset your password.');
+        } else {
+          setError(authError.message || 'Registration failed. Please try again.');
+        }
+        return;
+      }
+
+      // 2. Security Check: Supabase returns identities: [] when email already exists and email confirmations are active
+      if (data?.user?.identities && data.user.identities.length === 0) {
+        setError('An account with this email already exists. Please sign in or reset your password.');
+        return;
+      }
+
+      if (data?.user) {
+        // Safe profile creation (ALWAYS enforces role = 'member')
+        try {
+          await supabase.from('users').insert({
+            id: data.user.id,
+            name: cleanName,
+            email: cleanEmail,
+            role: 'member',
+            status: 'active',
+            avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(cleanName)}`,
+            effects_count: 0,
+            created_at: new Date().toISOString(),
+          });
+        } catch {
+          // Table triggers on auth.users will handle insertion if RLS prevents client direct insert
+        }
+
+        if (data.session) {
+          setSuccess('Account created successfully! Welcome to CodeSpark.');
+          setTimeout(() => {
+            navigate('/effects', { replace: true });
+          }, 800);
+        } else {
+          setSuccess('Account created! If email confirmation is required, please check your inbox to verify your email.');
+          setTimeout(() => {
+            navigate('/login', { replace: true });
+          }, 1500);
+        }
+      }
     } catch {
       setError('An error occurred during registration. Please try again.');
     } finally {
@@ -113,10 +139,10 @@ export default function SignupPage() {
         },
       });
       if (authError) {
-        setError(authError.message);
+        setError(authError.message || 'OAuth registration failed.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to initialize OAuth.');
+    } catch {
+      setError('Failed to initialize OAuth.');
     } finally {
       setOauthLoading(null);
     }
@@ -125,7 +151,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background-50">
       <Navbar />
-      <main className="pt-24 sm:pt-28 pb-20 w-full max-w-full overflow-x-hidden">
+      <main className="pt-32 sm:pt-36 lg:pt-44 pb-24 w-full max-w-full overflow-x-hidden">
         <div className="container-x grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
           <Reveal>
             <div className="hidden lg:block">
@@ -139,7 +165,9 @@ export default function SignupPage() {
               <div className="mt-8 space-y-4">
                 {terms.map((t, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <span className="grid h-9 w-9 place-items-center rounded-lg border border-background-300/50 text-lg text-primary-500"><i className={t.icon} /></span>
+                    <span className="grid h-9 w-9 place-items-center rounded-lg border border-background-300/50 text-lg text-primary-500">
+                      <i className={t.icon} />
+                    </span>
                     <p className="text-sm font-medium text-foreground-950">{t.text}</p>
                   </div>
                 ))}
@@ -148,30 +176,35 @@ export default function SignupPage() {
           </Reveal>
 
           <Reveal>
-            <form onSubmit={onSubmit} className="w-full space-y-5 rounded-2xl border border-background-300/50 bg-background-50 p-6 md:p-8 shadow-sm">
-              <h2 className="font-display text-3xl font-bold tracking-tight text-foreground-950">Create account</h2>
+            <div className="w-full max-w-[480px] mx-auto rounded-3xl border border-background-300/80 bg-background-50 p-6 sm:p-8 shadow-md">
+              <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground-950">
+                Create account
+              </h2>
+              <p className="mt-1 text-xs text-foreground-500 mb-5">
+                Join the interactive frontend creator community.
+              </p>
 
               {error && (
-                <div className="flex items-center gap-2 rounded-xl bg-primary-500/10 p-3.5 text-sm text-primary-600 border border-primary-500/30">
-                  <i className="ri-error-warning-line text-lg" />
-                  <span>{error}</span>
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-primary-500/10 p-3.5 text-xs text-primary-600 border border-primary-500/25 animate-fade-in">
+                  <i className="ri-error-warning-fill text-base shrink-0 text-primary-500 mt-0.5" />
+                  <span className="leading-snug">{error}</span>
                 </div>
               )}
 
               {success && (
-                <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 p-3.5 text-sm text-emerald-600 border border-emerald-500/30">
-                  <i className="ri-checkbox-circle-line text-lg" />
-                  <span>{success}</span>
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-emerald-500/10 p-3.5 text-xs text-emerald-600 border border-emerald-500/25 animate-fade-in">
+                  <i className="ri-checkbox-circle-fill text-base shrink-0 text-emerald-500 mt-0.5" />
+                  <span className="leading-snug">{success}</span>
                 </div>
               )}
 
-              {/* OAuth Buttons (Google & GitHub) */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* OAuth Buttons */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
                 <button
                   type="button"
                   onClick={() => handleOAuthSignup('google')}
-                  disabled={Boolean(oauthLoading)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-background-300/80 bg-background-50 py-2.5 px-3 text-xs font-semibold text-foreground-800 shadow-sm transition-all hover:bg-background-200"
+                  disabled={Boolean(oauthLoading) || loading}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-background-300 bg-background-100/70 py-2.5 px-3 text-xs font-semibold text-foreground-800 shadow-xs transition-all hover:bg-background-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   <i className="ri-google-fill text-base text-rose-500" />
                   <span>{oauthLoading === 'google' ? 'Connecting...' : 'Google'}</span>
@@ -179,97 +212,141 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => handleOAuthSignup('github')}
-                  disabled={Boolean(oauthLoading)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-background-300/80 bg-background-50 py-2.5 px-3 text-xs font-semibold text-foreground-800 shadow-sm transition-all hover:bg-background-200"
+                  disabled={Boolean(oauthLoading) || loading}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-background-300 bg-background-100/70 py-2.5 px-3 text-xs font-semibold text-foreground-800 shadow-xs transition-all hover:bg-background-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   <i className="ri-github-fill text-base text-foreground-950" />
                   <span>{oauthLoading === 'github' ? 'Connecting...' : 'GitHub'}</span>
                 </button>
               </div>
 
-              <div className="relative flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-background-300/60" /></div>
-                <span className="relative bg-background-50 px-3 text-xs font-medium uppercase tracking-wider text-foreground-400">or with email</span>
+              <div className="relative mb-4 text-center text-xs text-foreground-400">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-background-300/60" />
+                </div>
+                <span className="relative bg-background-50 px-2 uppercase text-[10px] font-bold tracking-wider">
+                  Or with email
+                </span>
               </div>
 
-              <div>
-                <label className="label">Full name</label>
-                <input
-                  className="input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your full name"
-                  required
-                />
-              </div>
-              <div>
-                <label className="label">Email</label>
-                <input
-                  type="email"
-                  className="input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
-              <div>
-                <label className="label">Password</label>
-                <div className="relative">
+              <form onSubmit={onSubmit} className="space-y-3.5">
+                <div>
+                  <label className="text-xs font-semibold text-foreground-800 block mb-1">
+                    Full name
+                  </label>
+                  <input
+                    className="input text-xs sm:text-sm h-10 w-full disabled:opacity-60 rounded-xl"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your full name"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-foreground-800 block mb-1">
+                    Email address
+                  </label>
+                  <input
+                    type="email"
+                    className="input text-xs sm:text-sm h-10 w-full disabled:opacity-60 rounded-xl"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-foreground-800 block mb-1">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={show ? 'text' : 'password'}
+                      className="input text-xs sm:text-sm h-10 pr-10 w-full disabled:opacity-60 rounded-xl"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Min 6 characters"
+                      minLength={6}
+                      required
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShow((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-400 hover:text-foreground-700 text-sm cursor-pointer"
+                      aria-label="Toggle password"
+                    >
+                      <i className={show ? 'ri-eye-off-line' : 'ri-eye-line'} />
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-foreground-800 block mb-1">
+                    Confirm Password
+                  </label>
                   <input
                     type={show ? 'text' : 'password'}
-                    className="input pr-11"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min 6 characters"
+                    className="input text-xs sm:text-sm h-10 w-full disabled:opacity-60 rounded-xl"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
                     minLength={6}
+                    disabled={loading}
+                  />
+                </div>
+
+                <label className="flex cursor-pointer items-start gap-2 text-xs text-foreground-600 pt-1 select-none">
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={(e) => setAgree(e.target.checked)}
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-background-400 text-primary-500 focus:ring-primary-400"
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShow((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-500 hover:text-foreground-950"
-                    aria-label="Toggle password"
-                  >
-                    <i className={show ? 'ri-eye-off-line text-lg' : 'ri-eye-line text-lg'} />
-                  </button>
-                </div>
-                <p className="mt-1.5 flex items-center gap-1.5 text-xs text-foreground-500">
-                  <i className="ri-shield-check-line" /> Use 6+ characters for a secure account.
-                </p>
-              </div>
+                  <span>
+                    I agree to the{' '}
+                    <Link to="/about" className="text-primary-600 hover:underline">
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link to="/about" className="text-primary-600 hover:underline">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </span>
+                </label>
 
-              <label className="flex cursor-pointer items-start gap-2.5 text-sm text-foreground-600">
-                <input
-                  type="checkbox"
-                  checked={agree}
-                  onChange={(e) => setAgree(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-background-400 text-primary-500 focus:ring-primary-400"
-                  required
-                />
-                <span>I agree to the <Link to="/about" className="text-primary-500 hover:underline">Terms of Service</Link> and <Link to="/about" className="text-primary-500 hover:underline">Privacy Policy</Link>.</span>
-              </label>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary h-11 w-full text-xs sm:text-sm font-bold shadow-md disabled:opacity-60 flex items-center justify-center gap-2 mt-2 cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <i className="ri-loader-4-line animate-spin text-base" />
+                      <span>Creating account...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Create account</span>
+                      <i className="ri-arrow-right-line" />
+                    </>
+                  )}
+                </button>
+              </form>
 
-              <button
-                type="submit"
-                disabled={!agree || loading}
-                className="btn btn-primary h-12 w-full text-sm disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? (
-                  <>
-                    <i className="ri-loader-4-line animate-spin text-lg" /> Creating account...
-                  </>
-                ) : (
-                  <>
-                    Create account <i className="ri-arrow-right-line text-lg" />
-                  </>
-                )}
-              </button>
-
-              <p className="pt-1 text-center text-sm text-foreground-500">
-                Already have an account? <Link to="/login" className="font-semibold text-primary-500 hover:underline">Sign in</Link>
+              <p className="mt-5 text-center text-xs text-foreground-500">
+                Already have an account?{' '}
+                <Link to="/login" className="font-semibold text-primary-600 hover:underline">
+                  Sign in
+                </Link>
               </p>
-            </form>
+            </div>
           </Reveal>
         </div>
       </main>

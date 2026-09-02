@@ -39,7 +39,7 @@ export default function SavedPage() {
     <div className="min-h-screen bg-background-50 text-foreground-950 flex flex-col justify-between">
       <Navbar />
 
-      <main className="pt-24 sm:pt-28 pb-20 flex-1">
+      <main className="pt-32 sm:pt-36 lg:pt-44 pb-24 flex-1">
         <div className="container-x">
           {/* Header Banner */}
           <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-background-300/50 pb-6">

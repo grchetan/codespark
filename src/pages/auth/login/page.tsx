@@ -4,16 +4,14 @@ import Navbar from '@/components/feature/Navbar';
 import Footer from '@/components/feature/Footer';
 import Reveal from '@/components/base/Reveal';
 import { useAuth } from '@/context/AuthContext';
-import { isSuperAdminOwner, type UserRole } from '@/lib/permissions';
 import { supabase } from '@/lib/supabase';
-import { verifyPassword, hashPassword } from '@/lib/security';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectParam = searchParams.get('redirect');
 
-  const { login, user, isAuthenticated, isStaff, loading: authLoading } = useAuth();
+  const { isAuthenticated, user, isStaff, loading: authLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // 1. Auto-redirect if already logged in
+  // Auto-redirect if already authenticated
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
       if (redirectParam) {
@@ -52,143 +50,30 @@ export default function LoginPage() {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Master Owner Instant Verification
-    if (isSuperAdminOwner(cleanEmail) && (password === 'Admin@123' || password === 'Owner@123')) {
-      const ownerUser = {
-        id: 'u_chetan',
-        name: 'Chetan Prajapat',
-        email: cleanEmail,
-        role: 'superadmin' as UserRole,
-        avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat',
-        effects_count: 18,
-      };
-      await login('token_admin_chetan_codespark', ownerUser);
-      setSuccess('Welcome back, Chetan Prajapat! Redirecting to Master Console...');
-      setTimeout(() => {
-        navigate(redirectParam || '/admin', { replace: true });
-      }, 500);
-      return;
-    }
-
-    // 2. Try Supabase Cloud Database Verification
     try {
-      const { data: dbUser, error: dbError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', cleanEmail)
-        .maybeSingle();
-
-      if (!dbError && dbUser) {
-        let isPasswordValid = await verifyPassword(password, dbUser.password_hash);
-
-        // Self-healing: if user was created with '[object Promise]' or plain-text password, auto-heal & allow login!
-        if (!isPasswordValid && (dbUser.password_hash === '[object Promise]' || !dbUser.password_hash || dbUser.password_hash === password.trim() || password === 'User@123' || password === 'Admin@123')) {
-          isPasswordValid = true;
-          try {
-            const correctHash = await hashPassword(password);
-            await supabase.from('users').update({ password_hash: correctHash }).eq('id', dbUser.id);
-          } catch {}
-        }
-
-        if (isPasswordValid) {
-          const isOwner = isSuperAdminOwner(dbUser.email, dbUser.role);
-          const resolvedRole: UserRole = isOwner
-            ? 'superadmin'
-            : (['superadmin', 'admin', 'moderator', 'member'].includes(dbUser.role) ? dbUser.role : 'member');
-
-          const authUser = {
-            id: dbUser.id,
-            name: isOwner && !dbUser.name ? 'Chetan Prajapat' : (dbUser.name || cleanEmail.split('@')[0]),
-            email: dbUser.email,
-            role: resolvedRole,
-            avatar:
-              dbUser.avatar ||
-              `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(dbUser.name || dbUser.email)}`,
-            effects_count: dbUser.effects_count || 0,
-          };
-
-          await login(`token_${dbUser.id}`, authUser);
-          setSuccess(`Welcome back, ${authUser.name}! Redirecting...`);
-
-          setTimeout(() => {
-            if (redirectParam) {
-              navigate(redirectParam, { replace: true });
-            } else if (resolvedRole === 'superadmin' || resolvedRole === 'admin' || resolvedRole === 'moderator') {
-              navigate('/admin', { replace: true });
-            } else {
-              navigate('/effects', { replace: true });
-            }
-          }, 500);
-          return;
-        }
-      }
-    } catch {}
-
-    // 3. Try Native Supabase Auth signInWithPassword
-    try {
-      const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+      // 1. Supabase Auth Server Sign In (Single Source of Truth)
+      const { data, error: authErr } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password,
       });
 
-      if (!authErr && authData?.session) {
-        const userEmail = authData.user.email || cleanEmail;
-        const isOwner = isSuperAdminOwner(userEmail);
-        const resolvedRole: UserRole = isOwner ? 'superadmin' : 'member';
-
-        const authUser = {
-          id: authData.user.id,
-          name: isOwner ? 'Chetan Prajapat' : (authData.user.user_metadata?.name || userEmail.split('@')[0]),
-          email: userEmail,
-          role: resolvedRole,
-          avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(userEmail)}`,
-          effects_count: 0,
-        };
-
-        await login(authData.session.access_token, authUser);
-        setSuccess('Authentication successful! Redirecting...');
-        setTimeout(() => {
-          navigate(redirectParam || (isOwner ? '/admin' : '/effects'), { replace: true });
-        }, 500);
+      if (authErr) {
+        setError('Invalid email or password. Please check your credentials.');
         return;
       }
-    } catch {}
 
-    // 4. Fallback to Local API
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, password }),
-      });
-      const data = await res.json();
-
-      if (data.success && data.user) {
-        const isOwner = isSuperAdminOwner(data.user.email, data.user.role);
-        const resolvedRole: UserRole = isOwner ? 'superadmin' : (data.user.role || 'member');
-        const authUser = {
-          ...data.user,
-          name: isOwner && !data.user.name ? 'Chetan Prajapat' : (data.user.name || cleanEmail.split('@')[0]),
-          role: resolvedRole,
-        };
-
-        await login(data.token, authUser);
-        setSuccess(`Welcome back, ${authUser.name}! Redirecting...`);
+      if (data?.session && data?.user) {
+        setSuccess('Authentication successful! Redirecting...');
         setTimeout(() => {
           if (redirectParam) {
             navigate(redirectParam, { replace: true });
-          } else if (resolvedRole === 'superadmin' || resolvedRole === 'admin' || resolvedRole === 'moderator') {
-            navigate('/admin', { replace: true });
           } else {
             navigate('/effects', { replace: true });
           }
         }, 500);
-        return;
-      } else {
-        setError(data.message || 'Incorrect email or password. Please check your credentials.');
       }
     } catch {
-      setError('Incorrect email or password. Please check your credentials.');
+      setError('Invalid email or password. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -205,7 +90,7 @@ export default function LoginPage() {
         },
       });
       if (authError) {
-        setError(authError.message || 'OAuth provider is not configured yet.');
+        setError(authError.message || 'OAuth login failed.');
       }
     } catch {
       setError('Failed to initialize OAuth connection.');
@@ -218,7 +103,7 @@ export default function LoginPage() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background-50 flex flex-col justify-between">
       <Navbar />
 
-      <main className="pt-28 sm:pt-32 pb-20 w-full max-w-full overflow-x-hidden flex-1 flex items-center justify-center">
+      <main className="pt-32 sm:pt-36 lg:pt-44 pb-24 w-full max-w-full overflow-x-hidden flex-1 flex items-center justify-center">
         <div className="container-x flex justify-center w-full px-4">
           <Reveal>
             {/* Stable, Unified Authentication Card with Fixed Max-Width */}
@@ -236,7 +121,7 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {/* Inline Error Banner (contained inside the card) */}
+              {/* Inline Error Banner */}
               {error && (
                 <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-primary-500/10 p-3 text-xs text-primary-600 border border-primary-500/25 animate-fade-in">
                   <i className="ri-error-warning-fill text-base shrink-0 text-primary-500 mt-0.5" />
@@ -306,6 +191,12 @@ export default function LoginPage() {
                     <label className="text-xs font-semibold text-foreground-800">
                       Password
                     </label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs font-semibold text-primary-600 hover:underline"
+                    >
+                      Forgot?
+                    </Link>
                   </div>
                   <div className="relative">
                     <input

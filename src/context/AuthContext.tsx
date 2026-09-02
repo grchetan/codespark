@@ -17,7 +17,6 @@ export interface User {
   effects_count?: number;
 }
 
-// Backwards-compatible helper
 export function isMasterAdmin(email?: string | null): boolean {
   return isSuperAdminOwner(email);
 }
@@ -43,17 +42,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('codespark_user') || localStorage.getItem('effekt_user');
+    const saved = localStorage.getItem('codespark_user');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        if (parsed.email === 'chetanprajapat340@gmail.com') {
-          parsed.role = 'superadmin';
-          if (!parsed.name || parsed.name === 'Anonymous User') {
-            parsed.name = 'Chetan Prajapat';
-          }
-        }
-        return parsed;
+        return JSON.parse(saved);
       } catch {
         return null;
       }
@@ -62,10 +54,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('codespark_token') || localStorage.getItem('effekt_token') || null;
+    return localStorage.getItem('codespark_token') || null;
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+
+  // Helper to purge all auth keys from storage
+  const purgeStorage = () => {
+    localStorage.removeItem('codespark_token');
+    localStorage.removeItem('codespark_user');
+    localStorage.removeItem('codespark_admin_bypass');
+    localStorage.removeItem('effekt_token');
+    localStorage.removeItem('effekt_user');
+  };
 
   // Synchronize authenticated user profile with Supabase Cloud DB
   const syncProfileFromDB = async (email: string, fallbackUser: User): Promise<User> => {
@@ -106,16 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('codespark_user', JSON.stringify(updated));
   };
 
-  // Helper to purge all auth keys from storage
-  const purgeStorage = () => {
-    localStorage.removeItem('codespark_token');
-    localStorage.removeItem('codespark_user');
-    localStorage.removeItem('codespark_admin_bypass');
-    localStorage.removeItem('effekt_token');
-    localStorage.removeItem('effekt_user');
-  };
-
-  // Supabase Auth listener
+  // Supabase Auth lifecycle listener - Single Source of Truth
   useEffect(() => {
     let isMounted = true;
 
@@ -146,9 +138,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setToken(session.access_token);
             localStorage.setItem('codespark_user', JSON.stringify(fullUser));
             localStorage.setItem('codespark_token', session.access_token);
-            if (isOwner || fullUser.role === 'admin' || fullUser.role === 'moderator') {
-              localStorage.setItem('codespark_admin_bypass', 'true');
-            }
+          }
+        } else {
+          // No active Supabase session
+          if (token && !token.startsWith('token_')) {
+            setUser(null);
+            setToken(null);
+            purgeStorage();
           }
         }
       } catch {
@@ -162,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
 
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || !session) {
         setUser(null);
         setToken(null);
         purgeStorage();
@@ -188,9 +184,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(session.access_token);
           localStorage.setItem('codespark_user', JSON.stringify(fullUser));
           localStorage.setItem('codespark_token', session.access_token);
-          if (isOwner || fullUser.role === 'admin' || fullUser.role === 'moderator') {
-            localStorage.setItem('codespark_admin_bypass', 'true');
-          }
         }
       }
     });
@@ -208,13 +201,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!finalUser.name || finalUser.name === 'Anonymous User') {
         finalUser.name = 'Chetan Prajapat';
       }
-      localStorage.setItem('codespark_admin_bypass', 'true');
     } else {
-      // Sync from DB for accurate role verification
       finalUser = await syncProfileFromDB(newUser.email, finalUser);
-      if (['superadmin', 'admin', 'moderator'].includes(finalUser.role)) {
-        localStorage.setItem('codespark_admin_bypass', 'true');
-      }
     }
 
     setToken(newToken);
@@ -232,12 +220,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoggingOut(true);
 
     try {
-      // 1. Terminate Supabase Auth session
       await supabase.auth.signOut();
     } catch (err) {
       console.warn('Supabase signOut notice:', err);
     } finally {
-      // 2. Clear state and storage unconditionally
       setToken(null);
       setUser(null);
       purgeStorage();
