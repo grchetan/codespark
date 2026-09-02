@@ -4,6 +4,18 @@ import React, { useState, useRef, useEffect } from 'react';
 // CODESPARK TRUSTED REACT EFFECTS REGISTRY
 // ==============================================================================
 
+export interface ManualReactEffect {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  categoryLabel: string;
+  description: string;
+  tags: string[];
+  difficulty: 'easy' | 'medium' | 'advanced';
+  isOfficial?: boolean;
+}
+
 // 1. Magnetic Button Component
 export function ReactMagneticButton({ text = 'Hover Me' }: { text?: string }) {
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -108,7 +120,9 @@ export function ReactTextScramble({ text = 'CODESPARK UI' }: { text?: string }) 
         text
           .split('')
           .map((char, index) => {
-            if (index < iteration) return text[index];
+            if (index < iteration) {
+              return text[index];
+            }
             return glyphs[Math.floor(Math.random() * glyphs.length)];
           })
           .join('')
@@ -117,6 +131,7 @@ export function ReactTextScramble({ text = 'CODESPARK UI' }: { text?: string }) 
       if (iteration >= text.length) {
         clearInterval(interval);
       }
+
       iteration += 1 / 3;
     }, 30);
   };
@@ -126,19 +141,66 @@ export function ReactTextScramble({ text = 'CODESPARK UI' }: { text?: string }) 
   }, [text]);
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 gap-3">
-      <span
-        onMouseEnter={scramble}
-        className="font-mono text-2xl sm:text-3xl font-black tracking-widest text-[#FF4D2E] cursor-pointer select-none"
+    <div className="flex items-center justify-center p-8">
+      <button
+        onClick={scramble}
+        className="px-6 py-3 rounded-xl bg-background-100 border border-background-300 font-mono text-xl sm:text-2xl font-black text-[#FF4D2E] tracking-wider shadow-sm hover:border-[#FF4D2E] transition-colors cursor-pointer"
       >
         {display}
-      </span>
-      <span className="text-[10px] text-foreground-400 uppercase tracking-wider">Hover to re-scramble</span>
+      </button>
     </div>
   );
 }
 
-// Registry Map (Connecting database component_key to trusted React components)
+// Manual React Effects Metadata Registry
+export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
+  {
+    id: 'react-magnetic-button',
+    slug: 'magnetic-button',
+    name: 'Magnetic Button',
+    category: 'hover',
+    categoryLabel: 'Hover',
+    description: 'A CTA that is subtly pulled toward your cursor with spring physics.',
+    tags: ['magnetic', 'button', 'react', 'cursor'],
+    difficulty: 'medium',
+    isOfficial: true,
+  },
+  {
+    id: 'react-tilt-card',
+    slug: '3d-tilt-card',
+    name: '3D Tilt Card',
+    category: '3d',
+    categoryLabel: '3D / Tilt',
+    description: 'A perspective card that rotates dynamically on the X and Y axes as you move cursor.',
+    tags: ['3d', 'perspective', 'react', 'tilt'],
+    difficulty: 'medium',
+    isOfficial: true,
+  },
+  {
+    id: 'react-text-scramble',
+    slug: 'text-scramble',
+    name: 'Text Scramble Decoder',
+    category: 'text',
+    categoryLabel: 'Text',
+    description: 'Characters violently scramble and decode into the final word. Perfect for hero headlines.',
+    tags: ['text', 'scramble', 'react', 'animation'],
+    difficulty: 'advanced',
+    isOfficial: true,
+  },
+  {
+    id: 'react-aurora-loader',
+    slug: 'aurora-loader',
+    name: 'Aurora Ambient Loader',
+    category: 'loader',
+    categoryLabel: 'Loaders',
+    description: 'Soft blurred color blobs that rotate in opposing directions — an organic, ambient loading state.',
+    tags: ['loader', 'aurora', 'react', 'ambient'],
+    difficulty: 'easy',
+    isOfficial: true,
+  },
+];
+
+// Mapping to actual React Components
 export const EFFECT_REGISTRY: Record<string, React.ComponentType<any>> = {
   MagneticButton: ReactMagneticButton,
   AuroraLoader: ReactAuroraLoader,
@@ -146,7 +208,7 @@ export const EFFECT_REGISTRY: Record<string, React.ComponentType<any>> = {
   TextScramble: ReactTextScramble,
 };
 
-// React Source Code Documentation (for displaying in the React tab)
+// Trusted Raw React Code Snippets for TSX Tab
 export const REACT_CODE_SNIPPETS: Record<string, string> = {
   MagneticButton: `import React, { useState, useRef } from 'react';
 
@@ -174,7 +236,7 @@ export default function MagneticButton({ children = 'Hover Me' }) {
         transform: \`translate(\${pos.x}px, \${pos.y}px)\`,
         transition: pos.x === 0 ? 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
       }}
-      className="relative px-8 py-4 text-sm font-bold text-white bg-[#FF4D2E] rounded-full shadow-xl hover:bg-[#ff6247]"
+      className="px-8 py-4 bg-[#FF4D2E] text-white font-bold rounded-full shadow-lg"
     >
       {children}
     </button>
@@ -186,9 +248,9 @@ export default function AuroraLoader() {
   return (
     <div className="relative flex items-center justify-center p-12 overflow-hidden rounded-2xl bg-[#0f1115]">
       <div className="absolute -inset-4 bg-gradient-to-r from-orange-500 via-rose-500 to-amber-500 rounded-full blur-2xl opacity-60 animate-pulse" />
-      <div className="relative z-10 flex items-center gap-3 px-6 py-3 rounded-xl bg-black/60 backdrop-blur-md border border-white/10">
+      <div className="relative z-10 flex items-center gap-3 px-6 py-3 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-white">
         <div className="h-4 w-4 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
-        <span className="text-xs font-mono tracking-widest uppercase text-white/90">Loading...</span>
+        <span className="text-xs font-mono uppercase tracking-widest">Loading...</span>
       </div>
     </div>
   );

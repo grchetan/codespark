@@ -9,7 +9,7 @@ import { categories as defaultCategories, effects as defaultEffects, type Effect
 import { effectCode } from '@/mocks/code';
 import { useSaved } from '@/context/SavedContext';
 import { supabase } from '@/lib/supabase';
-import { EFFECT_REGISTRY, REACT_CODE_SNIPPETS } from '@/effects/registry';
+import { EFFECT_REGISTRY, REACT_CODE_SNIPPETS, MANUAL_REACT_EFFECTS } from '@/effects/registry';
 import { MANUAL_DOCS, MANUAL_SECTIONS, type ManualDocItem } from '@/data/manualDocs';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
@@ -22,6 +22,44 @@ const COLOR_PRESETS = [
   { name: 'Amber Gold', hex: '#F59E0B', bg: 'bg-[#F59E0B]' },
   { name: 'Neon Pink', hex: '#EC4899', bg: 'bg-[#EC4899]' },
 ];
+
+const mergeWithManualReact = (dbList: Effect[]): Effect[] => {
+  const list = [...dbList];
+  for (const mr of MANUAL_REACT_EFFECTS) {
+    if (!list.some((x) => x.slug === mr.slug)) {
+      list.push({
+        id: mr.id,
+        slug: mr.slug,
+        name: mr.name,
+        category: mr.category,
+        categoryLabel: mr.categoryLabel,
+        description: mr.description,
+        tags: mr.tags,
+        difficulty: mr.difficulty,
+        license: 'MIT',
+        likes: 0,
+        saves: 0,
+        views: 0,
+        author: {
+          id: 'u_codespark',
+          name: 'CodeSpark Official',
+          handle: '@codespark',
+          avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkOfficial',
+          role: 'Core System',
+          followers: 1200,
+          effects: 10,
+          bio: 'Official React component',
+          tags: ['official', 'react'],
+          verified: true,
+        },
+        createdAt: '2026-09-01',
+        interactions: ['hover', 'click'],
+        isOfficial: true,
+      });
+    }
+  }
+  return list;
+};
 
 export default function EffectsWorkspace() {
   const { slug, docSlug } = useParams();
@@ -69,7 +107,6 @@ export default function EffectsWorkspace() {
   const [shared, setShared] = useState(false);
 
   const activeSidebarItemRef = useRef<HTMLAnchorElement | null>(null);
-  const rightContentAreaRef = useRef<HTMLDivElement | null>(null);
 
   // 1. Fetch All Published Effects for Sidebar (from Supabase DB with mock fallback)
   useEffect(() => {
@@ -117,7 +154,8 @@ export default function EffectsWorkspace() {
             interactions: ['hover', 'click'],
             isOfficial: e.is_official ?? true,
           }));
-          setAllEffects(mapped);
+          const merged = mergeWithManualReact(mapped);
+          setAllEffects(merged);
           return;
         }
       } catch {}
@@ -127,10 +165,14 @@ export default function EffectsWorkspace() {
         .then((res) => res.json())
         .then((data) => {
           if (data.success && Array.isArray(data.effects) && data.effects.length > 0) {
-            setAllEffects(data.effects);
+            setAllEffects(mergeWithManualReact(data.effects));
+          } else {
+            setAllEffects(mergeWithManualReact(defaultEffects));
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          setAllEffects(mergeWithManualReact(defaultEffects));
+        });
     };
 
     fetchAllEffects();
@@ -254,11 +296,9 @@ export default function EffectsWorkspace() {
     fetchDetail();
   }, [activeEffectSlug]);
 
-  // Reset scroll on right content pane when route changes
+  // Reset window scroll when route changes
   useEffect(() => {
-    if (rightContentAreaRef.current) {
-      rightContentAreaRef.current.scrollTop = 0;
-    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
 
   // Auto-scroll sidebar to active effect
@@ -559,16 +599,16 @@ export default function EffectsWorkspace() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background-50 overflow-hidden w-full max-w-full">
+    <div className="min-h-screen bg-background-50 flex flex-col justify-between w-full max-w-full">
       {/* Top Global CodeSpark Navbar */}
       <Navbar />
 
-      {/* Main Documentation & Effects Workspace (Cleanly starts below Navbar) */}
-      <div className="flex-1 min-h-0 flex overflow-hidden w-full max-w-full pt-16 md:pt-[104px]">
+      {/* Main Documentation & Effects Layout */}
+      <div className="w-full flex-1 flex flex-col md:flex-row pt-16 md:pt-[104px]">
         {/* ========================================================================= */}
-        {/* LEFT PANE: DOCUMENTATION & COMPONENTS SIDEBAR (Independent Scroll Area)   */}
+        {/* LEFT PANE: DOCUMENTATION & COMPONENTS SIDEBAR (Sticky + Internal Scroll)  */}
         {/* ========================================================================= */}
-        <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 h-full border-r border-background-300/70 bg-background-50 overflow-hidden select-none">
+        <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-background-300/70 bg-background-50 sticky top-16 md:top-[104px] h-[calc(100vh-64px)] md:h-[calc(100vh-104px)] overflow-hidden select-none z-30">
           {/* Sidebar Top Search */}
           <div className="p-3.5 border-b border-background-300/50 space-y-2 shrink-0 bg-background-50">
             <div className="flex items-center justify-between">
@@ -723,12 +763,9 @@ export default function EffectsWorkspace() {
         </aside>
 
         {/* ========================================================================= */}
-        {/* RIGHT PANE: MAIN DOCUMENTATION CONTENT (Independent Scroll Area)          */}
+        {/* RIGHT PANE: MAIN DOCUMENTATION CONTENT (Normal Document Flow)             */}
         {/* ========================================================================= */}
-        <div
-          ref={rightContentAreaRef}
-          className="flex-1 min-h-0 h-full overflow-y-auto scrollbar-thin bg-background-50 flex flex-col justify-between"
-        >
+        <div className="flex-1 min-w-0 flex flex-col justify-between">
           <main className="p-4 sm:p-8 lg:p-10 pb-16 max-w-4xl mx-auto w-full space-y-8 flex-1">
             {/* Mobile Drawer Bar (< md) */}
             <div className="md:hidden border-b border-background-300/60 pb-3">
