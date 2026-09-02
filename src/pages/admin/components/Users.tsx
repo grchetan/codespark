@@ -190,7 +190,7 @@ export default function Users({
     const emailClean = newUserEmail.trim().toLowerCase();
     const now = new Date().toISOString();
     const newUserId = `u_${Date.now()}`;
-    const hashedPassword = hashPassword(newUserPass);
+    const hashedPassword = await hashPassword(newUserPass);
 
     const newUserObj: AdminUser = {
       id: newUserId,
