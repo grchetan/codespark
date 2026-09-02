@@ -427,6 +427,35 @@ export default function EffectsWorkspace() {
   const ReactComponent = matchedReactKey ? EFFECT_REGISTRY[matchedReactKey] : null;
   const reactSourceSnippet = matchedReactKey ? REACT_CODE_SNIPPETS[matchedReactKey] : null;
 
+  // Dynamic Author resolution (Community Creator vs CodeSpark Official for React)
+  const displayAuthor = useMemo(() => {
+    if (matchedReactKey || effect?.isOfficial) {
+      return {
+        name: 'CodeSpark Official',
+        handle: '@codespark',
+        avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkOfficial',
+        role: 'Core System',
+        isOfficial: true,
+        badge: 'Official Component'
+      };
+    }
+
+    const name = effect?.author?.name && effect.author.name !== 'Chetan Prajapat' && effect.author.name !== 'CodeSpark Official'
+      ? effect.author.name
+      : (effect?.author?.name || 'Community Creator');
+    const handle = effect?.author?.handle || `@${name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    const avatar = effect?.author?.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
+
+    return {
+      name,
+      handle,
+      avatar,
+      role: effect?.author?.role || 'Creator',
+      isOfficial: false,
+      badge: 'Verified Creator'
+    };
+  }, [matchedReactKey, effect]);
+
   // Available code tabs (only show implementations that actually exist)
   const availableTabs = useMemo(() => {
     const list: { key: string; label: string; icon: string; color: string }[] = [];
@@ -1317,8 +1346,8 @@ export default function EffectsWorkspace() {
                 <div className="rounded-2xl border border-background-300/80 bg-background-100/50 p-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <img
-                      src={effect.author?.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${effect.author?.name || 'Creator'}`}
-                      alt={effect.author?.name || 'Creator'}
+                      src={displayAuthor.avatar}
+                      alt={displayAuthor.name}
                       className="h-11 w-11 rounded-full border border-background-300 object-cover bg-background-200"
                     />
                     <div>
@@ -1326,16 +1355,20 @@ export default function EffectsWorkspace() {
                         Created By
                       </span>
                       <span className="font-display text-sm font-bold text-foreground-950">
-                        {effect.author?.name || 'CodeSpark Team'}
+                        {displayAuthor.name}
                       </span>
                       <span className="text-xs text-foreground-500 block">
-                        {effect.author?.handle || '@codespark'}
+                        {displayAuthor.handle}
                       </span>
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary-500/10 px-3 py-1 text-xs font-bold text-primary-600 border border-primary-500/20">
-                    <i className="ri-verified-badge-fill" /> Verified Creator
+                  <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold border ${
+                    displayAuthor.isOfficial
+                      ? 'bg-primary-500/10 text-primary-600 border-primary-500/20'
+                      : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                  }`}>
+                    <i className={displayAuthor.isOfficial ? 'ri-sparkling-2-fill' : 'ri-verified-badge-fill'} /> {displayAuthor.badge}
                   </span>
                 </div>
 
