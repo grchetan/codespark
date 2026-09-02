@@ -15,7 +15,8 @@ import Saved from "../pages/saved/page";
 const routes: RouteObject[] = [
   { path: "/", element: <Home /> },
   { path: "/effects", element: <Effects /> },
-  { path: "/effects/:slug", element: <EffectDetail /> },
+  { path: "/effects/docs/:docSlug", element: <Effects /> },
+  { path: "/effects/:slug", element: <Effects /> },
   { path: "/saved", element: <Saved /> },
   { path: "/community", element: <Community /> },
   { path: "/submit", element: <Submit /> },

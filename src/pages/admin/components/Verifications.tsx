@@ -77,6 +77,32 @@ export default function Verifications() {
 
     try {
       await supabase.from('submissions').update({ status }).eq('id', id);
+
+      // When approved, auto-publish into public.effects so it instantly appears in the Documentation Library!
+      if (status === 'approved') {
+        const sub = list.find((s) => s.id === id);
+        if (sub) {
+          const slug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          await supabase.from('effects').upsert({
+            id: sub.id.startsWith('eff_') ? sub.id : `eff_${sub.id}`,
+            slug: slug || `effect-${Date.now()}`,
+            name: sub.name,
+            category: sub.category.toLowerCase(),
+            category_label: sub.category,
+            difficulty: sub.difficulty || 'medium',
+            description: sub.description || `${sub.name} interactive UI effect created by ${sub.author}.`,
+            author_id: sub.id,
+            author_name: sub.author,
+            author_handle: `@${sub.author.toLowerCase().replace(/\s+/g, '')}`,
+            html_code: sub.html_code || '',
+            css_code: sub.css_code || '',
+            js_code: sub.js_code || '',
+            tags: sub.tags && sub.tags.length > 0 ? sub.tags : [sub.category.toLowerCase(), 'interactive'],
+            status: 'published',
+            created_at: new Date().toISOString(),
+          });
+        }
+      }
     } catch {}
 
     try {
