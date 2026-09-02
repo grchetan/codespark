@@ -1,13 +1,14 @@
+import { Link } from 'react-router-dom';
 import Reveal from '@/components/base/Reveal';
 
-const marqueeItems = [
-  'HOVER EFFECTS',
-  'TEXT ANIMATIONS',
-  '3D CARDS',
-  'CURSOR TRICKS',
-  'LOADERS',
-  'TRANSITIONS',
-  'SCROLL INTERACTIONS',
+const categoryMarqueeItems = [
+  { label: 'Hover Effects', cat: 'hover' },
+  { label: 'Text Animations', cat: 'text' },
+  { label: '3D Cards', cat: '3d' },
+  { label: 'Cursor Tricks', cat: 'cursor' },
+  { label: 'Loaders', cat: 'loader' },
+  { label: 'Transitions', cat: 'transitions' },
+  { label: 'Scroll Interactions', cat: 'creative' },
 ];
 
 const stats = [
@@ -20,15 +21,37 @@ const stats = [
 export default function ImpactSection() {
   return (
     <section className="relative w-full max-w-full overflow-hidden bg-background-50">
-      {/* Dark marquee band at top */}
-      <div className="relative w-full max-w-full overflow-hidden border-y border-foreground-950/10 bg-foreground-950 py-3">
-        <div className="flex w-max min-w-full animate-marquee gap-8 select-none">
-          {[...marqueeItems, ...marqueeItems].map((item, i) => (
-            <span key={i} className="flex shrink-0 items-center gap-8 whitespace-nowrap font-display text-xs font-normal uppercase tracking-widest text-background-50">
-              {item}
-              <span className="text-primary-500 text-sm">✦</span>
-            </span>
-          ))}
+      {/* Dark Seamless Infinite Category Marquee Band */}
+      <div className="relative w-full max-w-full overflow-hidden border-y border-foreground-950/10 bg-foreground-950 py-3 sm:py-3.5 marquee-wrapper select-none">
+        <div className="marquee-track flex items-center">
+          {/* Set 1 */}
+          <div className="flex shrink-0 items-center gap-6 sm:gap-10 pr-6 sm:pr-10">
+            {categoryMarqueeItems.map((item, i) => (
+              <Link
+                key={`set1-${i}`}
+                to={`/effects?cat=${item.cat}`}
+                className="flex shrink-0 items-center gap-6 sm:gap-10 whitespace-nowrap font-display text-xs sm:text-sm font-normal uppercase tracking-widest text-background-100 hover:text-primary-400 transition-colors cursor-pointer group"
+              >
+                <span className="group-hover:text-primary-400 transition-colors">{item.label}</span>
+                <span className="text-primary-500 text-xs sm:text-sm transition-transform duration-300 group-hover:rotate-45">✦</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Set 2 (Identical Duplicate for 100% Seamless Infinite Looping) */}
+          <div className="flex shrink-0 items-center gap-6 sm:gap-10 pr-6 sm:pr-10" aria-hidden="true">
+            {categoryMarqueeItems.map((item, i) => (
+              <Link
+                key={`set2-${i}`}
+                to={`/effects?cat=${item.cat}`}
+                tabIndex={-1}
+                className="flex shrink-0 items-center gap-6 sm:gap-10 whitespace-nowrap font-display text-xs sm:text-sm font-normal uppercase tracking-widest text-background-100 hover:text-primary-400 transition-colors cursor-pointer group"
+              >
+                <span className="group-hover:text-primary-400 transition-colors">{item.label}</span>
+                <span className="text-primary-500 text-xs sm:text-sm transition-transform duration-300 group-hover:rotate-45">✦</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
