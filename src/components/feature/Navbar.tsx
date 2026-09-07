@@ -29,7 +29,8 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const isHome = location.pathname === '/';
-  const darkNav = isHome && !scrolled && !open;
+  // Home page uses sleek dark theme (unscrolled and scrolled) to match the dark hero & sections
+  const isDarkHeader = isHome && !open;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -103,19 +104,24 @@ export default function Navbar() {
     }
   };
 
-  const logoTextClass = darkNav ? 'text-background-50' : 'text-foreground-950';
-  const logoBorderClass = darkNav ? 'border-background-50/70 text-background-50' : 'border-foreground-950 text-foreground-950';
-  const actionIconClass = darkNav ? 'text-background-400 hover:text-background-50' : 'text-foreground-600 hover:text-foreground-950';
-  const mobileToggleClass = darkNav ? 'text-background-50' : 'text-foreground-950';
-  const navLinkInactive = darkNav ? 'text-background-400 hover:text-background-50' : 'text-foreground-500 hover:text-foreground-950';
-  const navLinkActive = darkNav ? 'text-background-50' : 'text-foreground-950';
+  // Dynamic Theme & Text Classes (High contrast on dark home and light pages)
+  const logoTextClass = isDarkHeader ? 'text-white' : 'text-foreground-950';
+  const logoBorderClass = isDarkHeader ? 'border-white/70 text-white' : 'border-foreground-950 text-foreground-950';
+  const actionIconClass = isDarkHeader ? 'text-stone-300 hover:text-amber-300' : 'text-foreground-600 hover:text-foreground-950';
+  const mobileToggleClass = isDarkHeader ? 'text-white' : 'text-foreground-950';
+  const navLinkInactive = isDarkHeader ? 'text-stone-300 hover:text-amber-300' : 'text-foreground-500 hover:text-foreground-950';
+  const navLinkActive = isDarkHeader ? 'text-amber-400 font-bold' : 'text-foreground-950 font-bold';
 
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 w-full max-w-full transition-all duration-300 ${
-        scrolled || open || !isHome
+        !isHome
           ? 'border-b border-background-300/60 bg-background-50/98 backdrop-blur-xl shadow-xs'
-          : 'border-b border-transparent bg-transparent'
+          : open
+            ? 'border-b border-white/10 bg-[#0c0d12] shadow-xl'
+            : scrolled
+              ? 'border-b border-white/10 bg-[#0c0d12]/92 backdrop-blur-xl shadow-lg'
+              : 'border-b border-transparent bg-transparent'
       }`}
     >
       {/* Top Main Navbar Row */}
@@ -135,16 +141,16 @@ export default function Navbar() {
           <form
             onSubmit={handleSearch}
             className={`flex w-full items-center gap-2 rounded-full border ${
-              darkNav ? 'border-background-700 bg-background-950/60' : 'border-background-300/70 bg-background-100/70'
-            } px-4 py-2 transition-colors focus-within:border-primary-400 focus-within:bg-background-50`}
+              isDarkHeader ? 'border-white/15 bg-white/10 focus-within:border-amber-400/80 focus-within:bg-white/15' : 'border-background-300/70 bg-background-100/70 focus-within:border-primary-400 focus-within:bg-background-50'
+            } px-4 py-2 transition-colors`}
           >
-            <i className={`ri-search-line text-sm shrink-0 ${darkNav ? 'text-background-400' : 'text-foreground-400'}`} />
+            <i className={`ri-search-line text-sm shrink-0 ${isDarkHeader ? 'text-stone-300' : 'text-foreground-400'}`} />
             <input
               ref={searchInputRef}
               type="text"
               placeholder="Search effects, tags, categories..."
               className={`w-full min-w-0 bg-transparent text-xs sm:text-sm outline-none ${
-                darkNav ? 'text-background-50 placeholder:text-background-500' : 'text-foreground-950 placeholder:text-foreground-400'
+                isDarkHeader ? 'text-white placeholder:text-stone-400' : 'text-foreground-950 placeholder:text-foreground-400'
               }`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -296,8 +302,8 @@ export default function Navbar() {
             <Link
               to="/login"
               className={`inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 text-xs font-semibold transition-all ${
-                darkNav
-                  ? 'border border-background-50/40 text-background-50 hover:bg-background-50/10'
+                isDarkHeader
+                  ? 'border border-white/30 text-white hover:bg-white/10 hover:border-amber-400/60'
                   : 'border border-foreground-950/20 text-foreground-950 hover:bg-foreground-950 hover:text-background-50'
               }`}
             >
@@ -350,14 +356,14 @@ export default function Navbar() {
 
       {/* Mobile Search Dropdown Bar */}
       {searchOpen && (
-        <div className="border-b border-background-300/40 bg-background-50 px-4 py-3 md:hidden animate-fade-in shadow-md">
-          <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-xl border border-background-300 bg-background-100 px-3 py-2">
-            <i className="ri-search-line text-sm text-foreground-400 shrink-0" />
+        <div className={`border-b ${isDarkHeader ? 'border-white/10 bg-[#0c0d12]' : 'border-background-300/40 bg-background-50'} px-4 py-3 md:hidden animate-fade-in shadow-md`}>
+          <form onSubmit={handleSearch} className={`flex items-center gap-2 rounded-xl border ${isDarkHeader ? 'border-white/15 bg-white/10' : 'border-background-300 bg-background-100'} px-3 py-2`}>
+            <i className={`ri-search-line text-sm ${isDarkHeader ? 'text-stone-300' : 'text-foreground-400'} shrink-0`} />
             <input
               ref={mobileSearchRef}
               type="text"
               placeholder="Search components..."
-              className="w-full bg-transparent text-xs outline-none text-foreground-950 placeholder:text-foreground-400"
+              className={`w-full bg-transparent text-xs outline-none ${isDarkHeader ? 'text-white placeholder:text-stone-400' : 'text-foreground-950 placeholder:text-foreground-400'}`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -371,7 +377,7 @@ export default function Navbar() {
       )}
 
       {/* Desktop Secondary Sub-Nav for Links */}
-      <div className={`hidden md:block border-t ${darkNav ? 'border-background-800/40' : 'border-background-300/40'} transition-colors`}>
+      <div className={`hidden md:block border-t ${isDarkHeader ? 'border-white/10' : 'border-background-300/40'} transition-colors`}>
         <div className="container-x flex h-10 items-center justify-center gap-6 text-xs uppercase tracking-wider font-semibold">
           {navLinks.map((l) => {
             const active = l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to);
@@ -379,13 +385,13 @@ export default function Navbar() {
               <Link
                 key={l.to}
                 to={l.to}
-                className={`relative py-2.5 transition-colors hover:text-primary-500 ${
+                className={`relative py-2.5 transition-colors ${
                   active ? navLinkActive : navLinkInactive
                 }`}
               >
                 {l.label}
                 {active && (
-                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-500 rounded-full" />
+                  <span className={`absolute inset-x-0 bottom-0 h-0.5 ${isDarkHeader ? 'bg-amber-400' : 'bg-primary-500'} rounded-full`} />
                 )}
               </Link>
             );
