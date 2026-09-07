@@ -29,8 +29,9 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const isHome = location.pathname === '/';
-  // Home page uses sleek dark theme (unscrolled and scrolled) to match the dark hero & sections
-  const isDarkHeader = isHome && !open;
+  // Dark header ONLY when: on home page, NOT yet scrolled, and menu is NOT open
+  // When scrolled → switch to light header so logo and sign in are clearly visible
+  const isDarkHeader = isHome && !scrolled && !open;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -115,13 +116,9 @@ export default function Navbar() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 w-full max-w-full transition-all duration-300 ${
-        !isHome
+        !isHome || scrolled || open
           ? 'border-b border-background-300/60 bg-background-50/98 backdrop-blur-xl shadow-xs'
-          : open
-            ? 'border-b border-white/10 bg-[#0c0d12] shadow-xl'
-            : scrolled
-              ? 'border-b border-white/10 bg-[#0c0d12]/92 backdrop-blur-xl shadow-lg'
-              : 'border-b border-transparent bg-transparent'
+          : 'border-b border-transparent bg-transparent'
       }`}
     >
       {/* Top Main Navbar Row */}
