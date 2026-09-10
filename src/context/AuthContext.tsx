@@ -122,13 +122,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           const baseUser: User = {
             id: session.user.id,
-            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || (userEmail === 'chetanprajapat340@gmail.com' ? 'Chetan Prajapat' : userEmail.split('@')[0]),
+            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0],
             email: userEmail,
             role: isOwner ? 'superadmin' : 'member',
             avatar:
               session.user.user_metadata?.avatar_url ||
               `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(userEmail)}`,
-            effects_count: isOwner ? 18 : 0,
+            effects_count: 0,
           };
 
           const fullUser = await syncProfileFromDB(userEmail, baseUser);
@@ -168,13 +168,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const baseUser: User = {
           id: session.user.id,
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || (userEmail === 'chetanprajapat340@gmail.com' ? 'Chetan Prajapat' : userEmail.split('@')[0]),
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0],
           email: userEmail,
           role: isOwner ? 'superadmin' : 'member',
           avatar:
             session.user.user_metadata?.avatar_url ||
             `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(userEmail)}`,
-          effects_count: isOwner ? 18 : 0,
+          effects_count: 0,
         };
 
         const fullUser = await syncProfileFromDB(userEmail, baseUser);

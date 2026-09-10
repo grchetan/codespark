@@ -82,7 +82,6 @@ export function isSuperAdminOwner(email?: string | null, role?: string | null): 
     .filter(Boolean);
 
   if (envAdmins.includes(clean)) return true;
-  if (clean === 'chetanprajapat340@gmail.com') return true;
 
   return false;
 }
