@@ -199,6 +199,14 @@ export const effects: Effect[] = [
     difficulty: 'easy', license: 'MIT', likes: 0, saves: 0, views: 0, author: creatorDevon, createdAt: '2026-09-01',
     interactions: ['loader', 'ambient', 'gradient'], isOfficial: false
   },
+  {
+    id: 'e6', slug: 'splash-cursor', name: 'Fluid Splash Cursor', category: 'cursor', categoryLabel: 'Cursor',
+    description: 'Interactive GPU-accelerated WebGL fluid simulation with Navier–Stokes pressure solver, colorful particle ribbons, and perimeter burst physics.',
+    image: '',
+    tags: ['cursor', 'fluid', 'webgl', 'physics', 'react', 'splash', 'animation'],
+    difficulty: 'advanced', license: 'MIT', likes: 0, saves: 0, views: 0, author: officialCreator, createdAt: '2026-09-01',
+    interactions: ['cursor', 'hover', 'fluid', 'webgl'], isOfficial: true
+  },
 ];
 
 export const featuredCreators: Creator[] = creators;

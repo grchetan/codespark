@@ -13,12 +13,14 @@ import ForgotPassword from "../pages/auth/forgot-password/page";
 import ResetPassword from "../pages/auth/reset-password/page";
 import Admin from "../pages/admin/page";
 import Saved from "../pages/saved/page";
+import EffectFullscreenPreview from "../pages/preview/page";
 
 const routes: RouteObject[] = [
   { path: "/", element: <Home /> },
   { path: "/effects", element: <Effects /> },
   { path: "/effects/docs/:docSlug", element: <Effects /> },
   { path: "/effects/:slug", element: <Effects /> },
+  { path: "/preview/:slug", element: <EffectFullscreenPreview /> },
   { path: "/saved", element: <Saved /> },
   { path: "/community", element: <Community /> },
   { path: "/submit", element: <Submit /> },

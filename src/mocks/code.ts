@@ -315,4 +315,14 @@ links.forEach((link) => {
   link.addEventListener('mouseleave', () => link.style.transform = 'none');
 });`,
   },
+  'react-splash-cursor': {
+    html: `<div class="fluid-stage">\n  <canvas id="fluid" class="fluid-canvas"></canvas>\n</div>`,
+    css: `.fluid-stage {\n  position: relative;\n  width: 100%;\n  height: 380px;\n  background: #0a0a0f;\n  border-radius: 16px;\n  overflow: hidden;\n}\n.fluid-canvas {\n  width: 100%;\n  height: 100%;\n  display: block;\n}`,
+    js: `// WebGL Fluid Simulation\n// See the TSX tab for the full React component with Navier-Stokes GPU solver.`,
+  },
+  'splash-cursor': {
+    html: `<div class="fluid-stage">\n  <canvas id="fluid" class="fluid-canvas"></canvas>\n</div>`,
+    css: `.fluid-stage {\n  position: relative;\n  width: 100%;\n  height: 380px;\n  background: #0a0a0f;\n  border-radius: 16px;\n  overflow: hidden;\n}\n.fluid-canvas {\n  width: 100%;\n  height: 100%;\n  display: block;\n}`,
+    js: `// WebGL Fluid Simulation\n// See the TSX tab for the full React component with Navier-Stokes GPU solver.`,
+  },
 };

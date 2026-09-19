@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import SplashCursor, { SplashCursorHandle } from './SplashCursor';
 
 // ==============================================================================
 // CODESPARK TRUSTED REACT EFFECTS REGISTRY
@@ -152,6 +153,128 @@ export function ReactTextScramble({ text = 'CODESPARK UI' }: { text?: string }) 
   );
 }
 
+// 5. Fluid Splash Cursor Component
+export function ReactSplashCursor() {
+  const splashRef = useRef<SplashCursorHandle>(null);
+  const lastBurstRef = useRef<number>(0);
+
+  const handleBurst = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    splashRef.current?.burst(rect);
+  };
+
+  const handleImageMove = (e: React.MouseEvent<HTMLElement>) => {
+    const now = Date.now();
+    if (now - lastBurstRef.current > 300) {
+      lastBurstRef.current = now;
+      const rect = e.currentTarget.getBoundingClientRect();
+      splashRef.current?.burst(rect);
+    }
+  };
+
+  return (
+    <div className="relative w-full min-h-[540px] sm:min-h-[640px] rounded-3xl overflow-hidden bg-[#faf6ee] text-[#121c15] select-none shadow-2xl border border-stone-200/80 p-4 sm:p-8 flex flex-col justify-between">
+      {/* Background WebGL Fluid simulation */}
+      <SplashCursor
+        ref={splashRef}
+        className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+        RAINBOW_MODE={true}
+        SPLAT_RADIUS={0.28}
+        DENSITY_DISSIPATION={1.0}
+        VELOCITY_DISSIPATION={1.2}
+        CURL={18}
+        SPLAT_FORCE={7000}
+        COLOR_UPDATE_SPEED={12}
+        SIM_RESOLUTION={128}
+        DYE_RESOLUTION={640}
+        PRESSURE_ITERATIONS={12}
+        TRANSPARENT={true}
+      />
+
+      {/* Top Demo Bar */}
+      <div className="relative z-10 flex items-center justify-between pb-4 border-b border-stone-900/10">
+        <div className="flex items-center gap-4 sm:gap-6 font-serif italic text-sm sm:text-base font-medium">
+          <span className="hover:opacity-75 cursor-pointer">Listings</span>
+          <span className="hover:opacity-75 cursor-pointer">Sell</span>
+          <span className="hover:opacity-75 cursor-pointer">About</span>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <svg className="w-5 h-5 text-[#121c15] mb-0.5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 22c0-5.523 0-8.5 0-11m0 0C12 6.5 8.5 3 3.5 3c0 4.5 3.5 8 8.5 8zm0 0c0-4.5 3.5-8 8.5-8 0 4.5-3.5 8-8.5 8z" />
+          </svg>
+          <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-[#121c15]">Green Vale</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <a
+            href="/preview/splash-cursor"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#121c15] text-[#faf6ee] text-xs font-bold hover:bg-black transition-all shadow-sm cursor-pointer"
+          >
+            <span>Open Fullscreen</span>
+            <i className="ri-external-link-line" />
+          </a>
+        </div>
+      </div>
+
+      {/* Headline */}
+      <div className="relative z-10 text-center my-6 sm:my-8 pointer-events-none">
+        <h1 className="font-serif font-black text-4xl sm:text-7xl md:text-8xl tracking-tight leading-none text-[#0d1810] uppercase">
+          Green Vale
+        </h1>
+        <p className="font-serif italic font-normal text-base sm:text-xl text-[#1a291f] tracking-wide mt-2">
+          Your Next Home is Here
+        </p>
+      </div>
+
+      {/* Interactive Cards & Content */}
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-center">
+        <div
+          onMouseEnter={handleBurst}
+          onMouseMove={handleImageMove}
+          className="w-full rounded-2xl overflow-hidden shadow-xl bg-[#ede6d8] aspect-[16/10] sm:aspect-[4/3] max-h-[260px] cursor-pointer group transition-all duration-300 hover:scale-[1.02]"
+        >
+          <img
+            src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=800&q=80"
+            alt="Living interior"
+            className="w-full h-full object-cover pointer-events-none"
+          />
+        </div>
+
+        <div className="flex flex-col justify-center space-y-3 bg-white/40 backdrop-blur-md p-5 rounded-2xl border border-white/60 shadow-sm">
+          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#FF4D2E]">
+            Interactive Burst Physics
+          </span>
+          <h4 className="font-serif font-bold text-lg sm:text-xl text-[#0d1810]">
+            Move Cursor To Paint Waves
+          </h4>
+          <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+            Gliding over images triggers perimeter splashes. Click below to test instantaneous outward velocity explosions.
+          </p>
+          <div className="pt-1 flex items-center gap-3">
+            <button
+              onClick={handleBurst}
+              className="px-4 py-2 rounded-xl bg-[#FF4D2E] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:bg-[#ff6247] active:scale-95 transition-all cursor-pointer"
+            >
+              Trigger Burst ⚡
+            </button>
+            <a
+              href="/preview/splash-cursor"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-bold text-[#121c15] underline hover:text-[#FF4D2E] transition-colors"
+            >
+              Full Window View ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Manual React Effects Metadata Registry
 export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
   {
@@ -198,6 +321,17 @@ export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
     difficulty: 'easy',
     isOfficial: true,
   },
+  {
+    id: 'react-splash-cursor',
+    slug: 'splash-cursor',
+    name: 'Fluid Splash Cursor',
+    category: 'cursor',
+    categoryLabel: 'Cursor Tricks',
+    description: 'Interactive GPU-accelerated WebGL fluid simulation with Navier–Stokes pressure solver, colorful particle ribbons, and perimeter burst physics.',
+    tags: ['cursor', 'fluid', 'webgl', 'physics', 'react', 'splash', 'animation'],
+    difficulty: 'advanced',
+    isOfficial: true,
+  },
 ];
 
 // Mapping to actual React Components
@@ -206,6 +340,7 @@ export const EFFECT_REGISTRY: Record<string, React.ComponentType<any>> = {
   AuroraLoader: ReactAuroraLoader,
   TiltCard: ReactTiltCard,
   TextScramble: ReactTextScramble,
+  SplashCursor: ReactSplashCursor,
 };
 
 // Trusted Raw React Code Snippets for TSX Tab
@@ -319,6 +454,52 @@ export default function TextScramble({ text = 'CODESPARK' }) {
     <span onMouseEnter={scramble} className="font-mono text-2xl font-black text-[#FF4D2E] cursor-pointer">
       {display}
     </span>
+  );
+}`,
+  SplashCursor: `import React, { useRef } from 'react';
+import SplashCursor, { SplashCursorHandle } from './SplashCursor';
+
+export default function FluidCursorDemo() {
+  const splashRef = useRef<SplashCursorHandle>(null);
+
+  const handleBurst = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    splashRef.current?.burst(rect);
+  };
+
+  return (
+    <div className="relative min-h-screen w-full bg-[#0a0a0c] text-white flex flex-col items-center justify-center overflow-hidden selection:bg-[#FF4D2E]">
+      {/* Background WebGL Fluid Canvas */}
+      <SplashCursor
+        ref={splashRef}
+        RAINBOW_MODE={true}
+        SPLAT_RADIUS={0.28}
+        DENSITY_DISSIPATION={1.0}
+        VELOCITY_DISSIPATION={1.2}
+        CURL={18}
+        SPLAT_FORCE={7000}
+        COLOR_UPDATE_SPEED={12}
+        SIM_RESOLUTION={128}
+        DYE_RESOLUTION={640}
+        PRESSURE_ITERATIONS={12}
+        TRANSPARENT={true}
+      />
+
+      <div className="relative z-10 text-center px-6">
+        <h1 className="text-4xl sm:text-6xl font-black tracking-tight mb-4">
+          WebGL Fluid Simulation
+        </h1>
+        <p className="text-stone-400 max-w-lg mx-auto text-sm sm:text-base mb-8">
+          Buttery smooth 60fps GPU fluid dynamics powered by Navier–Stokes pressure solvers.
+        </p>
+        <button
+          onClick={handleBurst}
+          className="px-6 py-3 rounded-xl bg-[#FF4D2E] text-white font-bold shadow-lg hover:bg-[#ff6247] active:scale-95 transition-all cursor-pointer"
+        >
+          Click for Fluid Burst ⚡
+        </button>
+      </div>
+    </div>
   );
 }`,
 };

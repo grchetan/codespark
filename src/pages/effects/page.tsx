@@ -189,11 +189,67 @@ export default function EffectsWorkspace() {
     setLoading(true);
 
     const fetchDetail = async () => {
+      const normalizedSlug = activeEffectSlug
+        ? decodeURIComponent(activeEffectSlug).toLowerCase().replace(/[-_\s%20]+/g, '-').trim()
+        : '';
+      const cleanSlugNoDashes = normalizedSlug.replace(/-/g, '');
+
+      // 1. First check if it matches any manual React effects (instant load)
+      const manual = MANUAL_REACT_EFFECTS.find((m) => {
+        const mSlug = m.slug.toLowerCase().replace(/[-_\s]+/g, '-');
+        return mSlug === normalizedSlug || m.id === activeEffectSlug || mSlug.replace(/-/g, '') === cleanSlugNoDashes;
+      });
+
+      if (manual) {
+        const eff: Effect = {
+          id: manual.id,
+          slug: manual.slug,
+          name: manual.name,
+          category: manual.category,
+          categoryLabel: manual.categoryLabel,
+          description: manual.description,
+          tags: manual.tags,
+          difficulty: manual.difficulty,
+          license: 'MIT',
+          likes: 0,
+          saves: 0,
+          views: 0,
+          author: {
+            id: 'u_codespark',
+            name: 'CodeSpark Official',
+            handle: '@codespark',
+            avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkOfficial',
+            role: 'Core System',
+            followers: 1200,
+            effects: 10,
+            bio: 'Official React component',
+            tags: ['official', 'react'],
+            verified: true,
+          },
+          createdAt: '2026-09-01',
+          interactions: ['hover', 'click', 'cursor'],
+          isOfficial: true,
+        };
+
+        setEffect(eff);
+        const mockCode = effectCode[manual.id] || effectCode[manual.slug] || { html: '', css: '', js: '' };
+        const initialCode = { html: mockCode.html || '', css: mockCode.css || '', js: mockCode.js || '' };
+        setCode(initialCode);
+        setInitialCustomText(eff);
+        generateDefaultSteps(initialCode, eff);
+        if (eff.category) {
+          setOpenCategories((prev) => ({ ...prev, [eff.category.toLowerCase()]: true }));
+        }
+        setActiveCodeTab('react');
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('effects')
           .select('*')
-          .or(`slug.eq.${activeEffectSlug},id.eq.${activeEffectSlug}`)
+          .or(`slug.eq.${activeEffectSlug},id.eq.${activeEffectSlug},slug.eq.${normalizedSlug}`)
           .single();
 
         if (!error && data) {
@@ -263,7 +319,7 @@ export default function EffectsWorkspace() {
       } catch {}
 
       // Fallback to API / Mocks
-      fetch(`/api/effects/${activeEffectSlug}`)
+      fetch(`/api/effects/${encodeURIComponent(activeEffectSlug)}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.effect) {
@@ -322,10 +378,22 @@ export default function EffectsWorkspace() {
   };
 
   const fallbackToMock = () => {
-    const found = defaultEffects.find((e) => e.slug === activeEffectSlug || e.id === activeEffectSlug);
+    const normalizedSlug = activeEffectSlug
+      ? decodeURIComponent(activeEffectSlug).toLowerCase().replace(/[-_\s%20]+/g, '-').trim()
+      : '';
+    const cleanSlugNoDashes = normalizedSlug.replace(/-/g, '');
+
+    const found = allEffects.find((e) => {
+      const eSlug = e.slug.toLowerCase().replace(/[-_\s]+/g, '-');
+      return eSlug === normalizedSlug || e.id === activeEffectSlug || eSlug.replace(/-/g, '') === cleanSlugNoDashes;
+    }) || defaultEffects.find((e) => {
+      const eSlug = e.slug.toLowerCase().replace(/[-_\s]+/g, '-');
+      return eSlug === normalizedSlug || e.id === activeEffectSlug || eSlug.replace(/-/g, '') === cleanSlugNoDashes;
+    });
+
     if (found) {
       setEffect(found);
-      const mockCode = effectCode[found.id] || { html: '', css: '', js: '' };
+      const mockCode = effectCode[found.id] || effectCode[found.slug] || { html: '', css: '', js: '' };
       const c = { html: mockCode.html || '', css: mockCode.css || '', js: mockCode.js || '' };
       setCode(c);
       setInitialCustomText(found);
@@ -333,7 +401,7 @@ export default function EffectsWorkspace() {
       if (found.category) {
         setOpenCategories((prev) => ({ ...prev, [found.category.toLowerCase()]: true }));
       }
-      setActiveCodeTab(c.html ? 'html' : 'css');
+      setActiveCodeTab(c.html ? 'html' : 'react');
     } else {
       setEffect(null);
     }
@@ -724,7 +792,12 @@ export default function EffectsWorkspace() {
                       {open && (
                         <div className="space-y-0.5 border-l border-background-300/50 ml-3 pl-1.5 transition-all">
                           {effList.map((e) => {
-                            const isActive = !isDocRoute && (e.slug === activeEffectSlug || e.id === activeEffectSlug);
+                            const normalizedActive = activeEffectSlug ? decodeURIComponent(activeEffectSlug).toLowerCase().replace(/[-_\s%20]+/g, '-').trim() : '';
+                            const isActive = !isDocRoute && (
+                              e.slug === activeEffectSlug ||
+                              e.id === activeEffectSlug ||
+                              e.slug.toLowerCase().replace(/[-_\s]+/g, '-') === normalizedActive
+                            );
                             return (
                               <Link
                                 key={e.id}
@@ -869,7 +942,12 @@ export default function EffectsWorkspace() {
                             </p>
                             <div className="space-y-0.5">
                               {effList.map((e) => {
-                                const isActive = !isDocRoute && (e.slug === activeEffectSlug || e.id === activeEffectSlug);
+                                const normalizedActive = activeEffectSlug ? decodeURIComponent(activeEffectSlug).toLowerCase().replace(/[-_\s%20]+/g, '-').trim() : '';
+                                const isActive = !isDocRoute && (
+                                  e.slug === activeEffectSlug ||
+                                  e.id === activeEffectSlug ||
+                                  e.slug.toLowerCase().replace(/[-_\s]+/g, '-') === normalizedActive
+                                );
                                 return (
                                   <Link
                                     key={e.id}
@@ -1135,6 +1213,18 @@ export default function EffectsWorkspace() {
 
                     {/* Stage Viewport & Controls */}
                     <div className="flex items-center gap-1.5">
+                      {/* Open in New Tab Fullscreen Preview */}
+                      <a
+                        href={`/preview/${effect.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#FF4D2E]/30 bg-[#FF4D2E]/10 text-[#FF4D2E] hover:bg-[#FF4D2E] hover:text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                        title="Open full-screen live demo in new tab"
+                      >
+                        <i className="ri-external-link-line text-sm" />
+                        <span className="hidden sm:inline">Open Full View</span>
+                      </a>
+
                       <div className="hidden sm:flex items-center rounded-lg border border-background-300 bg-background-100 p-0.5 text-xs font-medium">
                         <button
                           type="button"
@@ -1198,7 +1288,11 @@ export default function EffectsWorkspace() {
                       darkStage
                         ? 'border-background-800 bg-[#141210] shadow-2xl'
                         : 'border-background-300/80 bg-[#FAF6EE] shadow-lg'
-                    } p-4 sm:p-8 flex items-center justify-center min-h-[360px] sm:min-h-[420px] relative overflow-hidden`}
+                    } ${
+                      matchedReactKey === 'SplashCursor'
+                        ? 'p-0 overflow-hidden min-h-[540px] sm:min-h-[640px]'
+                        : 'p-4 sm:p-8 min-h-[360px] sm:min-h-[420px]'
+                    } flex items-center justify-center relative overflow-hidden`}
                     style={{
                       maxWidth:
                         deviceView === 'mobile'
@@ -1210,7 +1304,7 @@ export default function EffectsWorkspace() {
                   >
                     {/* 1. If trusted React component exists */}
                     {ReactComponent ? (
-                      <div key={`react_${stageKey}`}>
+                      <div key={`react_${stageKey}`} className="w-full h-full">
                         <ReactComponent text={customText || effect.name} title={customText || effect.name} />
                       </div>
                     ) : (
