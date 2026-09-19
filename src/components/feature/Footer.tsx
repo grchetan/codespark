@@ -19,22 +19,22 @@ export default function Footer() {
               </span>
               <span className="font-display text-xl font-bold tracking-tight text-foreground-950">CODESPARK</span>
             </Link>
-            <p className="mt-4 max-w-sm text-xs sm:text-sm leading-relaxed text-foreground-500">
+            <p className="mt-4 max-w-sm text-xs sm:text-sm leading-relaxed text-foreground-700">
               The living library for frontend effects. Preview, understand, copy and use beautiful UI interactions in your own projects — then share what you build.
             </p>
             <div className="mt-6 max-w-sm w-full">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-foreground-500">Weekly effects, zero spam</p>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-foreground-700">Weekly effects, zero spam</p>
               <NewsletterForm dark />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-6 sm:gap-8 sm:grid-cols-3 min-w-0 w-full">
             {columns.map((col) => (
               <div key={col.title} className="min-w-0">
-                <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-foreground-500">{col.title}</h4>
+                <h4 className="mb-3 text-xs font-bold uppercase tracking-widest text-foreground-800">{col.title}</h4>
                 <ul className="space-y-2 sm:space-y-2.5">
                   {col.links.map(([label, to]) => (
                     <li key={label} className="truncate">
-                      <Link to={to} className="text-xs sm:text-sm text-foreground-500 transition-colors hover:text-foreground-950">{label}</Link>
+                      <Link to={to} className="text-xs sm:text-sm text-foreground-600 transition-colors hover:text-primary-500">{label}</Link>
                     </li>
                   ))}
                 </ul>
@@ -43,12 +43,12 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-10 sm:mt-12 flex flex-col items-center justify-between gap-4 border-t border-background-300/40 pt-6 sm:flex-row text-center sm:text-left">
-          <p className="text-xs text-foreground-500">© {new Date().getFullYear()} CodeSpark. Crafted by developers, for developers.</p>
+          <p className="text-xs text-foreground-600">© {new Date().getFullYear()} CodeSpark. Crafted by developers, for developers.</p>
           <div className="flex items-center gap-4">
-            <a href="#" aria-label="GitHub" className="text-foreground-500 transition-colors hover:text-foreground-950"><i className="ri-github-fill text-lg" /></a>
-            <a href="#" aria-label="X" className="text-foreground-500 transition-colors hover:text-foreground-950"><i className="ri-twitter-x-fill text-lg" /></a>
-            <a href="#" aria-label="Discord" className="text-foreground-500 transition-colors hover:text-foreground-950"><i className="ri-discord-fill text-lg" /></a>
-            <a href="#" aria-label="YouTube" className="text-foreground-500 transition-colors hover:text-foreground-950"><i className="ri-youtube-fill text-lg" /></a>
+            <a href="#" aria-label="GitHub" className="text-foreground-600 transition-colors hover:text-primary-500"><i className="ri-github-fill text-lg" /></a>
+            <a href="#" aria-label="X" className="text-foreground-600 transition-colors hover:text-primary-500"><i className="ri-twitter-x-fill text-lg" /></a>
+            <a href="#" aria-label="Discord" className="text-foreground-600 transition-colors hover:text-primary-500"><i className="ri-discord-fill text-lg" /></a>
+            <a href="#" aria-label="YouTube" className="text-foreground-600 transition-colors hover:text-primary-500"><i className="ri-youtube-fill text-lg" /></a>
           </div>
         </div>
       </div>

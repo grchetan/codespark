@@ -81,7 +81,7 @@ export default function Trending() {
               <h2 className="mt-2 sm:mt-3 font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground-950">
                 What the community loves
               </h2>
-              <p className="mt-2 sm:mt-3 max-w-md text-xs sm:text-sm leading-relaxed text-foreground-500">
+              <p className="mt-2 sm:mt-3 max-w-md text-xs sm:text-sm leading-relaxed text-foreground-700">
                 The effects developers are saving, copying and shipping right now.
               </p>
             </div>

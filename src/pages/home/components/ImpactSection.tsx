@@ -22,7 +22,7 @@ export default function ImpactSection() {
   return (
     <section className="relative w-full max-w-full overflow-hidden bg-background-50">
       {/* Dark Seamless Infinite Category Marquee Band */}
-      <div className="relative w-full max-w-full overflow-hidden border-y border-foreground-950/10 bg-foreground-950 py-3 sm:py-3.5 marquee-wrapper select-none">
+      <div className="relative w-full max-w-full overflow-hidden border-y border-[rgba(245,241,234,0.12)] bg-[#12151A] py-3.5 sm:py-4 marquee-wrapper select-none">
         <div className="marquee-track flex items-center">
           {/* Set 1 */}
           <div className="flex shrink-0 items-center gap-6 sm:gap-10 pr-6 sm:pr-10">
@@ -30,7 +30,7 @@ export default function ImpactSection() {
               <Link
                 key={`set1-${i}`}
                 to={`/effects?cat=${item.cat}`}
-                className="flex shrink-0 items-center gap-6 sm:gap-10 whitespace-nowrap font-display text-xs sm:text-sm font-normal uppercase tracking-widest text-background-100 hover:text-primary-400 transition-colors cursor-pointer group"
+                className="flex shrink-0 items-center gap-6 sm:gap-10 whitespace-nowrap font-display text-xs sm:text-sm font-normal uppercase tracking-widest text-[#EDE8DF] hover:text-primary-400 transition-colors cursor-pointer group"
               >
                 <span className="group-hover:text-primary-400 transition-colors">{item.label}</span>
                 <span className="text-primary-500 text-xs sm:text-sm transition-transform duration-300 group-hover:rotate-45">✦</span>
@@ -45,7 +45,7 @@ export default function ImpactSection() {
                 key={`set2-${i}`}
                 to={`/effects?cat=${item.cat}`}
                 tabIndex={-1}
-                className="flex shrink-0 items-center gap-6 sm:gap-10 whitespace-nowrap font-display text-xs sm:text-sm font-normal uppercase tracking-widest text-background-100 hover:text-primary-400 transition-colors cursor-pointer group"
+                className="flex shrink-0 items-center gap-6 sm:gap-10 whitespace-nowrap font-display text-xs sm:text-sm font-normal uppercase tracking-widest text-[#EDE8DF] hover:text-primary-400 transition-colors cursor-pointer group"
               >
                 <span className="group-hover:text-primary-400 transition-colors">{item.label}</span>
                 <span className="text-primary-500 text-xs sm:text-sm transition-transform duration-300 group-hover:rotate-45">✦</span>
@@ -71,7 +71,7 @@ export default function ImpactSection() {
           </div>
           <div className="lg:pb-4 min-w-0">
             <Reveal delay={160}>
-              <p className="text-xs sm:text-sm leading-relaxed text-foreground-600">
+              <p className="text-xs sm:text-sm leading-relaxed text-foreground-700">
                 Numbers from twelve months of open-source contributions, weekly code drops, and very honest PR reviews in the CodeSpark community. Every effect is tested, every interaction is measured.
               </p>
             </Reveal>
@@ -80,13 +80,13 @@ export default function ImpactSection() {
 
         {/* Stats grid */}
         <Reveal delay={240}>
-          <div className="mt-8 sm:mt-12 grid grid-cols-2 border border-foreground-950/10 divide-x divide-y divide-foreground-950/10 lg:grid-cols-4 rounded-xl overflow-hidden bg-background-50">
+          <div className="mt-8 sm:mt-12 grid grid-cols-2 border border-foreground-950/15 divide-x divide-y divide-foreground-950/15 lg:grid-cols-4 rounded-xl overflow-hidden bg-background-50">
             {stats.map((stat, i) => (
               <div key={i} className="p-4 sm:p-6 lg:p-8 min-w-0">
                 <div className="font-display text-[1.8rem] sm:text-[2.5rem] font-normal uppercase tracking-wider text-foreground-950 md:text-[3.5rem]">
                   {stat.num}
                 </div>
-                <div className="mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-foreground-500 truncate">
+                <div className="mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-foreground-600 truncate">
                   {stat.label}
                 </div>
               </div>

@@ -7,28 +7,50 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Centralized CSS Variable Tokens
+        theme: {
+          bg: {
+            primary: 'var(--bg-primary)',
+            secondary: 'var(--bg-secondary)',
+            elevated: 'var(--bg-elevated)',
+          },
+          text: {
+            primary: 'var(--text-primary)',
+            secondary: 'var(--text-secondary)',
+            muted: 'var(--text-muted)',
+          },
+          border: {
+            DEFAULT: 'var(--border)',
+            strong: 'var(--border-strong)',
+          },
+          accent: {
+            DEFAULT: 'var(--accent)',
+            hover: 'var(--accent-hover)',
+            soft: 'var(--accent-soft)',
+          },
+        },
         background: {
           50: '#FAF6EE',
           100: '#F5EFE6',
-          200: '#EADFCF',
-          300: '#DDD0BE',
-          400: '#C8B8A2',
-          500: '#A9967F',
-          600: '#8A7662',
-          700: '#6C5946',
-          800: '#47392B',
-          950: '#141210',
+          200: '#EAE2D5',
+          300: '#DDD5C8',
+          400: '#C8C2B9', // Clean warm off-white / light gray (no muddy brown)
+          500: '#A69F94', // Neutral warm tone
+          600: '#918A80', // Legible muted tone (no muddy dark brown)
+          700: '#686259',
+          800: '#3D3833',
+          950: '#0D0F12', // Deep cinematic base
         },
         foreground: {
           50: '#FAF7F5',
           100: '#EFEAE6',
           200: '#DDD5CF',
-          300: '#C2B5AC',
-          400: '#9E8D82',
-          500: '#7E6C60',
-          600: '#5E4E44',
-          700: '#42362E',
-          800: '#2A221C',
+          300: '#C2B8B0',
+          400: '#8E8880',
+          500: '#6F6962',
+          600: '#524D46',
+          700: '#3A3530',
+          800: '#221F1C',
           950: '#0F1115',
         },
         primary: {
@@ -36,8 +58,8 @@ export default {
           100: '#FFE2D4',
           200: '#FFC2A8',
           300: '#FF9970',
-          400: '#FF733C',
-          500: '#FF4D2E',
+          400: '#FF624B',
+          500: '#FF4B32', // Signature CodeSpark Orange/Red
           600: '#E63819',
           700: '#BF260B',
           800: '#991F09',

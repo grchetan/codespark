@@ -14,7 +14,7 @@ export default function CTASection() {
             <h2 className="mt-2 sm:mt-3 font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground-950">
               Your effect could be<br />someone's favorite
             </h2>
-            <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-foreground-500 leading-relaxed">
+            <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-foreground-700 leading-relaxed">
               Publish a hover interaction, a loader, a cursor trick. Get featured, earn likes, and grow your presence in the community.
             </p>
             <div className="mt-6 sm:mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -26,7 +26,7 @@ export default function CTASection() {
               </Link>
             </div>
             <div className="mt-8 sm:mt-10 border-t border-background-300/50 pt-6 sm:pt-8">
-              <p className="mb-3 sm:mb-4 text-xs sm:text-sm font-medium text-foreground-500">Get fresh effects in your inbox every week.</p>
+              <p className="mb-3 sm:mb-4 text-xs sm:text-sm font-semibold text-foreground-700">Get fresh effects in your inbox every week.</p>
               <div className="mx-auto max-w-md w-full"><NewsletterForm /></div>
             </div>
           </div>

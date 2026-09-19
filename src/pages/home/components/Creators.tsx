@@ -38,7 +38,7 @@ export default function Creators() {
                 <i className="ri-verified-badge-fill text-primary-500 text-sm" />
               </h3>
               <p className="text-xs font-semibold text-primary-600 uppercase tracking-wider truncate w-full mt-0.5">{c.role}</p>
-              <p className="mt-2 text-xs text-foreground-500 line-clamp-2">{c.bio}</p>
+              <p className="mt-2 text-xs text-foreground-600 line-clamp-2">{c.bio}</p>
             </Link>
           </Reveal>
         ))}

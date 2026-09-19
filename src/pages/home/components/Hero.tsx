@@ -3,7 +3,7 @@ import Reveal from '@/components/base/Reveal';
 
 export default function Hero() {
   return (
-    <section className="relative w-full max-w-full overflow-hidden bg-foreground-950 pt-[4.5rem] md:pt-[7.75rem]">
+    <section className="relative w-full max-w-full overflow-hidden bg-[#0D0F12] pt-[4.5rem] md:pt-[7.75rem]">
       {/* Subtle grid on dark */}
       <div className="absolute inset-0 bg-line-grid opacity-10" />
       {/* Noise overlay */}
@@ -38,7 +38,7 @@ export default function Hero() {
             </Reveal>
 
             <Reveal delay={80}>
-              <h1 className="mt-4 sm:mt-6 font-display text-[2.4rem] xs:text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6.5rem] font-normal leading-[0.95] tracking-wider text-background-50 break-words">
+              <h1 className="mt-4 sm:mt-6 font-display text-[2.4rem] xs:text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6.5rem] font-normal leading-[0.95] tracking-wider text-[#F5F1EA] break-words">
                 EFFECTS<br />
                 <span className="text-stroke block">THAT MAKE</span>
                 YOUR UI<br />
@@ -47,7 +47,7 @@ export default function Hero() {
             </Reveal>
 
             <Reveal delay={160}>
-              <p className="mt-4 sm:mt-6 max-w-md text-xs sm:text-sm leading-relaxed text-background-400">
+              <p className="mt-4 sm:mt-6 max-w-md text-xs sm:text-sm leading-relaxed text-[#C8C2B9]">
                 A developer library where hover effects, text animations, and cursor tricks ship straight into your build. No friction. Pure impact.
               </p>
             </Reveal>
@@ -56,13 +56,13 @@ export default function Hero() {
               <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3">
                 <Link
                   to="/effects"
-                  className="inline-flex h-11 sm:h-12 items-center gap-2 bg-primary-500 px-5 sm:px-7 text-xs sm:text-sm font-semibold uppercase tracking-wider text-background-50 transition-colors hover:bg-primary-400"
+                  className="inline-flex h-11 sm:h-12 items-center gap-2 bg-primary-500 px-5 sm:px-7 text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#FAF6EE] transition-colors hover:bg-primary-400 shadow-sm"
                 >
                   START YOUR BUILD <i className="ri-arrow-right-up-line" />
                 </Link>
                 <Link
                   to="/effects"
-                  className="inline-flex h-11 sm:h-12 items-center border border-background-700 px-5 sm:px-7 text-xs sm:text-sm font-semibold uppercase tracking-wider text-background-50 transition-colors hover:bg-background-800"
+                  className="inline-flex h-11 sm:h-12 items-center border border-[rgba(245,241,234,0.22)] px-5 sm:px-7 text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#F5F1EA] transition-colors hover:bg-white/5 hover:border-white/40"
                 >
                   SEE THE EFFECTS
                 </Link>
@@ -70,7 +70,7 @@ export default function Hero() {
             </Reveal>
 
             <Reveal delay={300}>
-              <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-background-600">
+              <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-[#C8C2B9] font-medium">
                 <span className="flex items-center gap-1.5">
                   <i className="ri-checkbox-circle-line text-primary-500" /> Free forever
                 </span>
@@ -87,25 +87,25 @@ export default function Hero() {
           {/* Right: Visual element */}
           <div className="relative mt-10 hidden lg:mt-0 lg:block shrink-0">
             <div className="relative w-64">
-              <div className="rounded-lg border border-background-800 bg-background-950/80 p-4 backdrop-blur-sm shadow-xl">
+              <div className="rounded-xl border border-[rgba(245,241,234,0.14)] bg-[#171A20]/90 p-4 backdrop-blur-sm shadow-2xl">
                 <div className="flex items-center gap-1.5 mb-3">
                   <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
                   <div className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
                   <div className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-                  <span className="ml-2 text-[10px] font-mono text-background-600 uppercase tracking-wider">codespark.css</span>
+                  <span className="ml-2 text-[10px] font-mono text-[#918A80] uppercase tracking-wider">codespark.css</span>
                 </div>
-                <div className="font-mono text-[11px] text-background-400 leading-relaxed text-left">
+                <div className="font-mono text-[11px] text-[#C8C2B9] leading-relaxed text-left">
                   <div className="text-primary-400">.spark-btn:hover {'{'}</div>
                   <div>  transform: scale(1.05);</div>
                   <div>  box-shadow: 0 12px</div>
-                  <div>    40px rgba(255,77,46,0.25);</div>
+                  <div>    40px rgba(255,75,50,0.25);</div>
                   <div>{'}'}</div>
                 </div>
               </div>
               {/* Right side text */}
               <div className="absolute -top-8 -right-8 text-right">
                 <div className="font-display text-4xl tracking-wider text-primary-500">ALL CODE</div>
-                <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-background-600">FREE FOREVER</div>
+                <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#C8C2B9]">FREE FOREVER</div>
               </div>
             </div>
           </div>

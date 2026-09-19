@@ -35,15 +35,15 @@ export default function EffectFullscreenPreview() {
     <div className="relative min-h-screen w-full bg-[#faf6ee] text-[#121c15] overflow-x-hidden selection:bg-[#121c15] selection:text-[#faf6ee]">
       {/* Floating CodeSpark Action Top Bar */}
       {showBanner && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2 rounded-full bg-[#121c15]/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl text-xs">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-2 rounded-full bg-[#0D0F12]/90 text-white backdrop-blur-xl border border-[rgba(245,241,234,0.18)] shadow-2xl text-xs">
           <div className="flex items-center gap-2 font-mono">
-            <span className="w-2 h-2 rounded-full bg-[#FF4D2E] animate-ping" />
-            <span className="font-bold text-stone-200">CodeSpark Full Live Demo</span>
+            <span className="w-2 h-2 rounded-full bg-[#FF4B32] animate-ping" />
+            <span className="font-bold text-[#F5F1EA]">CodeSpark Full Live Demo</span>
           </div>
           <span className="text-white/30">•</span>
           <Link
             to={`/effects/${slug || 'splash-cursor'}`}
-            className="flex items-center gap-1 font-bold text-[#FF4D2E] hover:underline"
+            className="flex items-center gap-1 font-bold text-[#FF4B32] hover:text-[#FF624B]"
           >
             <span>View Code & Docs</span>
             <i className="ri-arrow-right-line" />

@@ -35,9 +35,9 @@ export default function Categories() {
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-2 font-body text-sm font-semibold text-foreground-950">
                     <span className="truncate">{c.label}</span>
-                    <span className="shrink-0 rounded-full bg-background-200/70 px-2 py-0.5 text-[10px] font-medium text-foreground-500">{count}+</span>
+                    <span className="shrink-0 rounded-full bg-background-200/80 px-2 py-0.5 text-[10px] font-semibold text-foreground-600">{count}+</span>
                   </span>
-                  <span className="mt-1 block text-xs leading-relaxed text-foreground-500 line-clamp-2">{c.blurb}</span>
+                  <span className="mt-1 block text-xs leading-relaxed text-foreground-600 line-clamp-2">{c.blurb}</span>
                 </span>
               </Link>
             </Reveal>

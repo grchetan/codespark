@@ -680,23 +680,23 @@ export default function EffectsWorkspace() {
           {/* Sidebar Top Search */}
           <div className="p-3.5 border-b border-background-300/50 space-y-2 shrink-0 bg-background-50">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black uppercase tracking-wider text-foreground-500 flex items-center gap-1.5">
+              <span className="text-[11px] font-black uppercase tracking-wider text-foreground-700 flex items-center gap-1.5">
                 <i className="ri-book-read-line text-primary-500 text-xs" />
                 <span>Effects Library</span>
               </span>
-              <span className="text-[10px] font-bold text-foreground-500 bg-background-200/80 px-1.5 py-0.5 rounded-md">
+              <span className="text-[10px] font-bold text-foreground-700 bg-background-200 px-1.5 py-0.5 rounded-md">
                 {allEffects.length} items
               </span>
             </div>
 
             <div className="relative">
-              <i className="ri-search-line absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-foreground-400" />
+              <i className="ri-search-line absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-foreground-500" />
               <input
                 type="text"
                 value={sidebarSearch}
                 onChange={(e) => setSidebarSearch(e.target.value)}
                 placeholder="Filter effects..."
-                className="w-full rounded-lg border border-background-300/80 bg-background-100/80 pl-7 pr-7 py-1.5 text-xs outline-none focus:border-primary-400 text-foreground-950 placeholder:text-foreground-400 transition-colors"
+                className="w-full rounded-lg border border-background-300/80 bg-background-100/80 pl-7 pr-7 py-1.5 text-xs outline-none focus:border-primary-400 text-foreground-950 placeholder:text-foreground-500 transition-colors"
               />
               {sidebarSearch && (
                 <button
@@ -717,7 +717,7 @@ export default function EffectsWorkspace() {
               <div className="space-y-4">
                 {MANUAL_SECTIONS.map((section) => (
                   <div key={section.title} className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-foreground-400 px-2 py-0.5">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-foreground-600 px-2 py-0.5">
                       {section.title}
                     </p>
                     <div className="space-y-0.5">
@@ -731,12 +731,12 @@ export default function EffectsWorkspace() {
                             className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-all ${
                               isActive
                                 ? 'bg-primary-500/15 text-primary-600 font-bold border-l-2 border-primary-500 shadow-xs'
-                                : 'text-foreground-600 hover:bg-background-200/60 hover:text-foreground-950'
+                                : 'text-foreground-700 font-medium hover:bg-background-200/60 hover:text-foreground-950'
                             }`}
                           >
                             <span>{item.title}</span>
                             {item.badge && (
-                              <span className="text-[9px] font-bold text-foreground-400 bg-background-200 px-1 py-0.2 rounded">
+                              <span className="text-[9px] font-bold text-foreground-500 bg-background-200 px-1 py-0.2 rounded">
                                 {item.badge}
                               </span>
                             )}
@@ -1263,7 +1263,7 @@ export default function EffectsWorkspace() {
                         onClick={() => setDarkStage((d) => !d)}
                         className={`grid h-8 w-8 place-items-center rounded-lg border transition-all ${
                           darkStage
-                            ? 'border-foreground-800 bg-foreground-950 text-amber-400'
+                            ? 'border-[rgba(245,241,234,0.18)] bg-[#171A20] text-primary-400'
                             : 'border-background-300 bg-background-50 text-foreground-600 hover:bg-background-100'
                         }`}
                         title={darkStage ? 'Switch to Light Stage' : 'Switch to Dark Stage'}
@@ -1286,7 +1286,7 @@ export default function EffectsWorkspace() {
                   <div
                     className={`mx-auto transition-all duration-300 rounded-3xl border ${
                       darkStage
-                        ? 'border-background-800 bg-[#141210] shadow-2xl'
+                        ? 'border-[rgba(245,241,234,0.14)] bg-[#0D0F12] shadow-2xl'
                         : 'border-background-300/80 bg-[#FAF6EE] shadow-lg'
                     } ${
                       matchedReactKey === 'SplashCursor'

@@ -159,7 +159,7 @@ export default function EffectCard({
           </div>
 
           <p
-            className={`mt-1.5 text-xs text-foreground-500 leading-relaxed ${
+            className={`mt-1.5 text-xs text-foreground-600 leading-relaxed ${
               compact ? 'line-clamp-1' : 'line-clamp-2'
             }`}
           >
@@ -171,7 +171,7 @@ export default function EffectCard({
             {effect.tags.slice(0, 3).map((t) => (
               <span
                 key={t}
-                className="rounded-md bg-background-200/60 px-2 py-0.5 text-[10px] font-medium text-foreground-600"
+                className="rounded-md bg-background-200/80 px-2 py-0.5 text-[10px] font-medium text-foreground-700"
               >
                 #{t}
               </span>
@@ -180,13 +180,13 @@ export default function EffectCard({
         </div>
 
         {/* Bottom Actions Row */}
-        <div className="mt-4 flex items-center justify-between border-t border-background-300/50 pt-3">
+        <div className="mt-4 flex items-center justify-between border-t border-background-300/60 pt-3">
           {/* Official Verified Author Badge */}
           <div className="flex items-center gap-1.5 min-w-0 max-w-[125px] sm:max-w-[145px]">
             <span className="grid h-5 w-5 place-items-center rounded-full bg-primary-500 text-[10px] font-bold text-white shadow-sm shrink-0">
               ⚡
             </span>
-            <span className="truncate text-xs font-semibold text-foreground-800">
+            <span className="truncate text-xs font-semibold text-foreground-900">
               {effect.author?.name || 'CodeSpark Official'}
             </span>
             <span className="inline-flex items-center justify-center text-primary-500 shrink-0" title="Verified Official Component">
@@ -203,7 +203,7 @@ export default function EffectCard({
               type="button"
               onClick={openRemix}
               title="Test with your custom text & theme"
-              className="grid h-8 w-8 place-items-center rounded-lg text-foreground-500 hover:bg-primary-50 hover:text-primary-500 transition-colors"
+              className="grid h-8 w-8 place-items-center rounded-lg text-foreground-600 hover:bg-primary-500/10 hover:text-primary-500 transition-colors"
             >
               <i className="ri-palette-line text-base" />
             </button>
@@ -214,8 +214,8 @@ export default function EffectCard({
               onClick={onLike}
               aria-label="Like"
               title={isLiked(effect.id) ? 'Unlike' : 'Like'}
-              className={`flex items-center gap-1 rounded-lg px-2 h-8 text-xs font-semibold transition-all hover:bg-background-200/50 active:scale-95 ${
-                isLiked(effect.id) ? 'text-rose-500 bg-rose-500/10 font-bold' : 'text-foreground-500'
+              className={`flex items-center gap-1 rounded-lg px-2 h-8 text-xs font-semibold transition-all hover:bg-background-200/60 active:scale-95 ${
+                isLiked(effect.id) ? 'text-rose-500 bg-rose-500/10 font-bold' : 'text-foreground-600'
               }`}
             >
               <i className={isLiked(effect.id) ? 'ri-heart-fill text-base text-rose-500 animate-pulse' : 'ri-heart-line text-base'} />
@@ -228,8 +228,8 @@ export default function EffectCard({
               onClick={onSave}
               aria-label="Save"
               title={isSaved(effect.id) ? 'Saved in your collection' : 'Save to bookmarks'}
-              className={`grid h-8 w-8 place-items-center rounded-lg transition-all hover:bg-background-200/50 active:scale-95 ${
-                isSaved(effect.id) ? 'text-primary-600 bg-primary-500/15' : 'text-foreground-500'
+              className={`grid h-8 w-8 place-items-center rounded-lg transition-all hover:bg-background-200/60 active:scale-95 ${
+                isSaved(effect.id) ? 'text-primary-600 bg-primary-500/15' : 'text-foreground-600'
               }`}
             >
               <i className={isSaved(effect.id) ? 'ri-bookmark-fill text-base text-primary-600' : 'ri-bookmark-line text-base'} />
@@ -249,7 +249,7 @@ export default function EffectCard({
                 className={`flex items-center gap-1 rounded-lg px-2.5 h-8 text-xs font-semibold transition-all ${
                   copied
                     ? 'bg-emerald-500 text-background-50'
-                    : 'bg-background-200/70 text-foreground-700 hover:bg-foreground-950 hover:text-background-50'
+                    : 'bg-background-200/80 text-foreground-800 hover:bg-foreground-950 hover:text-background-50'
                 }`}
               >
                 {copied ? (

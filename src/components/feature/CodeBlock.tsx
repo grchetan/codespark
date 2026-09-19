@@ -97,31 +97,31 @@ export default function CodeBlock({ code, lang }: { code: string; lang: 'html' |
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-background-300/50 bg-[#0f1115] shadow-lg">
+    <div className="overflow-hidden rounded-xl border border-[rgba(245,241,234,0.14)] bg-[#0D0F12] shadow-xl">
       {/* macOS-style window header */}
-      <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 bg-[#13151b]">
+      <div className="flex items-center justify-between border-b border-[rgba(245,241,234,0.08)] px-4 py-3 bg-[#12151A]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
             <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
             <span className="h-3 w-3 rounded-full bg-[#28c840]" />
           </div>
-          <span className="ml-2 text-xs font-mono text-white/40">{fileNames[lang] || 'snippet'}</span>
+          <span className="ml-2 text-xs font-mono text-[#918A80]">{fileNames[lang] || 'snippet'}</span>
         </div>
         <div className="flex items-center gap-2">
           <span
             className="inline-block h-2 w-2 rounded-full"
-            style={{ backgroundColor: langColors[lang] || '#ff4d2e' }}
+            style={{ backgroundColor: langColors[lang] || '#FF4B32' }}
           />
-          <span className="text-[11px] font-medium uppercase tracking-wider text-white/30">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#918A80]">
             {lang}
           </span>
           <button
             type="button"
             onClick={copy}
-            className="ml-3 flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/50 transition-all hover:bg-white/10 hover:text-white/80 cursor-pointer"
+            className="ml-3 flex items-center gap-1.5 rounded-md border border-[rgba(245,241,234,0.15)] bg-white/5 px-2.5 py-1 text-[11px] font-medium text-[#C8C2B9] transition-all hover:bg-white/10 hover:text-[#F5F1EA] cursor-pointer"
           >
-            <i className={copied ? 'ri-check-line text-green-400' : 'ri-file-copy-line'} />
+            <i className={copied ? 'ri-check-line text-emerald-400' : 'ri-file-copy-line'} />
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
@@ -130,13 +130,13 @@ export default function CodeBlock({ code, lang }: { code: string; lang: 'html' |
       {/* Code area with line numbers */}
       <div className="flex overflow-auto max-h-[500px]">
         {/* Line numbers */}
-        <div className="shrink-0 select-none border-r border-white/5 py-4 pr-3 pl-4 text-right font-mono text-[12px] leading-[1.7] text-white/20">
+        <div className="shrink-0 select-none border-r border-[rgba(245,241,234,0.08)] py-4 pr-3 pl-4 text-right font-mono text-[12px] leading-[1.7] text-[#918A80]/60">
           {lines.map((_, i) => (
             <div key={i}>{i + 1}</div>
           ))}
         </div>
         {/* Code */}
-        <pre className="code-scroll flex-1 overflow-auto p-4 font-mono text-[13px] leading-[1.7] text-white/80">
+        <pre className="code-scroll flex-1 overflow-auto p-4 font-mono text-[13px] leading-[1.7] text-[#F5F1EA]">
           <code
             className="block min-w-max"
             dangerouslySetInnerHTML={{ __html: highlighted }}
