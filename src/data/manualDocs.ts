@@ -95,7 +95,128 @@ npm install remixicon lucide-react`
     }
   },
 
-  // 3. GETTING STARTED: Changelog
+  // 3. GETTING STARTED: Design System & Tokens
+  {
+    id: 'design-system',
+    slug: 'design-system',
+    section: 'Getting Started',
+    title: 'Design System & Tokens',
+    description: 'Learn how CodeSpark manages centralized CSS custom properties and high-contrast color tokens.',
+    badge: 'Design Tokens',
+    content: {
+      heading: 'Centralized Design Token Architecture',
+      paragraphs: [
+        'CodeSpark features a robust token system built directly on CSS Custom Properties, making it effortless to customize palettes, switch between light/dark themes, and ensure accessible contrast without muddy colors.',
+        'All colors map semantically to surfaces, typography, borders, and accents.'
+      ],
+      codeSnippets: [
+        {
+          title: 'CSS Custom Property Tokens (styles.css)',
+          lang: 'css',
+          code: `:root {
+  /* Surfaces */
+  --bg-primary: #0D0F12;
+  --bg-secondary: #12151A;
+  --bg-elevated: #171A20;
+
+  /* Typography */
+  --text-primary: #F5F1EA;
+  --text-secondary: #C8C2B9;
+  --text-muted: #918A80;
+
+  /* Borders & Accents */
+  --border: rgba(245, 241, 234, 0.14);
+  --accent: #FF4B32;
+  --accent-hover: #FF624B;
+}`
+        }
+      ],
+      callouts: [
+        {
+          type: 'tip',
+          text: 'Using warm off-white (#F5F1EA) instead of harsh pure white (#FFFFFF) reduces eye fatigue while providing an exceptional 16.1:1 AAA contrast ratio.'
+        }
+      ],
+      subsections: [
+        {
+          title: 'Typography System',
+          text: 'CodeSpark combines Bebas Neue for powerful display headings, Playfair Display for editorial italic accents, Inter for interface elements, and JetBrains Mono for technical code blocks.'
+        },
+        {
+          title: 'Accessibility Compliance',
+          text: 'Every color combination meets or exceeds WCAG 2.1 AA (4.5:1 minimum contrast), ensuring complete legibility across high-resolution displays.'
+        }
+      ]
+    }
+  },
+
+  // 4. GETTING STARTED: Architecture & Sandboxing
+  {
+    id: 'architecture',
+    slug: 'architecture',
+    section: 'Getting Started',
+    title: 'Architecture & Sandboxing',
+    description: 'Deep dive into CodeSpark dual-mode execution sandboxes, iframe isolation, and zero-eval React engine.',
+    badge: 'Architecture',
+    content: {
+      heading: 'Security & Sandboxed Component Execution',
+      paragraphs: [
+        'Running dynamic, user-submitted frontend interactions requires rigorous isolation to prevent Cross-Site Scripting (XSS) and DOM contamination.',
+        'CodeSpark implements a multi-barrier execution pipeline separating untrusted community code from trusted application logic.'
+      ],
+      callouts: [
+        {
+          type: 'note',
+          text: 'The isolated iframe sandbox runs without allow-same-origin, ensuring zero access to parent cookies, localStorage, or JWT session tokens.'
+        }
+      ],
+      subsections: [
+        {
+          title: '1. Sandboxed IFrame Engine (HTML/CSS/JS)',
+          text: 'Community submissions are rendered inside an isolated <iframe> with sandbox="allow-scripts". Interaction overrides (custom text, colors, dark stage) are injected dynamically via templated CSS variables.'
+        },
+        {
+          title: '2. Zero-Eval Compiled Registry (React)',
+          text: 'Official React components are statically bundled at compile time without using eval() or new Function(). They execute with 0ms mount latency and complete TypeScript type safety.'
+        }
+      ]
+    }
+  },
+
+  // 5. CORE ENGINEERING: WebGL & Shader Pipeline
+  {
+    id: 'webgl-shaders',
+    slug: 'webgl-shaders',
+    section: 'Core Engineering',
+    title: 'WebGL & Shader Pipeline',
+    description: 'How high-performance GPU animations like the Fluid Splash Cursor work with framebuffers and fragment shaders.',
+    badge: 'WebGL',
+    content: {
+      heading: 'GPU-Accelerated WebGL Animations',
+      paragraphs: [
+        'For advanced micro-interactions like the Fluid Splash Cursor, DOM-based CSS animations are insufficient. CodeSpark leverages WebGL 2.0 / 1.0 directly on the GPU.',
+        'The simulation solves Navier-Stokes fluid equations in real time across advection, divergence, pressure, and vorticity passes.'
+      ],
+      callouts: [
+        {
+          type: 'tip',
+          text: 'Double-buffered Ping-Pong Framebuffer Objects (FBOs) allow instantaneous reading and writing of fluid velocity textures at 60+ FPS.'
+        }
+      ],
+      subsections: [
+        {
+          title: 'Pointer Velocity Tracking',
+          text: 'Cursor motion events compute differential vectors (dx, dy) to inject kinetic energy into the fluid grid on every animation frame.'
+        },
+        {
+          title: 'Mobile GPU Compatibility',
+          text: 'Floating-point linear filtering (HALF_FLOAT) automatically falls back to 8-bit integer textures when running on restricted mobile hardware.'
+        }
+      ]
+    }
+  },
+
+  // 6. GETTING STARTED: Changelog
   {
     id: 'changelog',
     slug: 'changelog',
@@ -292,6 +413,10 @@ export const MANUAL_SECTIONS = [
   {
     title: 'Getting Started',
     items: MANUAL_DOCS.filter((d) => d.section === 'Getting Started')
+  },
+  {
+    title: 'Core Engineering',
+    items: MANUAL_DOCS.filter((d) => d.section === 'Core Engineering')
   },
   {
     title: 'Contributing',
