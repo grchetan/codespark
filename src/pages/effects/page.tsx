@@ -105,6 +105,7 @@ export default function EffectsWorkspace() {
   const [activeCodeTab, setActiveCodeTab] = useState<string>('html');
   const [loading, setLoading] = useState(false);
   const [dbStatus, setDbStatus] = useState<'connected' | 'offline_paused' | 'loading'>('loading');
+  const [dismissOfflineNotice, setDismissOfflineNotice] = useState(false);
 
   // Customizer interactive states
   const [customText, setCustomText] = useState('');
@@ -281,12 +282,24 @@ export default function EffectsWorkspace() {
         return;
       }
 
+      // 2. If DB is already offline or paused, immediately load from local mock (zero lag)
+      if (dbStatus === 'offline_paused') {
+        fallbackToMock();
+        setLoading(false);
+        return;
+      }
+
       try {
-        const { data, error } = await supabase
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('DB Timeout')), 1800)
+        );
+        const fetchPromise = supabase
           .from('effects')
           .select('*')
           .or(`slug.eq.${activeEffectSlug},id.eq.${activeEffectSlug},slug.eq.${normalizedSlug}`)
           .single();
+
+        const { data, error } = (await Promise.race([fetchPromise, timeoutPromise])) as any;
 
         if (!error && data) {
           const eff: Effect = {
@@ -560,9 +573,18 @@ export default function EffectsWorkspace() {
     const cleanSlug = effect.slug.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
     const cleanName = effect.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
+    // 1. Direct exact match first
     for (const key of Object.keys(EFFECT_REGISTRY)) {
       const cleanKey = key.toLowerCase();
-      if (cleanSlug.includes(cleanKey) || cleanName.includes(cleanKey) || cleanKey.includes(cleanSlug)) {
+      if (cleanSlug === cleanKey || cleanName === cleanKey) {
+        return key;
+      }
+    }
+
+    // 2. Clean substring match
+    for (const key of Object.keys(EFFECT_REGISTRY)) {
+      const cleanKey = key.toLowerCase();
+      if (cleanSlug.includes(cleanKey) || cleanName.includes(cleanKey)) {
         return key;
       }
     }
@@ -1023,29 +1045,43 @@ export default function EffectsWorkspace() {
             )}
 
             {/* Database Paused / Offline Preview Mode Notice */}
-            {dbStatus === 'offline_paused' && (
-              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-950 dark:text-amber-100 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
-                <div className="flex items-start sm:items-center gap-3">
-                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-amber-500/20 text-amber-600 shrink-0 mt-0.5 sm:mt-0">
-                    <i className="ri-database-2-line text-base" />
+            {dbStatus === 'offline_paused' && !dismissOfflineNotice && (
+              <div className="relative overflow-hidden rounded-2xl border border-[rgba(245,241,234,0.14)] bg-[#171A20] p-4 text-[#F5F1EA] shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
+                {/* Subtle top indicator bar */}
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-primary-500 to-amber-500 opacity-70" />
+
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 mt-0.5 sm:mt-0">
+                    <i className="ri-database-2-line text-lg" />
                   </div>
-                  <div>
-                    <p className="font-bold text-foreground-950 dark:text-amber-100 flex items-center gap-2">
-                      <span>Cloud Database Inactive / Offline Preview Mode</span>
-                      <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-mono font-semibold text-amber-800 dark:text-amber-300">
-                        Local Registry Cache
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-sm text-[#F5F1EA] tracking-tight">
+                        Cloud Database Paused — Local Registry Active
                       </span>
-                    </p>
-                    <p className="text-foreground-600 dark:text-amber-200/80 text-[11px] mt-0.5 leading-relaxed">
-                      The Supabase cloud database is currently paused. CodeSpark is running seamlessly with verified local React & CSS components from the core registry.
+                      <span className="rounded-md bg-white/10 border border-white/15 px-2 py-0.5 text-[10px] font-mono font-bold text-[#F5F1EA]">
+                        Local Cache
+                      </span>
+                    </div>
+                    <p className="text-[#C8C2B9] text-xs mt-1 leading-relaxed">
+                      Supabase cloud database is currently paused. CodeSpark is running seamlessly from verified local React & CSS components in the core registry.
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold text-amber-800 dark:text-amber-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
+
+                <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-[11px] font-bold text-emerald-400">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
                     Offline Ready
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => setDismissOfflineNotice(true)}
+                    className="h-7 w-7 rounded-lg text-[#918A80] hover:text-[#F5F1EA] hover:bg-white/10 transition-colors grid place-items-center"
+                    title="Dismiss alert"
+                  >
+                    <i className="ri-close-line text-base" />
+                  </button>
                 </div>
               </div>
             )}

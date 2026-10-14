@@ -288,6 +288,96 @@ export function ReactSplashCursor() {
   );
 }
 
+// 6. Cursor Spotlight Card Component
+export function ReactCursorSpotlight({
+  text = 'Cursor Spotlight Card',
+  title = 'Interactive Radial Light Beam',
+}: {
+  text?: string;
+  title?: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 200, y: 150 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative w-full h-full min-h-[380px] flex items-center justify-center p-6 bg-[#0D0F12] rounded-2xl overflow-hidden select-none border border-[rgba(245,241,234,0.12)]"
+    >
+      {/* Background Dot Matrix Grid */}
+      <div
+        className="absolute inset-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(245, 241, 234, 0.18) 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+        }}
+      />
+
+      {/* Dynamic Cursor Spotlight Radial Beam */}
+      <div
+        className="pointer-events-none absolute inset-0 transition-opacity duration-300"
+        style={{
+          opacity: isHovered ? 1 : 0.4,
+          background: `radial-gradient(320px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 75, 50, 0.22) 0%, rgba(255, 75, 50, 0.05) 45%, transparent 75%)`,
+        }}
+      />
+
+      {/* Spotlight Interactive Card */}
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-[rgba(245,241,234,0.16)] bg-[#171A20]/95 p-7 sm:p-8 shadow-2xl backdrop-blur-xl overflow-hidden group">
+        {/* Card internal radial spotlight highlight */}
+        <div
+          className="pointer-events-none absolute inset-0 transition-opacity duration-200"
+          style={{
+            opacity: isHovered ? 1 : 0.3,
+            background: `radial-gradient(240px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 75, 50, 0.16), transparent 70%)`,
+          }}
+        />
+
+        <div className="relative z-10 flex items-center justify-between">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-500/30 bg-primary-500/10 px-3 py-1 text-[11px] font-mono font-bold text-primary-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary-500 animate-pulse" />
+            SPOTLIGHT REVEAL
+          </span>
+          <span className="font-mono text-[11px] text-[#918A80]">
+            x: {Math.round(mousePos.x)}px, y: {Math.round(mousePos.y)}px
+          </span>
+        </div>
+
+        <h3 className="relative z-10 mt-6 font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#F5F1EA]">
+          {text || 'Cursor Spotlight Card'}
+        </h3>
+
+        <p className="relative z-10 mt-2 text-xs sm:text-sm text-[#C8C2B9] leading-relaxed">
+          {title || 'A radial spotlight reveals underlying interface layers as your cursor glides across the interactive stage.'}
+        </p>
+
+        <div className="relative z-10 mt-6 pt-5 border-t border-[rgba(245,241,234,0.1)] flex items-center justify-between text-xs">
+          <span className="font-semibold text-[#BDB6AC]">
+            Dynamic Radial Lighting
+          </span>
+          <span className="font-bold text-primary-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            <span>Hover to reveal</span>
+            <i className="ri-arrow-right-line" />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Manual React Effects Metadata Registry
 export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
   {
@@ -381,6 +471,24 @@ export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
       bio: 'Creator of CodeSpark & WebGL interactive components.',
     },
   },
+  {
+    id: 'react-cursor-spotlight',
+    slug: 'cursor-spotlight',
+    name: 'Cursor Spotlight Card',
+    category: 'cursor',
+    categoryLabel: 'Cursor Tricks',
+    description: 'A radial spotlight reveals illuminated text and card depth as your cursor glides across the interactive stage.',
+    tags: ['cursor', 'spotlight', 'radial', 'reveal', 'react'],
+    difficulty: 'easy',
+    isOfficial: true,
+    author: {
+      name: 'Sophia Vance',
+      handle: '@sophiaui',
+      role: 'Design Systems Lead',
+      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=SophiaVance',
+      verified: true,
+    },
+  },
 ];
 
 // Mapping to actual React Components
@@ -390,6 +498,7 @@ export const EFFECT_REGISTRY: Record<string, React.ComponentType<any>> = {
   TiltCard: ReactTiltCard,
   TextScramble: ReactTextScramble,
   SplashCursor: ReactSplashCursor,
+  CursorSpotlight: ReactCursorSpotlight,
 };
 
 // Trusted Raw React Code Snippets for TSX Tab
@@ -548,6 +657,44 @@ export default function FluidCursorDemo() {
           Click for Fluid Burst ⚡
         </button>
       </div>
+    </div>
+  );
+}`,
+  CursorSpotlight: `import React, { useRef, useState } from 'react';
+
+export default function CursorSpotlightCard({
+  title = 'Cursor Spotlight Card',
+  description = 'Move your cursor across this surface to illuminate hidden layers with dynamic radial lighting.'
+}) {
+  const containerRef = useRef(null);
+  const [pos, setPos] = useState({ x: 180, y: 120 });
+  const [hover, setHover] = useState(false);
+
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const r = containerRef.current.getBoundingClientRect();
+    setPos({ x: e.clientX - r.left, y: e.clientY - r.top });
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="relative p-8 rounded-2xl bg-[#171A20] border border-white/10 overflow-hidden select-none"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 transition-opacity duration-200"
+        style={{
+          opacity: hover ? 1 : 0.35,
+          background: \`radial-gradient(240px circle at \${pos.x}px \${pos.y}px, rgba(255, 75, 50, 0.22), transparent 70%)\`,
+        }}
+      />
+      <h3 className="relative z-10 text-2xl font-bold text-[#F5F1EA]">{title}</h3>
+      <p className="relative z-10 text-sm text-[#C8C2B9] mt-2 max-w-sm">
+        {description}
+      </p>
     </div>
   );
 }`,
