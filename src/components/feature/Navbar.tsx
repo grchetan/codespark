@@ -1,90 +1,80 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useSaved } from '@/context/SavedContext';
-
-const navLinks = [
-  { label: 'Home', to: '/' },
-  { label: 'Effects', to: '/effects' },
-  { label: 'Saved', to: '/saved' },
-  { label: 'Community', to: '/community' },
-  { label: 'About', to: '/about' },
-  { label: 'Contact', to: '/contact' },
-];
 
 export default function Navbar() {
   const { user, logout, isLoggingOut, isStaff, isSuperAdmin, isAuthenticated } = useAuth();
   const { savedCount } = useSaved();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [userDropdown, setUserDropdown] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const mobileSearchRef = useRef<HTMLInputElement>(null);
+  // Active mega menu state: 'effects' | 'categories' | null
+  const [activeMegaMenu, setActiveMegaMenu] = useState<'effects' | 'categories' | null>(null);
+  const megaMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isHome = location.pathname === '/';
-
+  // Handle scroll detection
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 15);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close menus on route change
+  // Close all menus and mega menus on route change
   useEffect(() => {
     setOpen(false);
-    setSearchOpen(false);
     setUserDropdown(false);
+    setActiveMegaMenu(null);
   }, [location.pathname]);
 
-  // Focus mobile search on open
-  useEffect(() => {
-    if (searchOpen && mobileSearchRef.current) {
-      mobileSearchRef.current.focus();
-    }
-  }, [searchOpen]);
-
-  // Click outside to close user dropdown
+  // Click outside to close user dropdown & mega menu
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setUserDropdown(false);
+      }
+      if (navContainerRef.current && !navContainerRef.current.contains(e.target as Node)) {
+        setActiveMegaMenu(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Escape key to close all popups & menus
+  // Escape key to close any open popups
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setUserDropdown(false);
         setOpen(false);
-        setSearchOpen(false);
+        setActiveMegaMenu(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/effects?q=${encodeURIComponent(searchTerm.trim())}`);
-    } else {
-      navigate('/effects');
+  // Smooth hover handlers for Mega-Menu with 180ms grace delay
+  const handleMouseEnterMenu = (menu: 'effects' | 'categories') => {
+    if (megaMenuTimeoutRef.current) {
+      clearTimeout(megaMenuTimeoutRef.current);
+      megaMenuTimeoutRef.current = null;
     }
-    setSearchOpen(false);
-    setOpen(false);
-    setSearchTerm('');
+    setActiveMegaMenu(menu);
+  };
+
+  const handleMouseLeaveMenu = () => {
+    megaMenuTimeoutRef.current = setTimeout(() => {
+      setActiveMegaMenu(null);
+    }, 180);
   };
 
   const handleLogout = async () => {
@@ -102,87 +92,234 @@ export default function Navbar() {
     }
   };
 
-  // High-contrast tokens for CodeSpark cinematic navbar
-  const logoTextClass = 'text-[#F5F1EA]';
-  const logoBorderClass = 'border-[rgba(245,241,234,0.22)] bg-[#171A20] text-[#F5F1EA]';
-  const actionIconClass = 'text-[#EDE8DF] hover:text-[#F5F1EA]';
-  const mobileToggleClass = 'text-[#F5F1EA]';
-  const navLinkInactive = 'text-[#BDB6AC] hover:text-[#F5F1EA]';
-  const navLinkActive = 'text-primary-500 font-bold';
+  const isEffectsRoute = location.pathname.startsWith('/effects');
+  const isCommunityRoute = location.pathname.startsWith('/community');
+  const isAboutRoute = location.pathname.startsWith('/about');
+  const isSavedRoute = location.pathname.startsWith('/saved');
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 w-full max-w-full border-b border-[rgba(245,241,234,0.12)] bg-[#0D0F12]/95 backdrop-blur-md shadow-xs transition-all duration-300">
-      {/* Top Main Navbar Row */}
-      <nav className="container-x flex h-16 w-full items-center justify-between gap-2 sm:gap-3">
-        {/* Brand Logo */}
-        <Link to="/" className="flex shrink-0 items-center gap-2 group" aria-label="CodeSpark home">
-          <span className={`grid h-8 w-8 place-items-center rounded-full border ${logoBorderClass} text-sm transition-all group-hover:border-primary-500/60`}>
-            <i className="ri-sparkling-2-fill text-primary-500" />
-          </span>
-          <span className={`font-display text-lg sm:text-xl font-bold tracking-wider ${logoTextClass} transition-colors group-hover:text-primary-400`}>
-            CODESPARK
-          </span>
-        </Link>
-
-        {/* Desktop Search Bar (Centered) */}
-        <div className="hidden flex-1 items-center justify-center md:flex max-w-md mx-4 min-w-0">
-          <form
-            onSubmit={handleSearch}
-            className="flex w-full items-center gap-2 rounded-full border border-[rgba(245,241,234,0.14)] bg-[#171A20] px-4 py-2 transition-all focus-within:border-primary-500/80 focus-within:bg-[#1A1E24]"
+    <header className="fixed inset-x-0 top-0 z-50 w-full pt-3 px-3 sm:px-6 lg:px-8 pointer-events-none transition-all duration-300">
+      <div ref={navContainerRef} className="max-w-7xl mx-auto flex items-center justify-between gap-3 pointer-events-auto relative">
+        
+        {/* ========================================================================= */}
+        {/* 1. LEFT UTILITY BUTTON (Floating circle like Delta Cafes left audio pill) */}
+        {/* ========================================================================= */}
+        <div className="hidden md:flex items-center">
+          <Link
+            to="/effects"
+            title="Explore Interactive Effects Library"
+            className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-[#12151A]/95 border border-[rgba(245,241,234,0.12)] shadow-[0_10px_25px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all duration-300 hover:border-[#FF4B32]/50 hover:bg-[#171A20] hover:scale-105"
           >
-            <i className="ri-search-line text-sm shrink-0 text-[#BDB6AC]" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search effects, tags, categories..."
-              className="w-full min-w-0 bg-transparent text-xs sm:text-sm outline-none text-[#F5F1EA] placeholder:text-[#918A80]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button type="button" onClick={() => setSearchTerm('')} className="text-[#918A80] hover:text-[#F5F1EA] shrink-0">
-                <i className="ri-close-line text-sm" />
-              </button>
-            )}
-          </form>
+            <i className="ri-sparkling-fill text-[#FF4B32] text-lg transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
+            <span className="sr-only">Browse Effects</span>
+          </Link>
         </div>
 
-        {/* Desktop Right Actions */}
-        <div className="hidden md:flex items-center gap-2 shrink-0">
-          {/* Saved Collection Quick Button */}
-          <Link
-            to="/saved"
-            title="Saved Components"
-            className={`relative grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-white/5 ${actionIconClass}`}
-          >
-            <i className="ri-bookmark-line text-lg" />
-            {savedCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-primary-500 px-1 text-[10px] font-bold text-white shadow-sm animate-fade-in">
-                {savedCount}
-              </span>
-            )}
+        {/* ========================================================================= */}
+        {/* 2. CENTER FLOATING CAPSULE BAR (Delta Cafes Style with Red/Orange Triangle) */}
+        {/* ========================================================================= */}
+        <nav
+          className={`flex-1 md:flex-initial mx-auto flex items-center justify-between md:justify-center rounded-full bg-[#12151A]/95 border border-[rgba(245,241,234,0.12)] px-3 sm:px-5 py-2 shadow-[0_16px_40px_rgba(0,0,0,0.65)] backdrop-blur-2xl transition-all duration-300 ${
+            scrolled ? 'border-[rgba(245,241,234,0.18)] bg-[#0D0F12]/95' : ''
+          }`}
+        >
+          {/* Mobile Left Logo Branding (Visible only on mobile screens) */}
+          <Link to="/" className="flex items-center gap-2 md:hidden group py-1 pl-1">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF4B32] text-white shadow-[0_0_12px_rgba(255,75,50,0.6)]">
+              <i className="ri-sparkling-fill text-xs" />
+            </span>
+            <span className="font-display font-black text-sm tracking-widest text-[#F5F1EA]">
+              CODESPARK
+            </span>
           </Link>
 
-          {isStaff && (
+          {/* Desktop Left Group of Links */}
+          <div className="hidden md:flex items-center gap-1.5 lg:gap-2 mr-3 lg:mr-4">
+            {/* EFFECTS Dropdown Trigger */}
+            <div
+              className="relative"
+              onMouseEnter={() => handleMouseEnterMenu('effects')}
+              onMouseLeave={handleMouseLeaveMenu}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveMegaMenu(activeMegaMenu === 'effects' ? null : 'effects')}
+                className={`flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                  activeMegaMenu === 'effects' || isEffectsRoute
+                    ? 'border border-[rgba(245,241,234,0.22)] bg-white/10 text-[#F5F1EA] shadow-xs'
+                    : 'text-[#C8C2B9] hover:text-[#F5F1EA] hover:bg-white/5'
+                }`}
+              >
+                <span>Effects</span>
+                <i
+                  className={`ri-arrow-down-s-line text-xs transition-transform duration-200 ${
+                    activeMegaMenu === 'effects' ? 'rotate-180 text-[#FF4B32]' : 'text-[#918A80]'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* CATEGORIES Dropdown Trigger */}
+            <div
+              className="relative"
+              onMouseEnter={() => handleMouseEnterMenu('categories')}
+              onMouseLeave={handleMouseLeaveMenu}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveMegaMenu(activeMegaMenu === 'categories' ? null : 'categories')}
+                className={`flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                  activeMegaMenu === 'categories'
+                    ? 'border border-[rgba(245,241,234,0.22)] bg-white/10 text-[#F5F1EA] shadow-xs'
+                    : 'text-[#C8C2B9] hover:text-[#F5F1EA] hover:bg-white/5'
+                }`}
+              >
+                <span>Categories</span>
+                <i
+                  className={`ri-arrow-down-s-line text-xs transition-transform duration-200 ${
+                    activeMegaMenu === 'categories' ? 'rotate-180 text-[#FF4B32]' : 'text-[#918A80]'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* COMMUNITY Direct Link */}
             <Link
-              to="/admin"
-              className={`inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-bold border transition-all ${
-                isSuperAdmin
-                  ? 'bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/25'
-                  : 'bg-primary-500/10 text-primary-400 border-primary-500/30 hover:bg-primary-500/20'
+              to="/community"
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                isCommunityRoute
+                  ? 'border border-[rgba(245,241,234,0.22)] bg-white/10 text-[#F5F1EA]'
+                  : 'text-[#C8C2B9] hover:text-[#F5F1EA] hover:bg-white/5'
               }`}
             >
-              <i className={isSuperAdmin ? 'ri-vip-crown-fill text-amber-400 text-sm' : 'ri-shield-check-line text-sm'} />
-              <span>{isSuperAdmin ? 'Master Console' : user?.role === 'admin' ? 'Admin' : 'Moderation'}</span>
+              Community
             </Link>
-          )}
+          </div>
 
+          {/* ========================================================================= */}
+          {/* CENTER ICONIC TRIANGLE BADGE (Delta Cafes Style Upward Apex Emblem)       */}
+          {/* ========================================================================= */}
+          <div className="hidden md:flex items-center justify-center px-1">
+            <Link
+              to="/"
+              title="CodeSpark Home"
+              className="group relative -my-4 flex flex-col items-center justify-center transition-transform duration-300 hover:scale-105 focus:outline-none"
+            >
+              {/* Outer triangle container with apex rising above navbar capsule */}
+              <div className="relative h-13 w-16 flex items-center justify-center">
+                <svg
+                  viewBox="0 0 100 86.6"
+                  className="h-full w-full drop-shadow-[0_6px_16px_rgba(255,75,50,0.55)] transition-all duration-300 group-hover:drop-shadow-[0_8px_22px_rgba(255,75,50,0.75)]"
+                >
+                  <polygon
+                    points="50,0 100,86.6 0,86.6"
+                    fill="#FF4B32"
+                    stroke="rgba(245,241,234,0.18)"
+                    strokeWidth="2"
+                  />
+                </svg>
+
+                {/* Brand label & Spark inside triangle */}
+                <div className="absolute inset-x-0 bottom-1.5 flex flex-col items-center justify-center text-center select-none pointer-events-none">
+                  <i className="ri-sparkling-fill text-white text-[10px] leading-none mb-0.5" />
+                  <span className="font-display font-black text-[7.5px] leading-none tracking-widest text-[#FAF6EE] uppercase">
+                    CODESPARK
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Desktop Right Group of Links */}
+          <div className="hidden md:flex items-center gap-1.5 lg:gap-2 ml-3 lg:ml-4">
+            {/* DOCS Link */}
+            <Link
+              to="/about"
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                isAboutRoute
+                  ? 'border border-[rgba(245,241,234,0.22)] bg-white/10 text-[#F5F1EA]'
+                  : 'text-[#C8C2B9] hover:text-[#F5F1EA] hover:bg-white/5'
+              }`}
+            >
+              Docs
+            </Link>
+
+            {/* SAVED Link with live counter */}
+            <Link
+              to="/saved"
+              className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                isSavedRoute
+                  ? 'border border-[rgba(245,241,234,0.22)] bg-white/10 text-[#F5F1EA]'
+                  : 'text-[#C8C2B9] hover:text-[#F5F1EA] hover:bg-white/5'
+              }`}
+            >
+              <span>Saved</span>
+              {savedCount > 0 && (
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FF4B32] px-1 text-[9px] font-bold text-white shadow-xs">
+                  {savedCount}
+                </span>
+              )}
+            </Link>
+
+            {/* ABOUT Link */}
+            <Link
+              to="/about"
+              className="rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#C8C2B9] hover:text-[#F5F1EA] hover:bg-white/5 transition-colors"
+            >
+              About
+            </Link>
+
+            {/* Master Console Pill (Staff only) */}
+            {isStaff && (
+              <Link
+                to="/admin"
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold border transition-all ${
+                  isSuperAdmin
+                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/25'
+                    : 'bg-[#FF4B32]/10 text-[#FF4B32] border-[#FF4B32]/30 hover:bg-[#FF4B32]/20'
+                }`}
+              >
+                <i className={isSuperAdmin ? 'ri-vip-crown-fill text-amber-400 text-xs' : 'ri-shield-check-line text-xs'} />
+                <span>{isSuperAdmin ? 'Console' : 'Admin'}</span>
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile Right Controls: Saved & Hamburger Drawer */}
+          <div className="flex md:hidden items-center gap-1.5">
+            <Link
+              to="/saved"
+              title="Saved Effects"
+              className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-[#EDE8DF]"
+            >
+              <i className="ri-bookmark-line text-sm" />
+              {savedCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#FF4B32] px-0.5 text-[8px] font-bold text-white">
+                  {savedCount}
+                </span>
+              )}
+            </Link>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Toggle navigation drawer"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-[#F5F1EA]"
+            >
+              <i className={open ? 'ri-close-line text-lg' : 'ri-menu-line text-lg'} />
+            </button>
+          </div>
+        </nav>
+
+        {/* ========================================================================= */}
+        {/* 3. RIGHT UTILITY BUTTONS (Profile Capsule + Submit CTA like Delta right)  */}
+        {/* ========================================================================= */}
+        <div className="hidden md:flex items-center gap-2.5">
           {isAuthenticated && user ? (
             <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
                 onClick={() => setUserDropdown((v) => !v)}
-                className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-white/5 focus:outline-none"
+                className="flex h-11 items-center gap-2 rounded-full bg-[#12151A]/95 border border-[rgba(245,241,234,0.12)] px-3 py-1 shadow-[0_10px_25px_rgba(0,0,0,0.6)] backdrop-blur-xl hover:border-[rgba(245,241,234,0.25)] transition-all"
                 aria-expanded={userDropdown}
                 aria-haspopup="true"
               >
@@ -193,15 +330,19 @@ export default function Navbar() {
                       : `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(user.name || user.email || 'User')}`
                   }
                   alt={user.name}
-                  className={`h-8 w-8 rounded-full border bg-[#171A20] object-cover ${
-                    isSuperAdmin ? 'border-amber-400 shadow-sm' : 'border-[rgba(245,241,234,0.22)]'
+                  className={`h-7 w-7 rounded-full border bg-[#171A20] object-cover ${
+                    isSuperAdmin ? 'border-amber-400' : 'border-[rgba(245,241,234,0.22)]'
                   }`}
                 />
-                <i className={`ri-arrow-down-s-line text-xs ${actionIconClass}`} />
+                <span className="text-xs font-semibold text-[#EDE8DF] max-w-[90px] truncate">
+                  {user.name.split(' ')[0]}
+                </span>
+                <i className={`ri-arrow-down-s-line text-xs text-[#918A80] transition-transform duration-200 ${userDropdown ? 'rotate-180' : ''}`} />
               </button>
 
+              {/* User Dropdown Menu */}
               {userDropdown && (
-                <div className="absolute right-0 top-12 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-[rgba(245,241,234,0.14)] bg-[#171A20] p-2 shadow-2xl backdrop-blur-xl z-50 animate-fade-in text-[#F5F1EA]">
+                <div className="absolute right-0 top-13 w-64 rounded-2xl border border-[rgba(245,241,234,0.14)] bg-[#171A20] p-2.5 shadow-2xl backdrop-blur-2xl z-50 animate-fade-in text-[#F5F1EA]">
                   <div className="border-b border-[rgba(245,241,234,0.1)] px-3 py-2.5">
                     <p className="font-bold text-[#F5F1EA] text-sm truncate">{user.name}</p>
                     <p className="text-xs text-[#918A80] truncate">{user.email}</p>
@@ -209,10 +350,8 @@ export default function Navbar() {
                       isSuperAdmin
                         ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
                         : user.role === 'admin'
-                          ? 'bg-primary-500/15 text-primary-400 border-primary-500/30'
-                          : user.role === 'moderator'
-                            ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-                            : 'bg-white/5 text-[#C8C2B9] border-[rgba(245,241,234,0.12)]'
+                          ? 'bg-[#FF4B32]/15 text-[#FF4B32] border-[#FF4B32]/30'
+                          : 'bg-white/5 text-[#C8C2B9] border-[rgba(245,241,234,0.12)]'
                     }`}>
                       {isSuperAdmin && <i className="ri-vip-crown-fill text-amber-400 text-[9px]" />}
                       {isSuperAdmin ? 'Super Admin (Owner)' : user.role}
@@ -226,7 +365,7 @@ export default function Navbar() {
                         onClick={() => setUserDropdown(false)}
                         className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-[#F5F1EA] hover:bg-white/5 transition-colors"
                       >
-                        <i className="ri-shield-keyhole-line text-primary-500 text-sm" /> Control Center
+                        <i className="ri-shield-keyhole-line text-[#FF4B32] text-sm" /> Control Center
                       </Link>
                     )}
                     <Link
@@ -235,10 +374,10 @@ export default function Navbar() {
                       className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA] transition-colors"
                     >
                       <span className="flex items-center gap-2.5">
-                        <i className="ri-bookmark-line text-sm text-primary-500" /> Saved Collection
+                        <i className="ri-bookmark-line text-sm text-[#FF4B32]" /> Saved Collection
                       </span>
                       {savedCount > 0 && (
-                        <span className="rounded-full bg-primary-500/20 px-1.5 py-0.2 text-[10px] font-bold text-primary-400">
+                        <span className="rounded-full bg-[#FF4B32]/20 px-1.5 py-0.2 text-[10px] font-bold text-[#FF4B32]">
                           {savedCount}
                         </span>
                       )}
@@ -248,14 +387,14 @@ export default function Navbar() {
                       onClick={() => setUserDropdown(false)}
                       className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA] transition-colors"
                     >
-                      <i className="ri-add-circle-line text-sm text-primary-500" /> Create Effect
+                      <i className="ri-add-circle-line text-sm text-[#FF4B32]" /> Create Effect
                     </Link>
                     <Link
                       to="/community"
                       onClick={() => setUserDropdown(false)}
                       className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA] transition-colors"
                     >
-                      <i className="ri-team-line text-sm text-accent-400" /> Community
+                      <i className="ri-team-line text-sm text-[#FF624B]" /> Community
                     </Link>
                   </div>
 
@@ -264,7 +403,7 @@ export default function Navbar() {
                       type="button"
                       disabled={loggingOut || isLoggingOut}
                       onClick={handleLogout}
-                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-primary-400 hover:bg-primary-500/10 text-left disabled:opacity-50 transition-colors"
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-[#FF4B32] hover:bg-[#FF4B32]/10 text-left disabled:opacity-50 transition-colors"
                     >
                       {loggingOut || isLoggingOut ? (
                         <>
@@ -285,106 +424,293 @@ export default function Navbar() {
           ) : (
             <Link
               to="/login"
-              className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 text-xs font-semibold border border-[rgba(245,241,234,0.22)] text-[#EDE8DF] hover:bg-white/5 hover:border-primary-500/70 hover:text-[#F5F1EA] transition-all"
+              className="flex h-11 items-center gap-1.5 rounded-full bg-[#12151A]/95 border border-[rgba(245,241,234,0.14)] px-4 text-xs font-semibold text-[#EDE8DF] shadow-[0_10px_25px_rgba(0,0,0,0.6)] backdrop-blur-xl hover:border-[rgba(245,241,234,0.25)] hover:text-[#F5F1EA] transition-all"
             >
-              <i className="ri-user-line text-sm" /> Sign in
+              <i className="ri-user-line text-sm text-[#FF4B32]" />
+              <span>Sign in</span>
             </Link>
           )}
 
+          {/* Submit Effect Button */}
           <Link
             to="/submit"
-            className="btn btn-primary h-9 px-4 text-xs font-semibold bg-primary-500 text-[#FAF6EE] hover:bg-primary-400 shadow-sm whitespace-nowrap hidden sm:inline-flex"
+            className="flex h-11 items-center gap-1.5 rounded-full bg-[#FF4B32] px-4.5 text-xs font-bold uppercase tracking-wider text-[#FAF6EE] shadow-[0_8px_20px_rgba(255,75,50,0.4)] hover:bg-[#FF624B] hover:shadow-[0_10px_25px_rgba(255,75,50,0.6)] hover:scale-[1.02] transition-all"
           >
-            <i className="ri-add-line text-sm" /> Submit
+            <i className="ri-add-line text-sm" />
+            <span>Submit</span>
           </Link>
         </div>
 
-        {/* Mobile Action Buttons */}
-        <div className="flex items-center gap-1 md:hidden">
-          <button
-            type="button"
-            onClick={() => setSearchOpen((v) => !v)}
-            aria-label="Toggle search"
-            className={`grid h-9 w-9 place-items-center rounded-lg ${actionIconClass}`}
+        {/* ========================================================================= */}
+        {/* 4. MEGA-MENU DROPDOWN CARD (Delta Cafes Style with 3 Cards & Socials)      */}
+        {/* ========================================================================= */}
+        {activeMegaMenu && (
+          <div
+            className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-full max-w-5xl rounded-3xl bg-[#14171D]/98 border border-[rgba(245,241,234,0.14)] p-6 sm:p-8 shadow-[0_30px_90px_rgba(0,0,0,0.85)] backdrop-blur-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+            onMouseEnter={() => handleMouseEnterMenu(activeMegaMenu)}
+            onMouseLeave={handleMouseLeaveMenu}
           >
-            <i className="ri-search-line text-lg" />
-          </button>
+            {activeMegaMenu === 'effects' ? (
+              /* EFFECTS MEGA PANEL */
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                {/* Left Editorial Column */}
+                <div className="lg:col-span-4 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[rgba(245,241,234,0.08)] pb-6 lg:pb-0 lg:pr-6">
+                  <div>
+                    <span className="text-[10px] font-bold tracking-widest text-[#FF4B32] uppercase">
+                      COLLECTION SHOWCASE
+                    </span>
+                    <h2 className="font-display text-3xl sm:text-4xl font-black uppercase text-[#F5F1EA] tracking-tight leading-[0.95] mt-2">
+                      FEATURED<br />EFFECTS
+                    </h2>
+                    <p className="mt-3 text-xs sm:text-sm text-[#C8C2B9] leading-relaxed">
+                      GPU-accelerated fluid simulations, magnetic cursors, and physics-driven micro-interactions ready to copy into your codebase.
+                    </p>
+                  </div>
+                  <div className="mt-6">
+                    <Link
+                      to="/effects"
+                      onClick={() => setActiveMegaMenu(null)}
+                      className="group inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF4B32] hover:text-[#FF624B] transition-colors"
+                    >
+                      <span>Explore All 20+ Effects</span>
+                      <i className="ri-arrow-right-line transition-transform duration-200 group-hover:translate-x-1" />
+                    </Link>
+                  </div>
+                </div>
 
-          <Link
-            to="/saved"
-            aria-label="Saved effects"
-            className={`relative grid h-9 w-9 place-items-center rounded-lg ${actionIconClass}`}
-          >
-            <i className="ri-bookmark-line text-lg" />
-            {savedCount > 0 && (
-              <span className="absolute 1 top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary-500 px-1 text-[9px] font-bold text-white">
-                {savedCount}
+                {/* Right 3 Visual Cards */}
+                <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Card 1: Fluid Splash Cursor */}
+                  <Link
+                    to="/effects?q=splash"
+                    onClick={() => setActiveMegaMenu(null)}
+                    className="group flex flex-col rounded-2xl bg-[#0D0F12]/80 border border-[rgba(245,241,234,0.1)] p-3 transition-all duration-300 hover:border-[#FF4B32]/40 hover:bg-[#171A20]"
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-gradient-to-br from-cyan-950/60 via-purple-950/50 to-orange-950/40 border border-white/5">
+                      <img
+                        src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"
+                        alt="Fluid Splash Cursor"
+                        className="h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <span className="absolute top-2 left-2 rounded-full bg-black/60 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider border border-white/10">
+                        WebGL • Fluid
+                      </span>
+                    </div>
+                    <div className="mt-3">
+                      <h3 className="font-display font-bold text-sm text-[#F5F1EA] group-hover:text-[#FF4B32] transition-colors">
+                        Fluid Splash Cursor
+                      </h3>
+                      <p className="text-[11px] text-[#918A80] mt-0.5 line-clamp-1">
+                        Navier-Stokes fluid solver
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Card 2: 3D Tilt Card */}
+                  <Link
+                    to="/effects?q=tilt"
+                    onClick={() => setActiveMegaMenu(null)}
+                    className="group flex flex-col rounded-2xl bg-[#0D0F12]/80 border border-[rgba(245,241,234,0.1)] p-3 transition-all duration-300 hover:border-[#FF4B32]/40 hover:bg-[#171A20]"
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-gradient-to-br from-neutral-900 via-stone-900 to-amber-950/30 border border-white/5">
+                      <img
+                        src="https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=600&q=80"
+                        alt="3D Tilt Card"
+                        className="h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <span className="absolute top-2 left-2 rounded-full bg-black/60 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider border border-white/10">
+                        3D • Depth
+                      </span>
+                    </div>
+                    <div className="mt-3">
+                      <h3 className="font-display font-bold text-sm text-[#F5F1EA] group-hover:text-[#FF4B32] transition-colors">
+                        3D Tilt Card
+                      </h3>
+                      <p className="text-[11px] text-[#918A80] mt-0.5 line-clamp-1">
+                        Spatial rotation & glare
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Card 3: Cursor Spotlight */}
+                  <Link
+                    to="/effects?q=spotlight"
+                    onClick={() => setActiveMegaMenu(null)}
+                    className="group flex flex-col rounded-2xl bg-[#0D0F12]/80 border border-[rgba(245,241,234,0.1)] p-3 transition-all duration-300 hover:border-[#FF4B32]/40 hover:bg-[#171A20]"
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-gradient-to-br from-neutral-950 via-zinc-900 to-neutral-800 border border-white/5">
+                      <img
+                        src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80"
+                        alt="Cursor Spotlight"
+                        className="h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <span className="absolute top-2 left-2 rounded-full bg-black/60 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider border border-white/10">
+                        Mouse • Glow
+                      </span>
+                    </div>
+                    <div className="mt-3">
+                      <h3 className="font-display font-bold text-sm text-[#F5F1EA] group-hover:text-[#FF4B32] transition-colors">
+                        Cursor Spotlight Glow
+                      </h3>
+                      <p className="text-[11px] text-[#918A80] mt-0.5 line-clamp-1">
+                        Radial reveal illumination
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              /* CATEGORIES MEGA PANEL */
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                {/* Left Editorial Column */}
+                <div className="lg:col-span-4 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[rgba(245,241,234,0.08)] pb-6 lg:pb-0 lg:pr-6">
+                  <div>
+                    <span className="text-[10px] font-bold tracking-widest text-[#FF4B32] uppercase">
+                      SYSTEM TAXONOMY
+                    </span>
+                    <h2 className="font-display text-3xl sm:text-4xl font-black uppercase text-[#F5F1EA] tracking-tight leading-[0.95] mt-2">
+                      BROWSE<br />CATEGORIES
+                    </h2>
+                    <p className="mt-3 text-xs sm:text-sm text-[#C8C2B9] leading-relaxed">
+                      Filter components by interaction mechanics — hover states, kinetic typography, 3D space, and organic loaders.
+                    </p>
+                  </div>
+                  <div className="mt-6">
+                    <Link
+                      to="/effects"
+                      onClick={() => setActiveMegaMenu(null)}
+                      className="group inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF4B32] hover:text-[#FF624B] transition-colors"
+                    >
+                      <span>View Categories Index</span>
+                      <i className="ri-arrow-right-line transition-transform duration-200 group-hover:translate-x-1" />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Right 3 Visual Category Cards */}
+                <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Category 1: Hover & Pointer */}
+                  <Link
+                    to="/effects?category=cursor"
+                    onClick={() => setActiveMegaMenu(null)}
+                    className="group flex flex-col rounded-2xl bg-[#0D0F12]/80 border border-[rgba(245,241,234,0.1)] p-4 transition-all duration-300 hover:border-[#FF4B32]/40 hover:bg-[#171A20]"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF4B32]/10 text-[#FF4B32] border border-[#FF4B32]/20 mb-3 group-hover:scale-110 transition-transform">
+                      <i className="ri-cursor-line text-lg" />
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#918A80]">
+                      Micro-Interactions
+                    </span>
+                    <h3 className="font-display font-bold text-sm text-[#F5F1EA] group-hover:text-[#FF4B32] transition-colors mt-0.5">
+                      Cursor & Hover Dynamics
+                    </h3>
+                    <p className="text-[11px] text-[#C8C2B9] mt-2 leading-relaxed">
+                      Magnetic pulls, spot trails, elastic pointers, and boundary reveals.
+                    </p>
+                  </Link>
+
+                  {/* Category 2: 3D & Depth */}
+                  <Link
+                    to="/effects?category=3d"
+                    onClick={() => setActiveMegaMenu(null)}
+                    className="group flex flex-col rounded-2xl bg-[#0D0F12]/80 border border-[rgba(245,241,234,0.1)] p-4 transition-all duration-300 hover:border-[#FF4B32]/40 hover:bg-[#171A20]"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 mb-3 group-hover:scale-110 transition-transform">
+                      <i className="ri-box-3-line text-lg" />
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#918A80]">
+                      WebGL & CSS Spatial
+                    </span>
+                    <h3 className="font-display font-bold text-sm text-[#F5F1EA] group-hover:text-[#FF4B32] transition-colors mt-0.5">
+                      3D Perspective & Depth
+                    </h3>
+                    <p className="text-[11px] text-[#C8C2B9] mt-2 leading-relaxed">
+                      Perspective tilts, parallax grids, isometric cards, and spatial physics.
+                    </p>
+                  </Link>
+
+                  {/* Category 3: Typography & Motion */}
+                  <Link
+                    to="/effects?category=text"
+                    onClick={() => setActiveMegaMenu(null)}
+                    className="group flex flex-col rounded-2xl bg-[#0D0F12]/80 border border-[rgba(245,241,234,0.1)] p-4 transition-all duration-300 hover:border-[#FF4B32]/40 hover:bg-[#171A20]"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-3 group-hover:scale-110 transition-transform">
+                      <i className="ri-font-size text-lg" />
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#918A80]">
+                      Shaders & Kinetic
+                    </span>
+                    <h3 className="font-display font-bold text-sm text-[#F5F1EA] group-hover:text-[#FF4B32] transition-colors mt-0.5">
+                      Text & Kinetic Shaders
+                    </h3>
+                    <p className="text-[11px] text-[#C8C2B9] mt-2 leading-relaxed">
+                      Scramble decoders, wavy headlines, aurora loaders, and kinetic loops.
+                    </p>
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Bottom Footer Strip with Socials (Delta Cafes Style) */}
+            <div className="mt-8 pt-5 border-t border-[rgba(245,241,234,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Social Round Buttons */}
+              <div className="flex items-center gap-2.5">
+                <a
+                  href="https://github.com/grchetan/codespark"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(245,241,234,0.12)] bg-white/5 text-[#C8C2B9] hover:text-[#FF4B32] hover:border-[#FF4B32]/40 transition-colors"
+                  aria-label="GitHub Repository"
+                >
+                  <i className="ri-github-fill text-sm" />
+                </a>
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(245,241,234,0.12)] bg-white/5 text-[#C8C2B9] hover:text-[#FF4B32] hover:border-[#FF4B32]/40 transition-colors"
+                  aria-label="X (Twitter)"
+                >
+                  <i className="ri-twitter-x-fill text-sm" />
+                </a>
+                <a
+                  href="https://discord.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(245,241,234,0.12)] bg-white/5 text-[#C8C2B9] hover:text-[#FF4B32] hover:border-[#FF4B32]/40 transition-colors"
+                  aria-label="Discord Community"
+                >
+                  <i className="ri-discord-fill text-sm" />
+                </a>
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(245,241,234,0.12)] bg-white/5 text-[#C8C2B9] hover:text-[#FF4B32] hover:border-[#FF4B32]/40 transition-colors"
+                  aria-label="LinkedIn"
+                >
+                  <i className="ri-linkedin-fill text-sm" />
+                </a>
+              </div>
+
+              {/* Copyright Notice */}
+              <span className="text-xs text-[#918A80] font-medium tracking-wide">
+                2026 © CodeSpark • Creative Motion Library
               </span>
-            )}
-          </Link>
-
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle navigation menu"
-            className={`grid h-9 w-9 place-items-center rounded-lg ${mobileToggleClass}`}
-          >
-            <i className={open ? 'ri-close-line text-xl' : 'ri-menu-line text-xl'} />
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Search Dropdown Bar */}
-      {searchOpen && (
-        <div className="border-b border-[rgba(245,241,234,0.12)] bg-[#0D0F12] px-4 py-3 md:hidden animate-fade-in shadow-md">
-          <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-xl border border-[rgba(245,241,234,0.14)] bg-[#171A20] px-3 py-2">
-            <i className="ri-search-line text-sm text-[#BDB6AC] shrink-0" />
-            <input
-              ref={mobileSearchRef}
-              type="text"
-              placeholder="Search components..."
-              className="w-full bg-transparent text-xs outline-none text-[#F5F1EA] placeholder:text-[#918A80]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button type="button" onClick={() => setSearchTerm('')} className="text-[#918A80] hover:text-[#F5F1EA]">
-                <i className="ri-close-line text-sm" />
-              </button>
-            )}
-          </form>
-        </div>
-      )}
-
-      {/* Desktop Secondary Sub-Nav for Links */}
-      <div className="hidden md:block border-t border-[rgba(245,241,234,0.1)] bg-[#0D0F12]/80 backdrop-blur-sm transition-colors">
-        <div className="container-x flex h-10 items-center justify-center gap-6 text-xs uppercase tracking-wider font-semibold">
-          {navLinks.map((l) => {
-            const active = l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to);
-            return (
-              <Link
-                key={l.to}
-                to={l.to}
-                className={`relative py-2.5 transition-colors ${
-                  active ? navLinkActive : navLinkInactive
-                }`}
-              >
-                {l.label}
-                {active && (
-                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary-500 rounded-full" />
-                )}
-              </Link>
-            );
-          })}
-        </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* ========================================================================= */}
+      {/* 5. MOBILE DRAWER MENU (Clean Dark Cinematic Drawer - No Search Bar)       */}
+      {/* ========================================================================= */}
       {open && (
-        <div className="w-full border-t border-[rgba(245,241,234,0.14)] bg-[#0D0F12] px-5 py-5 shadow-2xl md:hidden max-h-[85vh] overflow-y-auto text-[#F5F1EA]">
-          {/* User status card if logged in */}
+        <div className="fixed inset-x-3 top-18 z-50 rounded-3xl bg-[#0D0F12]/98 border border-[rgba(245,241,234,0.14)] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] backdrop-blur-2xl md:hidden max-h-[82vh] overflow-y-auto pointer-events-auto text-[#F5F1EA] animate-in fade-in slide-in-from-top-3 duration-200">
+          {/* User card if logged in */}
           {isAuthenticated && user && (
-            <div className="flex items-center gap-3 rounded-2xl bg-[#171A20] p-3.5 mb-4 border border-[rgba(245,241,234,0.14)]">
+            <div className="flex items-center gap-3 rounded-2xl bg-[#171A20] p-3 mb-4 border border-[rgba(245,241,234,0.12)]">
               <img
                 src={
                   user.avatar && !user.avatar.includes('unsplash')
@@ -393,59 +719,98 @@ export default function Navbar() {
                 }
                 alt={user.name}
                 className={`h-10 w-10 rounded-full object-cover border bg-[#12151A] ${
-                  isSuperAdmin ? 'border-amber-400 shadow-sm' : 'border-[rgba(245,241,234,0.22)]'
+                  isSuperAdmin ? 'border-amber-400' : 'border-[rgba(245,241,234,0.22)]'
                 }`}
               />
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm text-[#F5F1EA] truncate">{user.name}</p>
                 <p className="text-xs text-[#918A80] truncate">{user.email}</p>
               </div>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider border ${
-                isSuperAdmin
-                  ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                  : user.role === 'admin'
-                    ? 'bg-primary-500/15 text-primary-400 border-primary-500/30'
-                    : user.role === 'moderator'
-                      ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-                      : 'bg-white/5 text-[#C8C2B9] border-[rgba(245,241,234,0.12)]'
-              }`}>
+              <span className="rounded-full bg-[#FF4B32]/15 text-[#FF4B32] border border-[#FF4B32]/30 px-2 py-0.5 text-[9px] font-black uppercase">
                 {isSuperAdmin ? 'Super Admin' : user.role}
               </span>
             </div>
           )}
 
-          {/* Links list */}
+          {/* Navigation Links List */}
           <div className="flex flex-col space-y-1">
-            {navLinks.map((l) => {
-              const active = l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to);
-              return (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
-                    active ? 'bg-primary-500/15 text-primary-400 border border-primary-500/30' : 'text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA]'
-                  }`}
-                >
-                  <span>{l.label}</span>
-                  <i className={`ri-arrow-right-s-line text-lg ${active ? 'text-primary-500' : 'text-[#918A80]'}`} />
-                </Link>
-              );
-            })}
+            <Link
+              to="/effects"
+              onClick={() => setOpen(false)}
+              className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                isEffectsRoute
+                  ? 'bg-[#FF4B32]/15 text-[#FF4B32] border border-[#FF4B32]/30'
+                  : 'text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA]'
+              }`}
+            >
+              <span>Effects Library</span>
+              <i className="ri-arrow-right-s-line text-lg text-[#918A80]" />
+            </Link>
+
+            <Link
+              to="/saved"
+              onClick={() => setOpen(false)}
+              className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                isSavedRoute
+                  ? 'bg-[#FF4B32]/15 text-[#FF4B32] border border-[#FF4B32]/30'
+                  : 'text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA]'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span>Saved Effects</span>
+                {savedCount > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FF4B32] px-1 text-[9px] font-bold text-white">
+                    {savedCount}
+                  </span>
+                )}
+              </span>
+              <i className="ri-arrow-right-s-line text-lg text-[#918A80]" />
+            </Link>
+
+            <Link
+              to="/community"
+              onClick={() => setOpen(false)}
+              className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                isCommunityRoute
+                  ? 'bg-[#FF4B32]/15 text-[#FF4B32] border border-[#FF4B32]/30'
+                  : 'text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA]'
+              }`}
+            >
+              <span>Community</span>
+              <i className="ri-arrow-right-s-line text-lg text-[#918A80]" />
+            </Link>
+
+            <Link
+              to="/about"
+              onClick={() => setOpen(false)}
+              className={`flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                isAboutRoute
+                  ? 'bg-[#FF4B32]/15 text-[#FF4B32] border border-[#FF4B32]/30'
+                  : 'text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA]'
+              }`}
+            >
+              <span>About & Docs</span>
+              <i className="ri-arrow-right-s-line text-lg text-[#918A80]" />
+            </Link>
+
+            <Link
+              to="/contact"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold text-[#C8C2B9] hover:bg-white/5 hover:text-[#F5F1EA] transition-colors"
+            >
+              <span>Contact</span>
+              <i className="ri-arrow-right-s-line text-lg text-[#918A80]" />
+            </Link>
 
             {isStaff && (
               <Link
                 to="/admin"
                 onClick={() => setOpen(false)}
-                className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-bold border transition-all ${
-                  isSuperAdmin
-                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                    : 'bg-primary-500/10 text-primary-400 border-primary-500/20'
-                }`}
+                className="flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-bold bg-[#FF4B32]/10 text-[#FF4B32] border border-[#FF4B32]/25 mt-1"
               >
                 <span className="flex items-center gap-2">
-                  <i className={isSuperAdmin ? 'ri-vip-crown-fill text-amber-400' : 'ri-shield-keyhole-line'} />
-                  <span>{isSuperAdmin ? 'Master Control Center' : 'Admin Control Center'}</span>
+                  <i className="ri-shield-keyhole-line" />
+                  <span>Control Center</span>
                 </span>
                 <i className="ri-arrow-right-s-line text-lg" />
               </Link>
@@ -457,9 +822,9 @@ export default function Navbar() {
             <Link
               to="/submit"
               onClick={() => setOpen(false)}
-              className="btn btn-primary h-12 w-full text-sm font-semibold shadow-md flex items-center justify-center gap-2 bg-primary-500 text-[#FAF6EE] hover:bg-primary-400"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#FF4B32] text-sm font-bold uppercase tracking-wider text-[#FAF6EE] shadow-lg hover:bg-[#FF624B] transition-colors"
             >
-              <i className="ri-add-circle-line text-lg" /> Submit an Effect
+              <i className="ri-add-line text-lg" /> Submit an Effect
             </Link>
 
             {isAuthenticated ? (
@@ -467,7 +832,7 @@ export default function Navbar() {
                 type="button"
                 disabled={loggingOut || isLoggingOut}
                 onClick={handleLogout}
-                className="btn h-11 w-full text-sm font-semibold text-primary-400 border border-primary-500/30 bg-primary-500/5 hover:bg-primary-500/15 disabled:opacity-50 flex items-center justify-center gap-2 rounded-lg transition-colors"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#FF4B32]/30 bg-[#FF4B32]/5 text-sm font-semibold text-[#FF4B32] hover:bg-[#FF4B32]/15 disabled:opacity-50 transition-colors"
               >
                 {loggingOut || isLoggingOut ? (
                   <>
@@ -485,9 +850,9 @@ export default function Navbar() {
               <Link
                 to="/login"
                 onClick={() => setOpen(false)}
-                className="btn h-11 w-full text-sm flex items-center justify-center gap-2 border border-[rgba(245,241,234,0.22)] text-[#EDE8DF] hover:bg-white/5 rounded-lg transition-colors"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[rgba(245,241,234,0.22)] bg-white/5 text-sm font-semibold text-[#EDE8DF] hover:bg-white/10 transition-colors"
               >
-                <i className="ri-user-line text-lg" /> Sign in to CodeSpark
+                <i className="ri-user-line text-lg text-[#FF4B32]" /> Sign in to CodeSpark
               </Link>
             )}
           </div>

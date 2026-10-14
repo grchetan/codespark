@@ -1,8 +1,8 @@
 {
   "version": "v1.3.0",
-  "commit": "4c6e52a",
-  "message": "fix(effects): add dedicated CursorSpotlight component to prevent duplicate Green Vale, redesign offline alert with high-contrast dark card",
-  "buildTime": 1791973450585,
-  "releaseDate": "2026-10-14 15:54:00 +0530",
-  "timestamp": "2026-10-14T10:24:10.585Z"
+  "commit": "4f644c6",
+  "message": "chore(version): sync build version metadata",
+  "buildTime": 1791982441090,
+  "releaseDate": "2026-10-14 15:54:38 +0530",
+  "timestamp": "2026-10-14T12:54:01.090Z"
 }

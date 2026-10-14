@@ -732,7 +732,7 @@ export default function EffectsWorkspace() {
       <Navbar />
 
       {/* Main Documentation & Effects Layout */}
-      <div className="fixed inset-x-0 top-16 md:top-[104px] bottom-0 flex flex-col md:flex-row bg-background-50 overflow-hidden">
+      <div className="fixed inset-x-0 top-16 md:top-[72px] bottom-0 flex flex-col md:flex-row bg-background-50 overflow-hidden">
         {/* ========================================================================= */}
         {/* LEFT PANE: DOCUMENTATION & COMPONENTS SIDEBAR (Full Height + Isolated Scroll) */}
         {/* ========================================================================= */}
