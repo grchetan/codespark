@@ -1,8 +1,8 @@
 {
   "version": "v1.3.0",
-  "commit": "4f644c6",
-  "message": "chore(version): sync build version metadata",
-  "buildTime": 1791982441090,
-  "releaseDate": "2026-10-14 15:54:38 +0530",
-  "timestamp": "2026-10-14T12:54:01.090Z"
+  "commit": "8313f52",
+  "message": "feat(navbar): redesign navbar inspired by Delta Cafes with iconic triangle emblem, interactive mega-menu and remove search bar",
+  "buildTime": 1791983227729,
+  "releaseDate": "2026-10-14 18:24:44 +0530",
+  "timestamp": "2026-10-14T13:07:07.729Z"
 }
