@@ -69,6 +69,11 @@ router.get('/submissions', adminLimiter, requireModerator, (_req, res) => {
       steps: JSON.parse(r.steps || '[]'),
       status: r.status,
       submittedAt: r.submitted_at,
+      type: r.type || 'html',
+      react_code: r.react_code || '',
+      dependencies: r.dependencies || '',
+      demo_url: r.demo_url || '',
+      author_handle: r.author_handle || `@${(r.author_name || 'maker').toLowerCase().replace(/\s+/g, '')}`,
     }));
     res.json({ success: true, submissions });
   } catch {

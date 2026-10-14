@@ -245,6 +245,83 @@ router.post('/', submitLimiter, authenticate, (req: AuthRequest, res) => {
   }
 });
 
+// POST React Component Proposal Request (Saved for Admin Review & Direct Notification)
+router.post('/react-request', submitLimiter, (req, res) => {
+  try {
+    const {
+      name,
+      category,
+      difficulty = 'medium',
+      tags = [],
+      description = '',
+      author_name,
+      author_handle,
+      author_email,
+      demo_url = '',
+      dependencies = '',
+      react_code,
+      instructions = ''
+    } = req.body;
+
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      return res.status(400).json({ success: false, error: 'Component Name is required (minimum 2 characters).' });
+    }
+    if (!react_code || typeof react_code !== 'string' || react_code.trim().length < 10) {
+      return res.status(400).json({ success: false, error: 'React TSX component code is required.' });
+    }
+
+    const subId = `req_react_${Date.now()}`;
+    const now = new Date().toISOString().slice(0, 10);
+    const parsedTags = Array.isArray(tags) ? tags : String(tags).split(',').map((t) => t.trim()).filter(Boolean);
+
+    // 1. Insert into submissions as a React proposal
+    db.prepare(`
+      INSERT INTO submissions (
+        id, name, category, author_name, author_email, tags, difficulty,
+        description, html_code, css_code, js_code, instructions, steps, status, submitted_at,
+        type, react_code, dependencies, demo_url, author_handle
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', '', '', ?, '[]', 'pending', ?, 'react', ?, ?, ?, ?)
+    `).run(
+      subId,
+      name.trim(),
+      category || 'React',
+      author_name || 'Community Maker',
+      author_email || '',
+      JSON.stringify(parsedTags),
+      difficulty,
+      (description || '').slice(0, 1000),
+      (instructions || '').slice(0, 2000),
+      now,
+      react_code,
+      dependencies,
+      demo_url,
+      author_handle || `@${(author_name || 'maker').toLowerCase().replace(/\s+/g, '')}`
+    );
+
+    // 2. Insert into contact_messages so Admin receives an alert/message in Admin Messages console
+    const msgId = `msg_react_${Date.now()}`;
+    db.prepare(`
+      INSERT INTO contact_messages (id, name, email, topic, message, submitted_at, status)
+      VALUES (?, ?, ?, 'React Component Request', ?, ?, 'unread')
+    `).run(
+      msgId,
+      (author_name || 'Community Maker').slice(0, 100),
+      (author_email || 'noreply@community.dev').slice(0, 254),
+      `New React Component Request: "${name.trim()}" (${category || 'React'}) submitted by ${author_name || 'Community Maker'} (${author_handle || '@maker'}). Dependencies: ${dependencies || 'None'}. Full TSX code ready for manual review in Admin Submissions!`,
+      new Date().toISOString()
+    );
+
+    res.status(201).json({
+      success: true,
+      id: subId,
+      message: 'React component proposal received! An admin notification has been dispatched. The core team will inspect your TSX code, integrate it into the registry, and assign your creator credit.'
+    });
+  } catch (err: any) {
+    console.error('React proposal error:', err);
+    res.status(500).json({ success: false, error: 'Failed to record React component proposal.' });
+  }
+});
+
 // POST Like — rate limited, no authentication required (public interaction)
 router.post('/:id/like', interactionLimiter, (req, res) => {
   try {

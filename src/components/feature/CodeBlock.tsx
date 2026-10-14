@@ -4,7 +4,9 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function highlightCode(code: string, lang: 'html' | 'css' | 'js' | 'bash'): string {
+export type CodeLang = 'html' | 'css' | 'js' | 'bash' | 'tsx' | 'typescript' | 'ts' | 'jsx';
+
+function highlightCode(code: string, lang: CodeLang): string {
   if (!code) return '';
 
   if (lang === 'html') {
@@ -41,7 +43,7 @@ function highlightCode(code: string, lang: 'html' | 'css' | 'js' | 'bash'): stri
       .replace(/:\s*([^;]+);/g, ': <span class="css-val">$1</span>;');
   }
 
-  if (lang === 'js') {
+  if (lang === 'js' || lang === 'tsx' || lang === 'typescript' || lang === 'ts' || lang === 'jsx') {
     const escaped = escapeHtml(code);
     return escaped
       // Comments
@@ -50,11 +52,11 @@ function highlightCode(code: string, lang: 'html' | 'css' | 'js' | 'bash'): stri
       // Strings
       .replace(/(&quot;[\s\S]*?&quot;|'[\s\S]*?'|`[\s\S]*?`)/g, '<span class="js-string">$1</span>')
       // Keywords
-      .replace(/\b(const|let|var|function|return|if|else|for|while|switch|case|break|default|try|catch|new|this|class|extends|import|export|from|async|await|typeof|instanceof)\b/g, '<span class="js-keyword">$1</span>')
+      .replace(/\b(const|let|var|function|return|if|else|for|while|switch|case|break|default|try|catch|new|this|class|extends|import|export|from|async|await|typeof|instanceof|type|interface|as|public|private|protected)\b/g, '<span class="js-keyword">$1</span>')
       // Numbers
       .replace(/\b(\d+(\.\d+)?)\b/g, '<span class="js-number">$1</span>')
       // Builtins & globals
-      .replace(/\b(document|window|console|Math|Date|Array|Object|String|Number|Boolean|Promise|setTimeout|setInterval|addEventListener|querySelector|getElementById|createElement|appendChild|removeChild|classList|style|innerHTML|textContent)\b/g, '<span class="js-builtin">$1</span>');
+      .replace(/\b(document|window|console|Math|Date|Array|Object|String|Number|Boolean|Promise|setTimeout|setInterval|addEventListener|querySelector|getElementById|createElement|appendChild|removeChild|classList|style|innerHTML|textContent|React|useState|useEffect|useRef|useMemo|useCallback)\b/g, '<span class="js-builtin">$1</span>');
   }
 
   if (lang === 'bash') {
@@ -73,6 +75,10 @@ const fileNames: Record<string, string> = {
   css: 'styles.css',
   js: 'script.js',
   bash: 'terminal',
+  tsx: 'Component.tsx',
+  typescript: 'registry.ts',
+  ts: 'types.ts',
+  jsx: 'Component.jsx',
 };
 
 const langColors: Record<string, string> = {
@@ -80,9 +86,13 @@ const langColors: Record<string, string> = {
   css: '#4285f4',
   js: '#f7df1e',
   bash: '#10b981',
+  tsx: '#00d8ff',
+  typescript: '#3178c6',
+  ts: '#3178c6',
+  jsx: '#00d8ff',
 };
 
-export default function CodeBlock({ code, lang }: { code: string; lang: 'html' | 'css' | 'js' | 'bash' }) {
+export default function CodeBlock({ code, lang }: { code: string; lang: CodeLang }) {
   const [copied, setCopied] = useState(false);
 
   const lines = useMemo(() => (code || '').split('\n'), [code]);

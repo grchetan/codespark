@@ -15,12 +15,17 @@ export interface Submission {
   name: string;
   category: string;
   author: string;
+  author_handle?: string;
   email?: string;
   submittedAt: string;
   status: 'pending' | 'approved' | 'rejected';
   difficulty: string;
   tags: string[];
   description?: string;
+  type?: 'html' | 'react';
+  react_code?: string;
+  dependencies?: string;
+  demo_url?: string;
   html_code?: string;
   css_code?: string;
   js_code?: string;

@@ -187,7 +187,7 @@ export default function EffectCard({
               ⚡
             </span>
             <span className="truncate text-xs font-semibold text-foreground-900">
-              {effect.author?.name || 'CodeSpark Official'}
+              {effect.author?.name || 'CodeSpark Core'}
             </span>
             <span className="inline-flex items-center justify-center text-primary-500 shrink-0" title="Verified Official Component">
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">

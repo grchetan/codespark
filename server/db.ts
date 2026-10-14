@@ -148,6 +148,11 @@ export function initDb() {
   try { db.exec(`ALTER TABLE effects ADD COLUMN steps TEXT;`); } catch {}
   try { db.exec(`ALTER TABLE submissions ADD COLUMN instructions TEXT;`); } catch {}
   try { db.exec(`ALTER TABLE submissions ADD COLUMN steps TEXT;`); } catch {}
+  try { db.exec(`ALTER TABLE submissions ADD COLUMN type TEXT DEFAULT 'html';`); } catch {}
+  try { db.exec(`ALTER TABLE submissions ADD COLUMN react_code TEXT;`); } catch {}
+  try { db.exec(`ALTER TABLE submissions ADD COLUMN dependencies TEXT;`); } catch {}
+  try { db.exec(`ALTER TABLE submissions ADD COLUMN demo_url TEXT;`); } catch {}
+  try { db.exec(`ALTER TABLE submissions ADD COLUMN author_handle TEXT;`); } catch {}
 
   seedData();
 }

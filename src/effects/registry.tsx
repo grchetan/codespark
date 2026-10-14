@@ -15,6 +15,19 @@ export interface ManualReactEffect {
   tags: string[];
   difficulty: 'easy' | 'medium' | 'advanced';
   isOfficial?: boolean;
+  author?: {
+    id?: string;
+    name: string;
+    handle: string;
+    avatar?: string;
+    role?: string;
+    followers?: number;
+    effects?: number;
+    bio?: string;
+    tags?: string[];
+    verified?: boolean;
+    github?: string;
+  };
 }
 
 // 1. Magnetic Button Component
@@ -287,6 +300,13 @@ export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
     tags: ['magnetic', 'button', 'react', 'cursor'],
     difficulty: 'medium',
     isOfficial: true,
+    author: {
+      name: 'CodeSpark Core',
+      handle: '@codespark',
+      role: 'Core UI Engineer',
+      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
+      verified: true,
+    },
   },
   {
     id: 'react-tilt-card',
@@ -298,6 +318,13 @@ export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
     tags: ['3d', 'perspective', 'react', 'tilt'],
     difficulty: 'medium',
     isOfficial: true,
+    author: {
+      name: 'CodeSpark Core',
+      handle: '@codespark',
+      role: '3D Interaction Team',
+      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSpark3D',
+      verified: true,
+    },
   },
   {
     id: 'react-text-scramble',
@@ -309,6 +336,13 @@ export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
     tags: ['text', 'scramble', 'react', 'animation'],
     difficulty: 'advanced',
     isOfficial: true,
+    author: {
+      name: 'CodeSpark Core',
+      handle: '@codespark',
+      role: 'Motion Design Team',
+      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=TextDecoder',
+      verified: true,
+    },
   },
   {
     id: 'react-aurora-loader',
@@ -320,6 +354,13 @@ export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
     tags: ['loader', 'aurora', 'react', 'ambient'],
     difficulty: 'easy',
     isOfficial: true,
+    author: {
+      name: 'CodeSpark Core',
+      handle: '@codespark',
+      role: 'Ambient UI Team',
+      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=AuroraLoader',
+      verified: true,
+    },
   },
   {
     id: 'react-splash-cursor',
@@ -331,6 +372,14 @@ export const MANUAL_REACT_EFFECTS: ManualReactEffect[] = [
     tags: ['cursor', 'fluid', 'webgl', 'physics', 'react', 'splash', 'animation'],
     difficulty: 'advanced',
     isOfficial: true,
+    author: {
+      name: 'Chetan Prajapat',
+      handle: '@chetan',
+      role: 'Creator & Lead Architect',
+      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ChetanPrajapat',
+      verified: true,
+      bio: 'Creator of CodeSpark & WebGL interactive components.',
+    },
   },
 ];
 

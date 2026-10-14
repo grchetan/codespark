@@ -117,8 +117,8 @@ export default function Navbar() {
     <header
       className={`fixed inset-x-0 top-0 z-50 w-full max-w-full transition-all duration-300 ${
         !isHome || scrolled || open
-          ? 'border-b border-background-300/70 bg-background-50/98 backdrop-blur-xl shadow-xs'
-          : 'border-b border-[rgba(245,241,234,0.12)] bg-[#0D0F12]/85 backdrop-blur-md'
+          ? 'border-b border-background-300 bg-background-50 dark:bg-[#0D0F12] dark:border-[rgba(245,241,234,0.14)] shadow-xs'
+          : 'border-b border-[rgba(245,241,234,0.12)] bg-[#0D0F12]/95 backdrop-blur-md'
       }`}
     >
       {/* Top Main Navbar Row */}

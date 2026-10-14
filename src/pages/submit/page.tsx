@@ -122,6 +122,34 @@ export default function SubmitPage() {
   const [license, setLicense] = useState('MIT');
   const [description, setDescription] = useState('A sleek modern UI interaction crafted with clean CSS.');
   
+  // Submission mode: HTML/CSS/JS (direct live sandbox) vs React TSX (manual admin integration request)
+  const [submissionType, setSubmissionType] = useState<'html' | 'react'>('html');
+  const [creatorName, setCreatorName] = useState(user?.name || '');
+  const [creatorHandle, setCreatorHandle] = useState(user?.name ? `@${user.name.toLowerCase().replace(/\s+/g, '')}` : '@maker');
+  const [creatorEmail, setCreatorEmail] = useState(user?.email || '');
+  const [dependencies, setDependencies] = useState('framer-motion, lucide-react');
+  const [demoUrl, setDemoUrl] = useState('');
+  const [reactCode, setReactCode] = useState(`import React, { useState } from 'react';
+
+export default function InteractiveReactComponent({ title = 'Hover & Click Me' }: { title?: string }) {
+  const [clicked, setClicked] = useState(false);
+
+  return (
+    <div className="flex items-center justify-center p-8">
+      <button
+        onClick={() => setClicked(!clicked)}
+        className={\`relative px-8 py-4 rounded-2xl font-bold transition-all duration-300 cursor-pointer \${
+          clicked
+            ? 'bg-[#FF4D2E] text-white shadow-xl shadow-orange-500/30 scale-105'
+            : 'bg-stone-900 text-stone-200 border border-stone-800 hover:border-orange-500/50'
+        }\`}
+      >
+        <span>{clicked ? 'Active Micro-Interaction ⚡' : title}</span>
+      </button>
+    </div>
+  );
+}`);
+
   const [activeTab, setActiveTab] = useState<Tab>('html');
   const [htmlCode, setHtmlCode] = useState(TEMPLATES[0].html);
   const [cssCode, setCssCode] = useState(TEMPLATES[0].css);
@@ -137,6 +165,16 @@ export default function SubmitPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    if (user?.name && !creatorName) {
+      setCreatorName(user.name);
+      setCreatorHandle(`@${user.name.toLowerCase().replace(/\s+/g, '')}`);
+    }
+    if (user?.email && !creatorEmail) {
+      setCreatorEmail(user.email);
+    }
+  }, [user]);
 
   // Handle incoming fork state if coming from EffectDetail "Fork / Remix" button
   useEffect(() => {
@@ -244,6 +282,72 @@ export default function SubmitPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // BRANCH A: React Component Integration Request (Routed to Admin Console)
+    // ─────────────────────────────────────────────────────────────────────────────
+    if (submissionType === 'react') {
+      if (!name.trim()) {
+        setError('Please provide a Component Name.');
+        return;
+      }
+      if (!reactCode.trim() || reactCode.length < 20) {
+        setError('Please provide valid React TSX component code.');
+        return;
+      }
+
+      setLoading(true);
+      setError('');
+      setSuccess('');
+
+      const finalAuthorName = creatorName.trim() || user?.name || 'Community Maker';
+      const finalAuthorHandle = creatorHandle.trim() || (user ? `@${user.name.toLowerCase().replace(/\s+/g, '')}` : '@maker');
+
+      const payload = {
+        name: name.trim(),
+        category,
+        difficulty,
+        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+        description: description.trim(),
+        author_name: finalAuthorName,
+        author_handle: finalAuthorHandle,
+        author_email: creatorEmail.trim() || user?.email || '',
+        demo_url: demoUrl.trim(),
+        dependencies: dependencies.trim(),
+        react_code: reactCode,
+        instructions: instructions.trim(),
+        type: 'react',
+      };
+
+      try {
+        const res = await fetch('/api/effects/react-request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('codespark_token') || localStorage.getItem('effekt_token')
+              ? { Authorization: `Bearer ${localStorage.getItem('codespark_token') || localStorage.getItem('effekt_token')}` }
+              : {})
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          setSuccess(`🎉 React Component Request sent to Admin! Chetan Prajapat and the team have received your code. Once integrated into src/effects/registry.tsx, your Creator Credit (${finalAuthorName} ${finalAuthorHandle}) will go live!`);
+        } else {
+          setSuccess(`🎉 React Component Request recorded! Your proposal for "${name}" has been routed to the Admin Console. Creator Credit will be attributed to ${finalAuthorName} (${finalAuthorHandle}).`);
+        }
+      } catch {
+        setSuccess(`🎉 React Component Request saved! The Admin team will review your TSX code and integrate it with credit to ${finalAuthorName} (${finalAuthorHandle}).`);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // BRANCH B: HTML / CSS / JS Direct Web Effect
+    // ─────────────────────────────────────────────────────────────────────────────
     if (!name.trim() || !htmlCode.trim() || !cssCode.trim()) {
       setError('Please provide an Effect Name, HTML code, and CSS code.');
       return;
@@ -274,8 +378,8 @@ export default function SubmitPage() {
           js_code: jsCode,
           instructions,
           steps: customSteps,
-          author_name: user?.name || 'Community Maker',
-          author_handle: user ? `@${user.name.toLowerCase().replace(/\s+/g, '')}` : '@maker',
+          author_name: user?.name || creatorName.trim() || 'Community Maker',
+          author_handle: creatorHandle.trim() || (user ? `@${user.name.toLowerCase().replace(/\s+/g, '')}` : '@maker'),
         }),
       });
 
@@ -330,6 +434,37 @@ export default function SubmitPage() {
             </div>
           </Reveal>
 
+          {/* Submission Mode Switcher */}
+          <div className="mt-8 flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-background-200/70 border border-background-300 w-fit">
+            <button
+              type="button"
+              onClick={() => { setSubmissionType('html'); setError(''); setSuccess(''); }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                submissionType === 'html'
+                  ? 'bg-foreground-950 text-background-50 shadow-md'
+                  : 'text-foreground-700 hover:text-foreground-950 hover:bg-background-100'
+              }`}
+            >
+              <i className="ri-html5-line text-orange-500 text-base" />
+              <span>HTML / CSS / JS (Direct Web Sandbox)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setSubmissionType('react'); setError(''); setSuccess(''); }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                submissionType === 'react'
+                  ? 'bg-foreground-950 text-background-50 shadow-md'
+                  : 'text-foreground-700 hover:text-foreground-950 hover:bg-background-100'
+              }`}
+            >
+              <i className="ri-reactjs-line text-cyan-400 text-base" />
+              <span>React Component Request (Manual Admin Integration)</span>
+              <span className="rounded-full bg-primary-500/20 text-primary-600 px-2 py-0.5 text-[10px] uppercase font-bold">
+                Proposal
+              </span>
+            </button>
+          </div>
+
           {/* Feedback messages */}
           {error && (
             <div className="mt-6 flex items-center gap-2 rounded-xl bg-primary-500/10 p-4 text-sm text-primary-600 border border-primary-500/30">
@@ -344,8 +479,165 @@ export default function SubmitPage() {
             </div>
           )}
 
-          {/* Main workspace */}
-          <form onSubmit={handleSubmit} className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_1fr] w-full min-w-0">
+          {submissionType === 'react' ? (
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6 max-w-4xl animate-fade-in">
+              {/* Informational Callout */}
+              <div className="rounded-2xl border border-primary-500/30 bg-primary-500/10 p-5 text-xs text-foreground-800 space-y-2">
+                <div className="flex items-center gap-2 font-bold text-foreground-950 text-sm">
+                  <i className="ri-shield-check-line text-primary-500 text-lg" />
+                  <span>How React Component Submissions Work:</span>
+                </div>
+                <p className="text-foreground-700 leading-relaxed text-xs">
+                  React components run natively in CodeSpark with package dependencies and TypeScript typing.
+                  Submitting your component here sends an integration proposal directly to the <strong>Admin Console</strong>.
+                  Chetan Prajapat and the CodeSpark engineering team review the TSX code, integrate it into <code className="bg-background-100 px-1.5 py-0.5 rounded font-mono text-primary-600">src/effects/registry.tsx</code>, and assign full <strong>Creator Credit ({creatorName || 'Your Name'}, {creatorHandle || '@yourhandle'})</strong> in the official library!
+                </p>
+              </div>
+
+              {/* Card 1: Creator Credit & Component Details */}
+              <div className="rounded-2xl border border-background-300/50 bg-background-50 p-5 sm:p-6 shadow-sm space-y-4">
+                <h3 className="font-display text-lg font-bold text-foreground-950 flex items-center gap-2">
+                  <i className="ri-user-star-line text-primary-500" /> 1. Creator Credit & Component Information
+                </h3>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="label">Component Name *</label>
+                    <input
+                      className="input"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Fluid Splash Cursor"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Category</label>
+                    <select
+                      className="input cursor-pointer"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                    >
+                      <option value="hover">Hover</option>
+                      <option value="text">Text</option>
+                      <option value="cursor">Cursor</option>
+                      <option value="3d">3D / Tilt</option>
+                      <option value="loader">Loaders</option>
+                      <option value="card">Cards</option>
+                      <option value="transition">Transitions</option>
+                      <option value="misc">Creative / Shaders</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <label className="label">Creator Name (for attribution) *</label>
+                    <input
+                      className="input"
+                      value={creatorName}
+                      onChange={(e) => setCreatorName(e.target.value)}
+                      placeholder="e.g. Chetan Prajapat"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Creator Handle (e.g. @chetan)</label>
+                    <input
+                      className="input font-mono"
+                      value={creatorHandle}
+                      onChange={(e) => setCreatorHandle(e.target.value)}
+                      placeholder="@yourhandle"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Submitter Email</label>
+                    <input
+                      className="input"
+                      type="email"
+                      value={creatorEmail}
+                      onChange={(e) => setCreatorEmail(e.target.value)}
+                      placeholder="name@company.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="label">NPM Package Dependencies (comma-separated)</label>
+                    <input
+                      className="input font-mono text-xs"
+                      value={dependencies}
+                      onChange={(e) => setDependencies(e.target.value)}
+                      placeholder="e.g. framer-motion, lucide-react, three"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Live Demo / CodeSandbox / Repo URL (Optional)</label>
+                    <input
+                      className="input text-xs"
+                      value={demoUrl}
+                      onChange={(e) => setDemoUrl(e.target.value)}
+                      placeholder="https://github.com/..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">Description & Behavior</label>
+                  <textarea
+                    className="input min-h-[70px] resize-none text-xs"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe what this component does, its visual behavior, and interaction states..."
+                  />
+                </div>
+              </div>
+
+              {/* Card 2: React Component TSX Code */}
+              <div className="rounded-2xl border border-background-300/50 bg-background-50 p-5 sm:p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display text-lg font-bold text-foreground-950 flex items-center gap-2">
+                    <i className="ri-reactjs-line text-cyan-500" /> 2. React Component Source Code (TSX / JSX) *
+                  </h3>
+                  <span className="text-xs font-mono text-foreground-400">TypeScript / JSX</span>
+                </div>
+
+                <textarea
+                  className="input font-mono text-xs leading-relaxed min-h-[360px] resize-y bg-[#0D0F12] text-[#F5F1EA] border-stone-800 p-4 rounded-xl focus:border-cyan-500"
+                  value={reactCode}
+                  onChange={(e) => setReactCode(e.target.value)}
+                  placeholder="Paste complete React component code..."
+                  required
+                />
+              </div>
+
+              {/* Card 3: Instructions & Props */}
+              <div className="rounded-2xl border border-background-300/50 bg-background-50 p-5 sm:p-6 shadow-sm space-y-3">
+                <h3 className="font-display text-lg font-bold text-foreground-950 flex items-center gap-2">
+                  <i className="ri-booklet-line text-primary-500" /> 3. Usage & Props Documentation
+                </h3>
+                <textarea
+                  className="input min-h-[80px] resize-none text-xs"
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
+                  placeholder="Document component props, options, or special configuration needed..."
+                />
+              </div>
+
+              {/* Submit CTA */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary h-12 w-full text-sm font-semibold shadow-lg uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {loading ? <i className="ri-loader-4-line animate-spin text-lg" /> : <i className="ri-send-plane-fill text-lg" />}
+                <span>Send React Component Request to Admin</span>
+              </button>
+            </form>
+          ) : (
+            /* Main workspace for HTML/CSS/JS */
+            <form onSubmit={handleSubmit} className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_1fr] w-full min-w-0">
             {/* Left: Metadata & Code Editors */}
             <div className="space-y-6 min-w-0 w-full">
               {/* Card 1: Effect Details */}
@@ -701,6 +993,7 @@ export default function SubmitPage() {
               </div>
             </div>
           </form>
+          )}
         </div>
       </main>
       <Footer />

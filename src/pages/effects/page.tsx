@@ -40,21 +40,34 @@ const mergeWithManualReact = (dbList: Effect[]): Effect[] => {
         likes: 0,
         saves: 0,
         views: 0,
-        author: {
-          id: 'u_codespark',
-          name: 'CodeSpark Official',
-          handle: '@codespark',
-          avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkOfficial',
-          role: 'Core System',
-          followers: 1200,
-          effects: 10,
-          bio: 'Official React component',
-          tags: ['official', 'react'],
-          verified: true,
-        },
+        author: mr.author
+          ? {
+              id: mr.author.id || `u_${mr.slug}`,
+              name: mr.author.name,
+              handle: mr.author.handle,
+              avatar: mr.author.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(mr.author.name)}`,
+              role: mr.author.role || 'Creator',
+              followers: mr.author.followers || 500,
+              effects: mr.author.effects || 1,
+              bio: mr.author.bio || '',
+              tags: mr.author.tags || ['verified', 'react'],
+              verified: mr.author.verified ?? true,
+            }
+          : {
+              id: 'u_codespark',
+              name: 'CodeSpark Core',
+              handle: '@codespark',
+              avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
+              role: 'Core System',
+              followers: 1200,
+              effects: 10,
+              bio: 'Official React component',
+              tags: ['official', 'react'],
+              verified: true,
+            },
         createdAt: '2026-09-01',
         interactions: ['hover', 'click'],
-        isOfficial: true,
+        isOfficial: mr.isOfficial ?? true,
       });
     }
   }
@@ -91,6 +104,7 @@ export default function EffectsWorkspace() {
   const [steps, setSteps] = useState<EffectStep[]>([]);
   const [activeCodeTab, setActiveCodeTab] = useState<string>('html');
   const [loading, setLoading] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'connected' | 'offline_paused' | 'loading'>('loading');
 
   // Customizer interactive states
   const [customText, setCustomText] = useState('');
@@ -119,6 +133,7 @@ export default function EffectsWorkspace() {
           .order('created_at', { ascending: false });
 
         if (!error && data && data.length > 0) {
+          setDbStatus('connected');
           const mapped: Effect[] = data.map((e: any) => ({
             id: e.id,
             slug: e.slug || e.id,
@@ -134,10 +149,10 @@ export default function EffectsWorkspace() {
             saves: e.saves || 0,
             views: e.views || 0,
             author: {
-              id: e.author_id || 'u_codespark',
-              name: e.author_name || 'CodeSpark Official',
-              handle: e.author_handle || '@codespark',
-              avatar: e.author_avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${e.name}`,
+              id: e.author_id || 'u_community',
+              name: e.author_name || 'Community Creator',
+              handle: e.author_handle || '@maker',
+              avatar: e.author_avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(e.author_name || e.name)}`,
               role: 'Creator',
               followers: 0,
               effects: 1,
@@ -152,13 +167,17 @@ export default function EffectsWorkspace() {
             steps: e.steps ? (typeof e.steps === 'string' ? JSON.parse(e.steps) : e.steps) : [],
             createdAt: (e.created_at || '2026-09-01').slice(0, 10),
             interactions: ['hover', 'click'],
-            isOfficial: e.is_official ?? true,
+            isOfficial: e.is_official ?? false,
           }));
           const merged = mergeWithManualReact(mapped);
           setAllEffects(merged);
           return;
+        } else if (error) {
+          setDbStatus('offline_paused');
         }
-      } catch {}
+      } catch {
+        setDbStatus('offline_paused');
+      }
 
       // Fallback to local API or defaults
       fetch('/api/effects')
@@ -166,12 +185,15 @@ export default function EffectsWorkspace() {
         .then((data) => {
           if (data.success && Array.isArray(data.effects) && data.effects.length > 0) {
             setAllEffects(mergeWithManualReact(data.effects));
+            setDbStatus('connected');
           } else {
             setAllEffects(mergeWithManualReact(defaultEffects));
+            setDbStatus('offline_paused');
           }
         })
         .catch(() => {
           setAllEffects(mergeWithManualReact(defaultEffects));
+          setDbStatus('offline_paused');
         });
     };
 
@@ -214,21 +236,34 @@ export default function EffectsWorkspace() {
           likes: 0,
           saves: 0,
           views: 0,
-          author: {
-            id: 'u_codespark',
-            name: 'CodeSpark Official',
-            handle: '@codespark',
-            avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkOfficial',
-            role: 'Core System',
-            followers: 1200,
-            effects: 10,
-            bio: 'Official React component',
-            tags: ['official', 'react'],
-            verified: true,
-          },
+          author: manual.author
+            ? {
+                id: manual.author.id || `u_${manual.slug}`,
+                name: manual.author.name,
+                handle: manual.author.handle,
+                avatar: manual.author.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(manual.author.name)}`,
+                role: manual.author.role || 'Creator',
+                followers: manual.author.followers || 500,
+                effects: manual.author.effects || 1,
+                bio: manual.author.bio || '',
+                tags: manual.author.tags || ['verified', 'react'],
+                verified: manual.author.verified ?? true,
+              }
+            : {
+                id: 'u_codespark',
+                name: 'CodeSpark Core',
+                handle: '@codespark',
+                avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
+                role: 'Core System',
+                followers: 1200,
+                effects: 10,
+                bio: 'Official React component',
+                tags: ['official', 'react'],
+                verified: true,
+              },
           createdAt: '2026-09-01',
           interactions: ['hover', 'click', 'cursor'],
-          isOfficial: true,
+          isOfficial: manual.isOfficial ?? true,
         };
 
         setEffect(eff);
@@ -535,32 +570,33 @@ export default function EffectsWorkspace() {
   const ReactComponent = matchedReactKey ? EFFECT_REGISTRY[matchedReactKey] : null;
   const reactSourceSnippet = matchedReactKey ? REACT_CODE_SNIPPETS[matchedReactKey] : null;
 
-  // Dynamic Author resolution (Community Creator vs CodeSpark Official for React)
+  // Dynamic Author resolution: Respect effect author from Database or React Registry
   const displayAuthor = useMemo(() => {
-    if (matchedReactKey || effect?.isOfficial) {
+    // 1. If effect has an author (from DB or React Registry), display it accurately!
+    if (effect?.author?.name && effect.author.name !== 'CodeSpark Official') {
+      const name = effect.author.name;
+      const handle = effect.author.handle || `@${name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+      const avatar = effect.author.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
+      const isOfficial = Boolean(matchedReactKey || effect.isOfficial);
+
       return {
-        name: 'CodeSpark Official',
-        handle: '@codespark',
-        avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkOfficial',
-        role: 'Core System',
-        isOfficial: true,
-        badge: 'Official Component'
+        name,
+        handle,
+        avatar,
+        role: effect.author.role || (isOfficial ? 'Core Creator' : 'Community Creator'),
+        isOfficial,
+        badge: isOfficial ? 'Verified Component' : 'Community Creator'
       };
     }
 
-    const name = effect?.author?.name && effect.author.name !== 'Chetan Prajapat' && effect.author.name !== 'CodeSpark Official'
-      ? effect.author.name
-      : (effect?.author?.name || 'Community Creator');
-    const handle = effect?.author?.handle || `@${name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-    const avatar = effect?.author?.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
-
+    // 2. Default fallback if no specific author was provided
     return {
-      name,
-      handle,
-      avatar,
-      role: effect?.author?.role || 'Creator',
-      isOfficial: false,
-      badge: 'Verified Creator'
+      name: 'CodeSpark Core Registry',
+      handle: '@codespark',
+      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=CodeSparkCore',
+      role: 'Core System',
+      isOfficial: true,
+      badge: 'Official Component'
     };
   }, [matchedReactKey, effect]);
 
@@ -972,6 +1008,34 @@ export default function EffectsWorkspace() {
                       })}
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Database Paused / Offline Preview Mode Notice */}
+            {dbStatus === 'offline_paused' && (
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-950 dark:text-amber-100 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-amber-500/20 text-amber-600 shrink-0 mt-0.5 sm:mt-0">
+                    <i className="ri-database-2-line text-base" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground-950 dark:text-amber-100 flex items-center gap-2">
+                      <span>Cloud Database Inactive / Offline Preview Mode</span>
+                      <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-mono font-semibold text-amber-800 dark:text-amber-300">
+                        Local Registry Cache
+                      </span>
+                    </p>
+                    <p className="text-foreground-600 dark:text-amber-200/80 text-[11px] mt-0.5 leading-relaxed">
+                      The Supabase cloud database is currently paused. CodeSpark is running seamlessly with verified local React & CSS components from the core registry.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
+                    Offline Ready
+                  </span>
                 </div>
               </div>
             )}
