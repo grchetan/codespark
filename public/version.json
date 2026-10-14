@@ -1,8 +1,8 @@
 {
   "version": "v1.3.0",
-  "commit": "630557b",
-  "message": "feat(navbar,deploy): fix navbar contrast & 2-color mismatch, add auto-deploy update notification with versioning",
-  "buildTime": 1791970535675,
-  "releaseDate": "2026-10-14 15:05:27 +0530",
-  "timestamp": "2026-10-14T09:35:35.675Z"
+  "commit": "41359d8",
+  "message": "chore(version): sync build version metadata",
+  "buildTime": 1791971604067,
+  "releaseDate": "2026-10-14 15:06:02 +0530",
+  "timestamp": "2026-10-14T09:53:24.067Z"
 }

@@ -121,6 +121,7 @@ export default function EffectsWorkspace() {
   const [shared, setShared] = useState(false);
 
   const activeSidebarItemRef = useRef<HTMLAnchorElement | null>(null);
+  const mainScrollRef = useRef<HTMLDivElement | null>(null);
 
   // 1. Fetch All Published Effects for Sidebar (from Supabase DB with mock fallback)
   useEffect(() => {
@@ -387,9 +388,10 @@ export default function EffectsWorkspace() {
     fetchDetail();
   }, [activeEffectSlug]);
 
-  // Reset window scroll when route changes
+  // Reset window and content scroll when route changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+    mainScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
   }, [location.pathname]);
 
   // Auto-scroll sidebar to active effect
@@ -703,16 +705,19 @@ export default function EffectsWorkspace() {
   };
 
   return (
-    <div className="min-h-screen bg-background-50 flex flex-col justify-between w-full max-w-full">
+    <div className="min-h-screen bg-background-50 flex flex-col w-full max-w-full overflow-hidden">
       {/* Top Global CodeSpark Navbar */}
       <Navbar />
 
       {/* Main Documentation & Effects Layout */}
-      <div className="w-full flex-1 flex flex-col md:flex-row pt-16 md:pt-[104px]">
+      <div className="fixed inset-x-0 top-16 md:top-[104px] bottom-0 flex flex-col md:flex-row bg-background-50 overflow-hidden">
         {/* ========================================================================= */}
-        {/* LEFT PANE: DOCUMENTATION & COMPONENTS SIDEBAR (Sticky + Internal Scroll)  */}
+        {/* LEFT PANE: DOCUMENTATION & COMPONENTS SIDEBAR (Full Height + Isolated Scroll) */}
         {/* ========================================================================= */}
-        <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-background-300/70 bg-background-50 sticky top-16 md:top-[104px] h-[calc(100vh-64px)] md:h-[calc(100vh-104px)] overflow-hidden select-none z-30">
+        <aside
+          className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-background-300/70 bg-background-50 h-full overflow-hidden select-none z-30 overscroll-contain"
+          onWheel={(e) => e.stopPropagation()}
+        >
           {/* Sidebar Top Search */}
           <div className="p-3.5 border-b border-background-300/50 space-y-2 shrink-0 bg-background-50">
             <div className="flex items-center justify-between">
@@ -747,7 +752,7 @@ export default function EffectsWorkspace() {
           </div>
 
           {/* Sidebar Navigation Tree */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-6 scrollbar-thin pb-28">
+          <div className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-6 custom-scroll pb-10">
             {/* TYPE A: MANUAL DOCUMENTATION SECTIONS */}
             {!sidebarSearch && (
               <div className="space-y-4">
@@ -872,9 +877,14 @@ export default function EffectsWorkspace() {
         </aside>
 
         {/* ========================================================================= */}
-        {/* RIGHT PANE: MAIN DOCUMENTATION CONTENT (Normal Document Flow)             */}
+        {/* RIGHT PANE: MAIN DOCUMENTATION CONTENT (Independent Scroll Container)     */}
         {/* ========================================================================= */}
-        <main className="flex-1 min-w-0 p-4 sm:p-8 lg:p-10 pb-16 max-w-4xl mx-auto w-full space-y-8">
+        <div
+          ref={mainScrollRef}
+          className="flex-1 h-full overflow-y-auto overscroll-contain flex flex-col justify-between custom-scroll"
+          onWheel={(e) => e.stopPropagation()}
+        >
+          <main className="flex-1 min-w-0 p-4 sm:p-8 lg:p-10 pb-16 max-w-4xl mx-auto w-full space-y-8">
             {/* Mobile Drawer Bar (< md) */}
             <div className="md:hidden border-b border-background-300/60 pb-3">
               <button
@@ -1623,10 +1633,11 @@ export default function EffectsWorkspace() {
               </div>
             )}
           </main>
-        </div>
 
-        {/* Full-Width CodeSpark Footer */}
-        <Footer />
+          {/* Full-Width CodeSpark Footer inside Right Pane */}
+          <Footer />
+        </div>
       </div>
-    );
+    </div>
+  );
 }
