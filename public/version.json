@@ -1,8 +1,8 @@
 {
   "version": "v1.3.0",
-  "commit": "41359d8",
-  "message": "chore(version): sync build version metadata",
-  "buildTime": 1791971604067,
-  "releaseDate": "2026-10-14 15:06:02 +0530",
-  "timestamp": "2026-10-14T09:53:24.067Z"
+  "commit": "868cbc6",
+  "message": "feat(effects): isolate sidebar & content scrolling, eliminate bottom gap with full-height dual pane layout",
+  "buildTime": 1791971669268,
+  "releaseDate": "2026-10-14 15:24:17 +0530",
+  "timestamp": "2026-10-14T09:54:29.268Z"
 }
