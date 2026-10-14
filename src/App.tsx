@@ -5,6 +5,7 @@ import i18n from "./i18n";
 import { AuthProvider } from "./context/AuthContext";
 import { MaintenanceProvider } from "./context/MaintenanceContext";
 import { SavedProvider } from "./context/SavedContext";
+import UpdateToast from "./components/feature/UpdateToast";
 
 declare const __BASE_PATH__: string;
 
@@ -18,6 +19,7 @@ function App() {
           <SavedProvider>
             <BrowserRouter basename={basename}>
               <AppRoutes />
+              <UpdateToast />
             </BrowserRouter>
           </SavedProvider>
         </MaintenanceProvider>

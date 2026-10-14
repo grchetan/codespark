@@ -1,11 +1,12 @@
 {
   "name": "codespark",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "prebuild": "node scripts/generate-version.js",
+    "build": "node scripts/generate-version.js && tsc && vite build",
     "preview": "vite preview",
     "server": "tsx server/index.ts",
     "start": "concurrently \"npm run server\" \"npm run dev\""
